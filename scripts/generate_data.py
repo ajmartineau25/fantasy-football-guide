@@ -30,7 +30,8 @@ TEAMS = {
     "IND": {"name": "Indianapolis Colts", "win_total": 7.5, "playcaller": 17, "qb_rank": 17, "ol_rank": 21, "sos_rank": 19, "scheme": "Balanced", "playcaller_name": "Shane Steichen"},
     "JAX": {"name": "Jacksonville Jaguars", "win_total": 8.5, "playcaller": 32, "qb_rank": 27, "ol_rank": 17, "sos_rank": 20, "scheme": "McVay/Coen", "playcaller_name": "Liam Coen"},
     "KC":  {"name": "Kansas City Chiefs", "win_total": 10.5, "playcaller": 24, "qb_rank": 31, "ol_rank": 29, "sos_rank": 13, "scheme": "Reid motion", "playcaller_name": "Andy Reid"},
-    "LV":  {"name": "Las Vegas Raiders", "win_total": 5.5, "playcaller": 12, "qb_rank": 10, "ol_rank": 11, "sos_rank": 21, "scheme": "Pro style", "playcaller_name": "OC staff"},
+    # qb_rank bumped after #1 overall Fernando Mendoza (2026 draft)
+    "LV":  {"name": "Las Vegas Raiders", "win_total": 6.5, "playcaller": 14, "qb_rank": 18, "ol_rank": 11, "sos_rank": 21, "scheme": "Pro style", "playcaller_name": "OC staff"},
     "LAC": {"name": "Los Angeles Chargers", "win_total": 9.5, "playcaller": 20, "qb_rank": 23, "ol_rank": 23, "sos_rank": 11, "scheme": "McDaniel / Harbaugh", "playcaller_name": "Mike McDaniel"},
     "LAR": {"name": "Los Angeles Rams", "win_total": 11.5, "playcaller": 30, "qb_rank": 29, "ol_rank": 25, "sos_rank": 10, "scheme": "McVay", "playcaller_name": "Sean McVay"},
     "MIA": {"name": "Miami Dolphins", "win_total": 4.5, "playcaller": 10, "qb_rank": 9, "ol_rank": 9, "sos_rank": 3, "scheme": "Rebuild", "playcaller_name": "Jeff Hafley staff"},
@@ -64,7 +65,8 @@ PLAYERS = [
     {"name": "Jonathan Taylor", "pos": "RB", "team": "IND", "age": 27, "adp_ppr": 5.0, "adp_half": 4.0, "fpts_ppr": 320.0, "fpts_half": 300.0, "opportunity": 30, "efficiency": 28, "injury": 22, "bye": 14},
     {"name": "Saquon Barkley", "pos": "RB", "team": "PHI", "age": 29, "adp_ppr": 8.0, "adp_half": 7.0, "fpts_ppr": 290.0, "fpts_half": 270.0, "opportunity": 28, "efficiency": 27, "injury": 18, "bye": 9},
     {"name": "De'Von Achane", "pos": "RB", "team": "MIA", "age": 24, "adp_ppr": 18.0, "adp_half": 20.0, "fpts_ppr": 240.0, "fpts_half": 215.0, "opportunity": 22, "efficiency": 30, "injury": 20, "bye": 6},
-    {"name": "Ashton Jeanty", "pos": "RB", "team": "LV", "age": 22, "adp_ppr": 12.0, "adp_half": 11.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 29, "efficiency": 26, "injury": 27, "bye": 8, "rookie": True},
+    # 2025 1st-round pick — Year 2, NOT a 2026 rookie (975 rush / 55-346-5 rec ≈ 245 PPR)
+    {"name": "Ashton Jeanty", "pos": "RB", "team": "LV", "age": 22, "adp_ppr": 12.0, "adp_half": 11.0, "fpts_ppr": 245.1, "fpts_half": 217.6, "opportunity": 29, "efficiency": 26, "injury": 27, "bye": 8},
     {"name": "Bucky Irving", "pos": "RB", "team": "TB", "age": 23, "adp_ppr": 14.0, "adp_half": 13.0, "fpts_ppr": 265.0, "fpts_half": 245.0, "opportunity": 27, "efficiency": 28, "injury": 26, "bye": 9},
     {"name": "Josh Jacobs", "pos": "RB", "team": "GB", "age": 28, "adp_ppr": 16.0, "adp_half": 14.0, "fpts_ppr": 255.0, "fpts_half": 245.0, "opportunity": 28, "efficiency": 24, "injury": 24, "bye": 5},
     {"name": "Chase Brown", "pos": "RB", "team": "CIN", "age": 25, "adp_ppr": 20.0, "adp_half": 19.0, "fpts_ppr": 250.0, "fpts_half": 230.0, "opportunity": 26, "efficiency": 25, "injury": 27, "bye": 10},
@@ -92,7 +94,11 @@ PLAYERS = [
     {"name": "Aaron Jones", "pos": "RB", "team": "MIN", "age": 31, "adp_ppr": 78.0, "adp_half": 76.0, "fpts_ppr": 195.0, "fpts_half": 175.0, "opportunity": 20, "efficiency": 23, "injury": 15, "bye": 6},
     {"name": "J.K. Dobbins", "pos": "RB", "team": "DEN", "age": 27, "adp_ppr": 68.0, "adp_half": 64.0, "fpts_ppr": 180.0, "fpts_half": 170.0, "opportunity": 22, "efficiency": 21, "injury": 11, "bye": 12},
     {"name": "Cam Skattebo", "pos": "RB", "team": "NYG", "age": 23, "adp_ppr": 95.0, "adp_half": 90.0, "fpts_ppr": 120.0, "fpts_half": 110.0, "opportunity": 21, "efficiency": 19, "injury": 26, "bye": 14},
-    {"name": "Jeremiyah Love", "pos": "RB", "team": "ARI", "age": 22, "adp_ppr": 88.0, "adp_half": 85.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 24, "efficiency": 24, "injury": 28, "bye": 8, "rookie": True},
+    # 2026 draft class RBs
+    {"name": "Jeremiyah Love", "pos": "RB", "team": "ARI", "age": 21, "adp_ppr": 72.0, "adp_half": 68.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 26, "efficiency": 25, "injury": 28, "bye": 8, "rookie": True},
+    {"name": "Jadarian Price", "pos": "RB", "team": "SEA", "age": 22, "adp_ppr": 98.0, "adp_half": 94.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 20, "efficiency": 22, "injury": 28, "bye": 8, "rookie": True},
+    {"name": "Jonah Coleman", "pos": "RB", "team": "DEN", "age": 22, "adp_ppr": 135.0, "adp_half": 132.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 14, "efficiency": 18, "injury": 27, "bye": 12, "rookie": True},
+    {"name": "Nicholas Singleton", "pos": "RB", "team": "TEN", "age": 22, "adp_ppr": 145.0, "adp_half": 142.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 12, "efficiency": 17, "injury": 27, "bye": 10, "rookie": True},
     {"name": "Rico Dowdle", "pos": "RB", "team": "CAR", "age": 28, "adp_ppr": 100.0, "adp_half": 98.0, "fpts_ppr": 145.0, "fpts_half": 135.0, "opportunity": 15, "efficiency": 18, "injury": 22, "bye": 14},
     {"name": "Zach Charbonnet", "pos": "RB", "team": "SEA", "age": 25, "adp_ppr": 105.0, "adp_half": 100.0, "fpts_ppr": 140.0, "fpts_half": 130.0, "opportunity": 16, "efficiency": 17, "injury": 25, "bye": 8},
     {"name": "Trey Benson", "pos": "RB", "team": "ARI", "age": 23, "adp_ppr": 110.0, "adp_half": 105.0, "fpts_ppr": 100.0, "fpts_half": 95.0, "opportunity": 14, "efficiency": 16, "injury": 20, "bye": 8},
@@ -142,8 +148,20 @@ PLAYERS = [
     {"name": "Xavier Worthy", "pos": "WR", "team": "KC", "age": 23, "adp_ppr": 66.0, "adp_half": 64.0, "fpts_ppr": 185.0, "fpts_half": 165.0, "opportunity": 21, "efficiency": 24, "injury": 23, "bye": 10},
     {"name": "Jayden Reed", "pos": "WR", "team": "GB", "age": 26, "adp_ppr": 78.0, "adp_half": 80.0, "fpts_ppr": 180.0, "fpts_half": 160.0, "opportunity": 19, "efficiency": 23, "injury": 20, "bye": 5},
     {"name": "Dontayvion Wicks", "pos": "WR", "team": "PHI", "age": 25, "adp_ppr": 110.0, "adp_half": 112.0, "fpts_ppr": 140.0, "fpts_half": 125.0, "opportunity": 18, "efficiency": 20, "injury": 24, "bye": 9},
-    {"name": "Makai Lemon", "pos": "WR", "team": "PHI", "age": 22, "adp_ppr": 125.0, "adp_half": 128.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 16, "efficiency": 18, "injury": 28, "bye": 9, "rookie": True},
-    {"name": "Carnell Tate", "pos": "WR", "team": "TEN", "age": 22, "adp_ppr": 105.0, "adp_half": 108.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 20, "efficiency": 20, "injury": 28, "bye": 10, "rookie": True},
+    # 2026 draft class WRs (NFL Draft Apr 2026)
+    {"name": "Carnell Tate", "pos": "WR", "team": "TEN", "age": 21, "adp_ppr": 78.0, "adp_half": 82.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 24, "efficiency": 22, "injury": 28, "bye": 10, "rookie": True},
+    {"name": "Jordyn Tyson", "pos": "WR", "team": "NO", "age": 22, "adp_ppr": 85.0, "adp_half": 88.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 23, "efficiency": 23, "injury": 22, "bye": 11, "rookie": True},
+    {"name": "Makai Lemon", "pos": "WR", "team": "PHI", "age": 21, "adp_ppr": 92.0, "adp_half": 96.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 20, "efficiency": 22, "injury": 28, "bye": 9, "rookie": True},
+    {"name": "KC Concepcion", "pos": "WR", "team": "CLE", "age": 22, "adp_ppr": 108.0, "adp_half": 112.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 21, "efficiency": 21, "injury": 27, "bye": 9, "rookie": True},
+    {"name": "Omar Cooper Jr.", "pos": "WR", "team": "NYJ", "age": 22, "adp_ppr": 118.0, "adp_half": 122.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 18, "efficiency": 20, "injury": 28, "bye": 9, "rookie": True},
+    {"name": "Germie Bernard", "pos": "WR", "team": "PIT", "age": 22, "adp_ppr": 128.0, "adp_half": 132.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 16, "efficiency": 19, "injury": 27, "bye": 5, "rookie": True},
+    {"name": "Denzel Boston", "pos": "WR", "team": "CLE", "age": 22, "adp_ppr": 132.0, "adp_half": 136.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 17, "efficiency": 19, "injury": 27, "bye": 9, "rookie": True},
+    {"name": "De'Zhaun Stribling", "pos": "WR", "team": "SF", "age": 22, "adp_ppr": 138.0, "adp_half": 142.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 15, "efficiency": 20, "injury": 26, "bye": 14, "rookie": True},
+    {"name": "Antonio Williams", "pos": "WR", "team": "WAS", "age": 22, "adp_ppr": 142.0, "adp_half": 146.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 15, "efficiency": 18, "injury": 27, "bye": 12, "rookie": True},
+    {"name": "Zachariah Branch", "pos": "WR", "team": "ATL", "age": 21, "adp_ppr": 148.0, "adp_half": 150.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 14, "efficiency": 18, "injury": 27, "bye": 12, "rookie": True},
+    {"name": "Elijah Sarratt", "pos": "WR", "team": "BAL", "age": 22, "adp_ppr": 155.0, "adp_half": 158.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 13, "efficiency": 17, "injury": 27, "bye": 7, "rookie": True},
+    {"name": "Malachi Fields", "pos": "WR", "team": "NYG", "age": 22, "adp_ppr": 160.0, "adp_half": 162.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 13, "efficiency": 17, "injury": 26, "bye": 14, "rookie": True},
+    {"name": "Ted Hurst", "pos": "WR", "team": "TB", "age": 22, "adp_ppr": 165.0, "adp_half": 168.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 12, "efficiency": 16, "injury": 27, "bye": 9, "rookie": True},
     {"name": "Cooper Kupp", "pos": "WR", "team": "SEA", "age": 33, "adp_ppr": 115.0, "adp_half": 118.0, "fpts_ppr": 150.0, "fpts_half": 130.0, "opportunity": 16, "efficiency": 21, "injury": 8, "bye": 8},
     {"name": "Deebo Samuel", "pos": "WR", "team": "WAS", "age": 30, "adp_ppr": 88.0, "adp_half": 85.0, "fpts_ppr": 170.0, "fpts_half": 155.0, "opportunity": 18, "efficiency": 22, "injury": 15, "bye": 12},
     {"name": "Michael Pittman Jr.", "pos": "WR", "team": "IND", "age": 28, "adp_ppr": 92.0, "adp_half": 94.0, "fpts_ppr": 175.0, "fpts_half": 155.0, "opportunity": 20, "efficiency": 18, "injury": 22, "bye": 14},
@@ -188,6 +206,9 @@ PLAYERS = [
     {"name": "J.J. McCarthy", "pos": "QB", "team": "MIN", "age": 23, "adp_ppr": 148.0, "adp_half": 145.0, "fpts_ppr": 151.4, "fpts_half": 151.4, "opportunity": 19, "efficiency": 18, "injury": 15, "bye": 6},
     {"name": "Tyler Shough", "pos": "QB", "team": "NO", "age": 26, "adp_ppr": 165.0, "adp_half": 162.0, "fpts_ppr": 172.0, "fpts_half": 172.0, "opportunity": 18, "efficiency": 17, "injury": 23, "bye": 11},
     {"name": "Shedeur Sanders", "pos": "QB", "team": "CLE", "age": 24, "adp_ppr": 175.0, "adp_half": 172.0, "fpts_ppr": 106.9, "fpts_half": 106.9, "opportunity": 15, "efficiency": 14, "injury": 25, "bye": 9},
+    # 2026 draft class QBs
+    {"name": "Fernando Mendoza", "pos": "QB", "team": "LV", "age": 22, "adp_ppr": 125.0, "adp_half": 122.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 24, "efficiency": 22, "injury": 28, "bye": 8, "rookie": True},
+    {"name": "Ty Simpson", "pos": "QB", "team": "LAR", "age": 22, "adp_ppr": 185.0, "adp_half": 182.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 10, "efficiency": 18, "injury": 28, "bye": 6, "rookie": True},
 
     # ===== TE =====
     {"name": "Brock Bowers", "pos": "TE", "team": "LV", "age": 23, "adp_ppr": 23.0, "adp_half": 25.0, "fpts_ppr": 260.0, "fpts_half": 220.0, "opportunity": 32, "efficiency": 28, "injury": 24, "bye": 8},
@@ -213,7 +234,10 @@ PLAYERS = [
     {"name": "Chig Okonkwo", "pos": "TE", "team": "TEN", "age": 26, "adp_ppr": 145.0, "adp_half": 148.0, "fpts_ppr": 120.0, "fpts_half": 105.0, "opportunity": 16, "efficiency": 18, "injury": 26, "bye": 10},
     {"name": "Tyler Warren", "pos": "TE", "team": "IND", "age": 23, "adp_ppr": 70.0, "adp_half": 72.0, "fpts_ppr": 160.0, "fpts_half": 140.0, "opportunity": 24, "efficiency": 22, "injury": 27, "bye": 14},
     {"name": "Colston Loveland", "pos": "TE", "team": "CHI", "age": 22, "adp_ppr": 115.0, "adp_half": 118.0, "fpts_ppr": 100.0, "fpts_half": 90.0, "opportunity": 19, "efficiency": 20, "injury": 28, "bye": 7},
-    {"name": "Eli Stowers", "pos": "TE", "team": "PHI", "age": 22, "adp_ppr": 150.0, "adp_half": 152.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 14, "efficiency": 16, "injury": 28, "bye": 9, "rookie": True},
+    # 2026 draft class TEs
+    {"name": "Kenyon Sadiq", "pos": "TE", "team": "NYJ", "age": 21, "adp_ppr": 112.0, "adp_half": 115.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 22, "efficiency": 21, "injury": 28, "bye": 9, "rookie": True},
+    {"name": "Eli Stowers", "pos": "TE", "team": "PHI", "age": 22, "adp_ppr": 148.0, "adp_half": 150.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 15, "efficiency": 17, "injury": 28, "bye": 9, "rookie": True},
+    {"name": "Eli Raridon", "pos": "TE", "team": "NE", "age": 22, "adp_ppr": 168.0, "adp_half": 170.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 12, "efficiency": 15, "injury": 27, "bye": 14, "rookie": True},
 
     # ===== K =====
     {"name": "Brandon Aubrey", "pos": "K", "team": "DAL", "age": 31, "adp_ppr": 120.0, "adp_half": 118.0, "fpts_ppr": 175.0, "fpts_half": 175.0, "opportunity": 30, "efficiency": 32, "injury": 28, "bye": 10},
