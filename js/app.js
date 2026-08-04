@@ -62,11 +62,28 @@ function toast(msg, type = "ok") {
   toast._t = setTimeout(() => el.classList.remove("show"), 3200);
 }
 
+/** Local first; fall back to public GitHub raw if data missing on host. */
+const DATA_FALLBACK =
+  "https://raw.githubusercontent.com/ajmartineau25/fantasy-football-guide/main/data";
+
+async function fetchJson(path) {
+  const local = `./data/${path}`;
+  try {
+    const res = await fetch(local);
+    if (res.ok) return res.json();
+  } catch (_) {
+    /* try remote */
+  }
+  const res = await fetch(`${DATA_FALLBACK}/${path}`);
+  if (!res.ok) throw new Error(`Failed to load ${path} (${res.status})`);
+  return res.json();
+}
+
 async function loadData() {
   const [players, meta, teams] = await Promise.all([
-    fetch("./data/players.json").then((r) => r.json()),
-    fetch("./data/meta.json").then((r) => r.json()),
-    fetch("./data/teams.json").then((r) => r.json()),
+    fetchJson("players.json"),
+    fetchJson("meta.json"),
+    fetchJson("teams.json"),
   ]);
   state.players = players;
   state.meta = meta;
