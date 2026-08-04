@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2026 Fantasy Football Guide · Multi-Factor Draft Board</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <h1>Fantasy Football <span>Guide</span> 2026</h1>
+        <p>Multi-factor rankings · 0.5 PPR / 1 PPR · Live Sleeper & ESPN draft board</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <nav class="site-nav">
+          <a href="./index.html" class="active">Draft Board</a>
+          <a href="./how-it-works.html">How It Works</a>
+        </nav>
+        <div class="scoring-toggle" role="group" aria-label="Scoring format">
+          <button type="button" data-scoring="half">0.5 PPR</button>
+          <button type="button" data-scoring="ppr" class="active">1 PPR</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Left: filters & weights -->
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Position</h2>
+          <div class="pos-chips">
+            <button type="button" class="chip active" data-pos="ALL">ALL</button>
+            <button type="button" class="chip" data-pos="QB">QB</button>
+            <button type="button" class="chip" data-pos="RB">RB</button>
+            <button type="button" class="chip" data-pos="WR">WR</button>
+            <button type="button" class="chip" data-pos="TE">TE</button>
+            <button type="button" class="chip" data-pos="K">K</button>
+            <button type="button" class="chip" data-pos="DST">DST</button>
+          </div>
+          <label class="field" for="searchInput">Search</label>
+          <input id="searchInput" type="text" placeholder="Player or team\u2026" class="search" />
+          <label class="checkbox-row">
+            <input type="checkbox" id="hideDrafted" />
+            Hide drafted players
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="enableNeed" checked />
+            Boost by team need (12-team 1QB)
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>Factor weights</h2>
+          <p class="help-text">Each factor uses natural units (FPts, ADP, wins, etc.). Weights control the 0\u2013100 model total (aim for sum 100).</p>
+          <div id="weights"></div>
+          <div id="weightTotal" class="weight-total ok"><span>Weight sum</span><span>100</span></div>
+          <div class="btn-row">
+            <button type="button" class="btn" id="resetWeights">Reset weights</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Scoring layers</h2>
+          <p class="help-text" style="margin-bottom:8px">Click a layer to open its ranking tab.</p>
+          <div class="layer-links" id="layerLinks"></div>
+        </section>
+      </aside>
+
+      <!-- Center: board -->
+      <main class="main-panel">
+        <nav class="rank-tabs" id="rankTabs" aria-label="Ranking views">
+          <button type="button" class="rank-tab active" data-view="summary">Summary</button>
+          <button type="button" class="rank-tab" data-view="lastYear">Last Year</button>
+          <button type="button" class="rank-tab" data-view="age">Age</button>
+          <button type="button" class="rank-tab" data-view="qb">QB</button>
+          <button type="button" class="rank-tab" data-view="playcaller">Playcaller</button>
+          <button type="button" class="rank-tab" data-view="adp">ADP</button>
+          <button type="button" class="rank-tab" data-view="vegas">Vegas</button>
+          <button type="button" class="rank-tab" data-view="opportunity">Opportunity</button>
+          <button type="button" class="rank-tab" data-view="efficiency">Efficiency</button>
+          <button type="button" class="rank-tab" data-view="injury">Health</button>
+          <button type="button" class="rank-tab" data-view="sos">SOS</button>
+        </nav>
+
+        <div class="view-banner" id="viewBanner"></div>
+
+        <div class="stats-bar">
+          <div class="stat-pill">Showing <strong id="statPlayers">0</strong></div>
+          <div class="stat-pill">Available <strong id="statAvailable">0</strong></div>
+          <div class="stat-pill">Drafted <strong id="statDrafted">0</strong></div>
+          <div class="stat-pill">Scoring <strong id="statScoring">1 PPR</strong></div>
+          <div class="stat-pill">View <strong id="statView">Summary</strong></div>
+          <div class="stat-pill">
+            <span id="liveDot" class="status-dot"></span>
+            <span id="liveLabel">Not connected</span>
+          </div>
+        </div>
+
+        <div id="teamRankPanel" class="team-rank-panel hidden"></div>
+
+        <div class="table-wrap">
+          <table class="board" id="boardTable"></table>
+        </div>
+      </main>
+
+      <!-- Right: draft -->
+      <aside class="draft-panel">
+        <section class="panel">
+          <h2>Your roster need</h2>
+          <div class="need-grid" id="needMeter"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Top picks for you</h2>
+          <div class="rec-list" id="recList"></div>
+        </section>
+
+        <section class="panel">
+          <div class="tabs">
+            <button type="button" class="tab active" data-tab="sleeper">Sleeper</button>
+            <button type="button" class="tab" data-tab="espn">ESPN</button>
+            <button type="button" class="tab" data-tab="manual">Manual</button>
+          </div>
+
+          <div id="tab-sleeper">
+            <label class="field" for="sleeperUser">Sleeper username</label>
+            <input id="sleeperUser" type="text" placeholder="your_username" />
+            <label class="field" for="sleeperLeague">League ID (optional)</label>
+            <input id="sleeperLeague" type="text" placeholder="from sleeper URL" />
+            <label class="field" for="sleeperDraft">Draft ID (optional)</label>
+            <input id="sleeperDraft" type="text" placeholder="auto from league" />
+            <p class="help-text" id="sleeperUserInfo">Public API \u00b7 no key required. League/draft IDs are in the Sleeper URL.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="btnSleeper">Connect Sleeper</button>
+            </div>
+          </div>
+
+          <div id="tab-espn" class="hidden">
+            <label class="field" for="espnLeague">ESPN league ID</label>
+            <input id="espnLeague" type="text" placeholder="from fantasy.espn.com URL" />
+            <label class="field" for="espnTeam">Your team ID (optional)</label>
+            <input id="espnTeam" type="number" placeholder="1\u201312" />
+            <label class="field" for="espnSeason">Season</label>
+            <input id="espnSeason" type="number" value="2026" />
+            <label class="checkbox-row">
+              <input type="checkbox" id="espnProxy" checked />
+              Use CORS proxy (needed in browser)
+            </label>
+            <p class="help-text">
+              Works best for <strong>public</strong> leagues. Private leagues need espn_s2 + SWID cookies via a local proxy (see README).
+            </p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-secondary" id="btnEspn">Connect ESPN</button>
+            </div>
+          </div>
+
+          <div id="tab-manual" class="hidden">
+            <label class="field" for="manualName">Mark pick (type name, Enter)</label>
+            <input id="manualName" type="text" placeholder="e.g. Jahmyr Gibbs" />
+            <label class="checkbox-row">
+              <input type="checkbox" id="manualMine" checked />
+              This is my pick
+            </label>
+            <p class="help-text">Use during a party draft or when live APIs aren\u2019t available.</p>
+          </div>
+
+          <div class="btn-row" style="margin-top:10px">
+            <button type="button" class="btn" id="btnStopPoll">Stop poll</button>
+            <button type="button" class="btn btn-danger" id="btnResetDraft">Reset board</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Draft log</h2>
+          <div class="draft-log" id="draftLog"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Simple tab switching for draft panel
+    document.querySelectorAll(".tabs .tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tabs .tab").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        ["sleeper", "espn", "manual"].forEach((id) => {
+          document.getElementById("tab-" + id).classList.toggle("hidden", tab.dataset.tab !== id);
+        });
+      });
+    });
+  </script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
