@@ -4,45 +4,40 @@
 
 import { rankPlayers, countRoster, emptyRosterCounts } from "./rankings.js";
 
+/**
+ * Strategies only gently tilt BPA by position — they never override top talent.
+ * needStrength: how hard to favor empty roster spots (0 = pure BPA, 0.2 = soft).
+ */
 export const STRATEGIES = {
   balanced: {
     label: "Balanced",
-    desc: "Best blend of value + roster need",
-    needWeight: 0.35,
-    valueWeight: 0.35,
-    modelWeight: 0.3,
+    desc: "Best player available; soft tilt toward roster holes",
+    needStrength: 0.12,
+    posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DST: 1 },
   },
   zero_rb: {
     label: "Zero RB",
-    desc: "Load WR/TE early; RB later",
-    needWeight: 0.25,
-    valueWeight: 0.3,
-    modelWeight: 0.25,
-    posBias: { WR: 1.12, TE: 1.06, RB: 0.82, QB: 1.0, K: 0.9, DST: 0.9 },
+    desc: "BPA with mild WR/TE lean (still won't take Flowers over Gibbs)",
+    needStrength: 0.1,
+    posBias: { WR: 1.04, TE: 1.03, RB: 0.94, QB: 1.0, K: 0.95, DST: 0.95 },
   },
   hero_rb: {
     label: "Hero RB",
-    desc: "Secure elite RB early, then WR",
-    needWeight: 0.3,
-    valueWeight: 0.3,
-    modelWeight: 0.25,
-    posBias: { RB: 1.14, WR: 1.0, TE: 1.0, QB: 0.98, K: 0.9, DST: 0.9 },
+    desc: "BPA with mild early-RB lean until you have one",
+    needStrength: 0.12,
+    posBias: { RB: 1.05, WR: 1.0, TE: 1.0, QB: 0.99, K: 0.95, DST: 0.95 },
   },
   robust_rb: {
     label: "Robust RB",
-    desc: "Prioritize RB depth through mid rounds",
-    needWeight: 0.35,
-    valueWeight: 0.25,
-    modelWeight: 0.25,
-    posBias: { RB: 1.18, WR: 0.95, TE: 0.98, QB: 0.95, K: 0.9, DST: 0.9 },
+    desc: "BPA with stronger RB depth preference",
+    needStrength: 0.14,
+    posBias: { RB: 1.06, WR: 0.98, TE: 0.99, QB: 0.98, K: 0.95, DST: 0.95 },
   },
   best_ball: {
     label: "Best Ball",
-    desc: "Upside + stacks; de-emphasize K/DST early",
-    needWeight: 0.2,
-    valueWeight: 0.35,
-    modelWeight: 0.3,
-    posBias: { WR: 1.08, TE: 1.05, RB: 1.02, QB: 1.06, K: 0.5, DST: 0.5 },
+    desc: "BPA; push K/DST later, slight skill upside lean",
+    needStrength: 0.08,
+    posBias: { WR: 1.03, TE: 1.02, RB: 1.01, QB: 1.02, K: 0.7, DST: 0.7 },
   },
 };
 
@@ -143,37 +138,37 @@ export function floorCeiling(p) {
 }
 
 /**
- * Build reasons for recommending a player.
+ * Build reasons for recommending a player (BPA-first narrative).
  */
 export function buildReasons(p, ctx) {
   const reasons = [];
   const { scarcity, rosterCounts, strategy } = ctx;
-  if (p.valueTag === "steal" || p.valueTag === "value") {
-    reasons.push(`Value: ADP ${p.adpRaw} vs model #${p.modelRank} (+${p.value} slots)`);
-  } else if (p.valueTag === "reach" || p.valueTag === "slight-reach") {
-    reasons.push(`Slight reach vs ADP ${p.adpRaw} (model #${p.modelRank}) — justified by need/upside`);
-  }
+  const total = p.displayTotal ?? p.total ?? 0;
+  reasons.push(`Best available: model ${total.toFixed(1)}/100 (board rank #${p.modelRank} among remaining)`);
+
   const ns = needScore(p.pos, rosterCounts, ctx.targets);
-  if (ns >= 0.7) reasons.push(`Fills ${p.pos} need (you have ${rosterCounts[p.pos] || 0})`);
-  if (scarcity[p.pos]?.scarcity >= 55) {
-    reasons.push(`${p.pos} scarcity high (${scarcity[p.pos].left} quality options left)`);
+  if (ns >= 0.75 && (rosterCounts[p.pos] || 0) === 0) {
+    reasons.push(`Also fills open ${p.pos} slot on your roster`);
+  } else if (ns >= 0.7) {
+    reasons.push(`Helps ${p.pos} depth (you have ${rosterCounts[p.pos] || 0})`);
+  }
+  if (scarcity[p.pos]?.scarcity >= 60) {
+    reasons.push(`${p.pos} getting thin (${scarcity[p.pos].left} left on board)`);
   }
   const m = p.activeMetrics || {};
-  if (m.opportunity && m.opportunity <= 5) reasons.push(`Elite opportunity (#${m.opportunity} at ${p.pos})`);
-  if (m.vegasYards && m.vegasYardsLabel) {
-    reasons.push(`Vegas: ${Math.round(m.vegasYards)} ${m.vegasYardsLabel} O/U`);
+  if (m.opportunity && m.opportunity <= 5) {
+    reasons.push(`Elite opportunity (#${m.opportunity} at ${p.pos})`);
   }
-  if ((m.injury ?? 17) <= 10) reasons.push("Durability risk — bank on upside if healthy");
-  if (p.tier && p.tier <= 3) reasons.push(`Tier ${p.tier} talent — last of a clear tier soon`);
-  if (strategy === "zero_rb" && p.pos === "WR") reasons.push("Fits Zero-RB: prioritize pass catchers");
+  // Value is informational only — not why we ranked him #1
+  if (p.valueTag === "steal" || p.valueTag === "value") {
+    reasons.push(`Bonus: still on board vs ADP ${p.adpRaw} (market later than model)`);
+  }
   if (strategy === "hero_rb" && p.pos === "RB" && (rosterCounts.RB || 0) === 0) {
-    reasons.push("Hero RB: lock your workhorse");
+    reasons.push("Matches Hero-RB lean until you roster an RB");
   }
-  // stacks
   if (ctx.myQbTeam && p.team === ctx.myQbTeam && (p.pos === "WR" || p.pos === "TE")) {
     reasons.push(`Stack with your QB (${p.team})`);
   }
-  if (!reasons.length) reasons.push(`Strong model total (${(p.displayTotal ?? p.total).toFixed(1)}) at ${p.pos}`);
   return reasons.slice(0, 4);
 }
 
@@ -189,7 +184,16 @@ export function buildRisks(p) {
 }
 
 /**
- * On-clock recommendation list.
+ * On-clock picks = Best Player Available on the remaining board.
+ *
+ * Primary sort: model total among undrafted players.
+ * Soft adjustments only:
+ *  - mild roster-need multiplier (cannot vault a WR3 over an elite RB1)
+ *  - strategy position bias (~±6%)
+ *  - K/DST suppressed until late
+ *
+ * ADP value is NEVER used to rank who to pick (shown as a label only).
+ * Empty roster / pick 1 → essentially pure model BPA.
  */
 export function recommendPicks(players, {
   scoring = "ppr",
@@ -204,7 +208,9 @@ export function recommendPicks(players, {
   const strat = STRATEGIES[strategy] || STRATEGIES.balanced;
   const rosterCounts = countRoster(myRoster);
   const available = players.filter((p) => !p.drafted);
+  const rosterEmpty = myRoster.length === 0;
 
+  // Pure model ranking of remaining players (no need boost in rankPlayers)
   let ranked = rankPlayers(available, {
     scoring,
     weights,
@@ -219,40 +225,67 @@ export function recommendPicks(players, {
   const myQb = myRoster.find((p) => p.pos === "QB");
   const ctx = { scarcity, rosterCounts, targets, strategy, myQbTeam: myQb?.team };
 
-  // Early-round K/DST penalty
-  const early = pickNumber <= (targets.teams || 12) * 9;
+  const teams = targets.teams || 12;
+  const early = pickNumber <= teams * 9; // before ~round 10
+  // Need tilt only matters after you have a roster; stay tiny early
+  const needStrength = rosterEmpty ? 0 : (strat.needStrength ?? 0.12) * (pickNumber <= teams ? 0.35 : 1);
 
   const scored = ranked.map((p) => {
     const fc = floorCeiling(p);
     const n = needScore(p.pos, rosterCounts, targets);
-    const valNorm = Math.max(-20, Math.min(25, p.value)) / 25; // -1..1
-    const valScore = (valNorm + 1) / 2; // 0..1
-    const modelNorm = (p.displayTotal ?? p.total ?? 0) / 100;
+    const model = p.displayTotal ?? p.total ?? 0;
     const bias = strat.posBias?.[p.pos] ?? 1;
-    let pickScore =
-      strat.modelWeight * modelNorm +
-      strat.valueWeight * valScore +
-      strat.needWeight * n;
-    pickScore *= bias;
-    if (hideKdstEarly && early && (p.pos === "K" || p.pos === "DST")) pickScore *= 0.35;
-    // slight scarcity bump
-    pickScore *= 1 + (scarcity[p.pos]?.scarcity || 0) / 400;
+
+    // BPA core: model score. Need multiplies in a narrow band, e.g. 0.94–1.12
+    const needMult = 1 + needStrength * (n - 0.5) * 2; // n=1 → +needStrength, n=0.15 → slight down
+    let pickScore = model * needMult * bias;
+
+    // Scarcity: tiny bump only (max ~3%)
+    pickScore *= 1 + Math.min(0.03, (scarcity[p.pos]?.scarcity || 0) / 2500);
+
+    // Do not draft K/DST while studs remain
+    if (hideKdstEarly && early && (p.pos === "K" || p.pos === "DST")) {
+      pickScore *= 0.25;
+    }
+    // Soft-cap: never let need/bias alone jump more than ~8 model points over pure BPA
+    // (guards against mid-round "values" outranking elite remaining talent)
+    const pure = model;
+    if (pickScore > pure + 8) pickScore = pure + 8;
+    if (pickScore < pure - 6) pickScore = pure - 6;
+
     return {
       ...p,
       ...fc,
-      pickScore: Math.round(pickScore * 1000) / 1000,
-      reasons: buildReasons(p, ctx),
+      pickScore: Math.round(pickScore * 100) / 100,
+      bpaScore: model,
+      reasons: null, // filled after sort so modelRank is correct
       risks: buildRisks(p),
       needFit: Math.round(n * 100),
     };
   });
 
-  scored.sort((a, b) => b.pickScore - a.pickScore || b.displayTotal - a.displayTotal);
+  // Sort by adjusted BPA score, tie-break pure model then ADP (earlier ADP wins ties)
+  scored.sort(
+    (a, b) =>
+      b.pickScore - a.pickScore ||
+      b.bpaScore - a.bpaScore ||
+      (a.adpRaw ?? 999) - (b.adpRaw ?? 999)
+  );
+
+  // Re-stamp modelRank among remaining for display (1 = best remaining by pure model)
+  const byModel = [...scored].sort((a, b) => b.bpaScore - a.bpaScore);
+  const modelRankMap = new Map(byModel.map((p, i) => [p.id, i + 1]));
+  for (const p of scored) {
+    p.modelRank = modelRankMap.get(p.id) ?? p.modelRank;
+    p.reasons = buildReasons(p, ctx);
+  }
+
   return {
     picks: scored.slice(0, limit),
     scarcity,
     rosterCounts,
     strategy: strat,
+    mode: rosterEmpty ? "bpa" : "bpa_need",
   };
 }
 

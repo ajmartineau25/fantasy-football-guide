@@ -159,7 +159,7 @@ function renderOnClock() {
     state.myRoster.length,
     state.leagueTeams * 15
   );
-  const { picks, scarcity, strategy } = recommendPicks(state.players, {
+  const { picks, scarcity, strategy, mode } = recommendPicks(state.players, {
     scoring: state.scoring,
     weights: state.weights,
     targets: rosterTargets(),
@@ -171,7 +171,8 @@ function renderOnClock() {
   state.lastRecs = picks;
 
   $("#statStrategy").textContent = strategy.label || state.strategy;
-  $("#onClockMeta").textContent = `${strategy.label}: ${strategy.desc} · est. overall pick ~${pickNo}`;
+  const modeLabel = mode === "bpa" ? "Best player available (empty roster)" : "BPA among remaining + soft roster fit";
+  $("#onClockMeta").textContent = `${modeLabel} · ${strategy.label} · ~pick ${pickNo}`;
 
   $("#scarcityBar").innerHTML = ["RB", "WR", "TE", "QB"]
     .map((pos) => {
@@ -185,13 +186,14 @@ function renderOnClock() {
   $("#onClockList").innerHTML = picks
     .map((p, i) => {
       const fc = floorCeiling(p);
+      const score = (p.bpaScore ?? p.displayTotal ?? p.total ?? 0).toFixed(1);
       return `<div class="on-clock-card ${i === 0 ? "pick-1" : ""}" data-id="${p.id}">
         <div class="oc-top">
           <span class="oc-rank">${i + 1}</span>
           <span class="pos-badge ${p.pos}">${p.pos}</span>
           <div>
-            <div class="oc-name">${p.name} ${valueTagHtml(p.valueTag)}<span class="tag tier">T${p.tier}</span></div>
-            <div class="oc-meta">${p.team} · model #${p.modelRank} · ADP ${p.adpRaw} · need ${p.needFit}% · F/C ${fc.floor}–${fc.ceiling}</div>
+            <div class="oc-name">${p.name} <span class="tag tier">BPA #${p.modelRank}</span>${p.tier ? `<span class="tag tier">T${p.tier}</span>` : ""}${valueTagHtml(p.valueTag)}</div>
+            <div class="oc-meta">${p.team} · model <strong>${score}</strong> · ADP ${p.adpRaw} · F/C ${fc.floor}–${fc.ceiling}${p.needFit >= 70 ? ` · fills need` : ""}</div>
           </div>
         </div>
         <ul>${(p.reasons || []).map((r) => `<li>${r}</li>`).join("")}</ul>
@@ -200,7 +202,7 @@ function renderOnClock() {
         </div>
       </div>`;
     })
-    .join("") || `<div class="help-text">No players left.</div>`;
+    .join("") || `<div class="help-text">No players left on the board.</div>`;
 
   $$("#onClockList .on-clock-card").forEach((card) => {
     card.addEventListener("click", (e) => {
@@ -215,7 +217,7 @@ function renderOnClock() {
     });
   });
 
-  // Keep right-rail rec list in sync with AI picks
+  // Right rail = same BPA list
   $("#recList").innerHTML = picks
     .slice(0, 6)
     .map(
@@ -223,10 +225,10 @@ function renderOnClock() {
     <div class="rec-item" data-id="${p.id}">
       <span class="pos-badge ${p.pos}">${p.pos}</span>
       <div>
-        <div><strong>${p.name}</strong> ${valueTagHtml(p.valueTag)}</div>
-        <div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team} · #${p.modelRank} vs ADP ${p.adpRaw}</div>
+        <div><strong>${p.name}</strong></div>
+        <div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team} · BPA #${p.modelRank} · model ${(p.bpaScore ?? p.total).toFixed(1)}</div>
       </div>
-      <span class="score">${(p.displayTotal ?? p.total).toFixed(1)}</span>
+      <span class="score">${(p.bpaScore ?? p.displayTotal ?? p.total).toFixed(1)}</span>
     </div>`
     )
     .join("");
