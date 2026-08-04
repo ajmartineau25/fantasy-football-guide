@@ -156,13 +156,18 @@
           </div>
 
           <div class="factor-doc" id="f-vegas">
-            <h3>Vegas Lines <span class="unit-pill">unit: team win total</span></h3>
-            <p><strong>What you see:</strong> Sportsbook regular-season over/under wins (e.g. <code>11.5</code>, <code>4.5</code>).</p>
-            <p><strong>What it measures:</strong> Market-implied team strength and scoring environment.
-              Higher win totals usually mean more competitive games, better supporting casts, and more TD equity—
-              not a guarantee for every skill player.</p>
-            <p><strong>On the Vegas tab:</strong> All 32 teams ordered by win total, then players on those teams.</p>
-            <p><strong>Source note:</strong> Openers/moves from major books (e.g. DraftKings via public roundups). Update when lines move.</p>
+            <h3>Vegas Lines <span class="unit-pill">unit: per-player props</span></h3>
+            <p><strong>What you see:</strong> Season <em>player</em> prop O/Us — <strong>not team wins</strong>:</p>
+            <ul>
+              <li><strong>QB:</strong> Pass yards + pass TDs (e.g. <code>4250 Pass Yds · 28.5 Pass TDs</code>)</li>
+              <li><strong>RB:</strong> Rush+rec yards + total TDs</li>
+              <li><strong>WR / TE:</strong> Receiving yards + rec TDs</li>
+              <li><strong>K:</strong> Kicking points / FG made</li>
+              <li><strong>DST:</strong> Sacks / takeaways</li>
+            </ul>
+            <p><strong>What it measures:</strong> Market-implied individual production. Higher primary yard (or sack/point) lines mean the books expect more from that player.</p>
+            <p><strong>How it ranks:</strong> Higher primary prop first. Team win totals are ignored for this factor.</p>
+            <p><strong>Source note:</strong> Props are modeled from ADP/opportunity/prior production until live sportsbook season props are wired in.</p>
           </div>
 
           <div class="factor-doc" id="f-opportunity">

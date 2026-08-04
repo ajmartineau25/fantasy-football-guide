@@ -6,7 +6,7 @@
  *   age → years (fitness curve for model only)
  *   qb / playcaller / sos → 1–32 among 32 NFL teams
  *   adp → actual ADP pick number
- *   vegas → team win total
+ *   vegas → player season prop primary line (yards / sacks / points)
  *   opportunity → rank within position (1 = best)
  *   efficiency → 0–100 rating
  *   injury → games played (0–17)
@@ -54,7 +54,8 @@ export const FACTOR_TAB_LABELS = {
 };
 
 /** Factors that map to all 32 NFL teams (1–32 scale is legitimate). */
-export const TEAM_LEVEL_FACTORS = new Set(["playcaller", "vegas", "qb", "sos"]);
+/** Team-level only (32 clubs). Vegas is per-player props — not included. */
+export const TEAM_LEVEL_FACTORS = new Set(["playcaller", "qb", "sos"]);
 
 /** Meta for each factor's display + sort direction. */
 export const FACTOR_META = {
@@ -89,10 +90,10 @@ export const FACTOR_META = {
     desc: "2026 ADP (1.0 = first overall). Lower = higher draft capital.",
   },
   vegas: {
-    unit: "wins",
+    unit: "player props",
     higherBetter: true,
-    scaleNote: "team win total",
-    desc: "Sportsbook regular-season win total (e.g. 11.5).",
+    scaleNote: "season yards / TD lines",
+    desc: "Per-player season props (pass/rush/rec yards + TDs). Not team win totals. Higher primary line = stronger market projection.",
   },
   opportunity: {
     unit: "pos rank",
@@ -168,8 +169,16 @@ export function formatMetric(key, metrics, scoring) {
       return `${v}/32`;
     case "adp":
       return Number(v).toFixed(1);
-    case "vegas":
-      return Number(v).toFixed(1);
+    case "vegas": {
+      const yds = metrics.vegasYards ?? v;
+      const tds = metrics.vegasTds;
+      const yl = metrics.vegasYardsLabel || "Yds";
+      const tl = metrics.vegasTdLabel || "TDs";
+      const unit = metrics.vegasPrimaryUnit || "yds";
+      if (unit === "pts") return `${Number(yds).toFixed(1)} pts / ${Number(tds).toFixed(1)} FG`;
+      if (unit === "sacks") return `${Number(yds).toFixed(1)} sacks / ${Number(tds).toFixed(1)} TO`;
+      return `${Number(yds).toFixed(0)} ${yl} · ${Number(tds).toFixed(1)} ${tl}`;
+    }
     case "opportunity": {
       const of = metrics.opportunityOf || "?";
       return `#${v} / ${of}`;
@@ -308,10 +317,6 @@ export function rankTeamsByFactor(teams, factorKey) {
       value = t.playcaller;
       detail = t.playcaller_name || "OC staff";
       unit = "of 32";
-    } else if (factorKey === "vegas") {
-      value = t.win_total;
-      detail = `Win total ${t.win_total}`;
-      unit = "wins";
     } else if (factorKey === "qb") {
       value = t.qb_rank;
       detail = "Team QB quality";
@@ -337,7 +342,7 @@ export function rankTeamsByFactor(teams, factorKey) {
     };
   });
 
-  // Sort: higher better for all team factors (vegas wins, ranks where 32=best)
+  // Sort: higher better (ranks where 32=best)
   rows.sort((a, b) => b.value - a.value || a.team.localeCompare(b.team));
   return rows.map((r, i) => ({ ...r, rank: i + 1 }));
 }

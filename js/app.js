@@ -249,7 +249,7 @@ function renderViewBanner() {
       <div class="banner-meta">
         <div class="stat-pill">Model total <strong>0–100</strong></div>
         <div class="stat-pill">Playcaller / QB / SOS <strong>1–32 teams</strong></div>
-        <div class="stat-pill">Last year <strong>FPts</strong> · ADP <strong>pick #</strong> · Vegas <strong>wins</strong></div>
+        <div class="stat-pill">Last year <strong>FPts</strong> · ADP <strong>pick #</strong> · Vegas <strong>player props</strong></div>
       </div>`;
     return;
   }
@@ -287,7 +287,6 @@ function renderTeamRankPanel() {
   const rows = rankTeamsByFactor(state.teams, key);
   const titleMap = {
     playcaller: "All 32 playcallers (32 = best fantasy scheme → 1 = worst)",
-    vegas: "Vegas win totals (raw over/under wins)",
     qb: "Team QB quality (32 = best starter → 1 = worst)",
     sos: "Strength of schedule (32 = easiest → 1 = hardest)",
   };
@@ -302,10 +301,6 @@ function renderTeamRankPanel() {
         detail = `${r.playcaller_name || detail}${r.scheme ? " · " + r.scheme : ""}`;
         displayVal = r.value;
         unitSuffix = "/32";
-      } else if (key === "vegas") {
-        detail = r.name;
-        displayVal = Number(r.win_total).toFixed(1);
-        unitSuffix = " wins";
       } else if (key === "qb") {
         detail = r.name;
         displayVal = r.qb_rank;
@@ -406,7 +401,7 @@ function renderBoard() {
           fk === "playcaller"
             ? p.raw?.playcaller_name || ""
             : fk === "vegas"
-              ? `${p.team_name || p.team}`
+              ? `${m.vegasYardsLabel || "Yds"} O/U · ${m.vegasTdLabel || "TDs"} O/U`
               : fk === "qb"
                 ? `QB quality ${m.qb}/32`
                 : fk === "sos"
@@ -614,7 +609,7 @@ function openPlayer(id) {
       <div class="stat-pill">Model total <strong>${total.toFixed(1)}</strong> / 100</div>
       <div class="stat-pill">2025 ${state.scoring === "ppr" ? "PPR" : "0.5 PPR"} <strong>${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</strong> FPts</div>
       <div class="stat-pill">Playcaller <strong>${p.raw.playcaller_name}</strong> (${p.raw.playcaller}/32)</div>
-      <div class="stat-pill">Vegas <strong>${p.raw.vegas_win_total}</strong> wins</div>
+      <div class="stat-pill">Vegas <strong>${formatMetric("vegas", m, state.scoring)}</strong></div>
       <div class="stat-pill">Scheme <strong>${p.raw.scheme}</strong></div>
     </div>
     <h2 style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px">Factor metrics (natural units)</h2>

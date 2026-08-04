@@ -304,6 +304,125 @@ def efficiency_rating(eff_legacy: int) -> int:
     return int(max(0, min(100, round((eff_legacy / 32) * 100))))
 
 
+def _round_half(x: float) -> float:
+    return round(x * 2) / 2
+
+
+def _round_to(x: float, step: int) -> float:
+    return round(x / step) * step
+
+
+def estimate_player_props(p: dict) -> dict:
+    """
+    Per-player season prop lines (yards + TDs) — NOT team win totals.
+
+    Real sportsbook season props are preferred when available. Until then we
+    model market-style O/U lines from ADP, opportunity, and prior production so
+    the factor is player-level and comparable within position.
+    """
+    pos = p["pos"]
+    fpts = float(p.get("fpts_ppr") or 0)
+    opp = float(p.get("opportunity") or 16)
+    adp = float(p.get("adp_ppr") or 120)
+    rookie = bool(p.get("rookie", False))
+    # Earlier ADP → slightly higher implied line
+    adp_factor = max(0.75, min(1.2, 1.12 - (adp / 220) * 0.45))
+
+    if pos == "QB":
+        # Season pass yards (~2,800–4,800) + pass TDs
+        base_yds = 2800 + opp * 28 + min(fpts, 380) * 1.15
+        if rookie or fpts < 80:
+            base_yds = 2600 + opp * 25
+        yards = max(2200.0, min(4800.0, _round_to(base_yds * adp_factor, 25)))
+        tds = max(10.0, min(42.0, _round_half(16 + opp * 0.35 + min(fpts, 380) / 90)))
+        return {
+            "yards": yards,
+            "tds": tds,
+            "yards_label": "Pass Yds",
+            "td_label": "Pass TDs",
+            "primary": yards,
+            "primary_unit": "yds",
+            "source": "modeled",
+        }
+
+    if pos == "RB":
+        # Rush + receiving yards (~400–2,200) + total TDs
+        base_yds = 350 + opp * 28 + min(fpts, 400) * 1.35
+        if rookie or fpts < 50:
+            base_yds = 500 + opp * 24
+        yards = max(250.0, min(2200.0, _round_to(base_yds * adp_factor, 25)))
+        tds = max(2.0, min(22.0, _round_half(3.5 + opp * 0.28 + min(fpts, 400) / 100)))
+        return {
+            "yards": yards,
+            "tds": tds,
+            "yards_label": "Rush+Rec Yds",
+            "td_label": "Total TDs",
+            "primary": yards,
+            "primary_unit": "yds",
+            "source": "modeled",
+        }
+
+    if pos in ("WR", "TE"):
+        # Receiving yards (~300–1,800)
+        if pos == "WR":
+            base_yds = 300 + opp * 26 + min(fpts, 380) * 1.4
+            if rookie or fpts < 40:
+                base_yds = 400 + opp * 22
+        else:
+            base_yds = 250 + opp * 22 + min(fpts, 280) * 1.15
+            if rookie or fpts < 40:
+                base_yds = 300 + opp * 18
+        yards = max(200.0, min(1800.0, _round_to(base_yds * adp_factor, 25)))
+        tds = max(1.5, min(16.0, _round_half(2.5 + opp * 0.22 + min(fpts, 380) / 110)))
+        return {
+            "yards": yards,
+            "tds": tds,
+            "yards_label": "Rec Yds",
+            "td_label": "Rec TDs",
+            "primary": yards,
+            "primary_unit": "yds",
+            "source": "modeled",
+        }
+
+    if pos == "K":
+        # Season kicking points + FG made
+        points = max(90.0, min(180.0, _round_half(100 + opp * 1.4 + min(fpts, 180) * 0.25)))
+        fgs = max(20.0, min(40.0, _round_half(points / 4.5)))
+        return {
+            "yards": points,  # primary ranking key
+            "tds": fgs,
+            "yards_label": "K Points",
+            "td_label": "FG Made",
+            "primary": points,
+            "primary_unit": "pts",
+            "source": "modeled",
+        }
+
+    if pos == "DST":
+        # Season sacks O/U as primary defensive prop
+        sacks = max(20.0, _round_half(28 + opp * 0.55 + min(fpts, 160) / 20))
+        takeaways = max(12.0, _round_half(18 + opp * 0.25))
+        return {
+            "yards": sacks,
+            "tds": takeaways,
+            "yards_label": "Sacks",
+            "td_label": "Takeaways",
+            "primary": sacks,
+            "primary_unit": "sacks",
+            "source": "modeled",
+        }
+
+    return {
+        "yards": 0.0,
+        "tds": 0.0,
+        "yards_label": "Yds",
+        "td_label": "TDs",
+        "primary": 0.0,
+        "primary_unit": "yds",
+        "source": "modeled",
+    }
+
+
 def build_players():
     # Opportunity: rank within position by legacy volume score (1 = best role)
     opp_rank = pos_rank_map(PLAYERS, lambda x: x["opportunity"], reverse=True)
@@ -324,6 +443,7 @@ def build_players():
         eff = efficiency_rating(p["efficiency"])
         fitness = age_fitness(p["pos"], p["age"]) if p["pos"] != "DST" else 50.0
         n_at_pos = sum(1 for x in PLAYERS if x["pos"] == p["pos"])
+        props = estimate_player_props(p)
 
         # metrics: applicable display values (same for ppr/half except lastYear + adp)
         def metrics_for(scoring: str) -> dict:
@@ -341,8 +461,13 @@ def build_players():
                 "playcaller": t["playcaller"],
                 # Real ADP (lower = drafted earlier)
                 "adp": adp,
-                # Vegas win total (e.g. 11.5)
-                "vegas": t["win_total"],
+                # PLAYER prop primary line (yards/sacks/points) — NOT team wins
+                "vegas": props["primary"],
+                "vegasYards": props["yards"],
+                "vegasTds": props["tds"],
+                "vegasYardsLabel": props["yards_label"],
+                "vegasTdLabel": props["td_label"],
+                "vegasPrimaryUnit": props["primary_unit"],
                 # Rank within position: 1 = best opportunity, N = worst
                 "opportunity": opp_rank[(p["name"], p["pos"])],
                 "opportunityOf": n_at_pos,
@@ -370,13 +495,13 @@ def build_players():
                 "playcaller_name": t["playcaller_name"],
                 "scheme": t["scheme"],
                 "qb_rank": qb_quality,
-                "vegas_win_total": t["win_total"],
                 "sos_rank": t["sos_rank"],
                 "games_played": gp,
                 "efficiency_rating": eff,
                 "opp_rank": opp_rank[(p["name"], p["pos"])],
                 "opp_of": n_at_pos,
                 "age_fitness": fitness,
+                "vegas_props": props,
             },
             # Applicable metric values used for display + ranking
             "metrics": {
@@ -439,9 +564,9 @@ def main():
             {
                 "key": "vegas",
                 "label": "Vegas Lines",
-                "unit": "wins",
+                "unit": "player props",
                 "higherBetter": True,
-                "desc": "Team regular-season win total from sportsbooks (e.g. 11.5)",
+                "desc": "Per-player season props: QB pass yds/TDs, RB rush+rec yds/TDs, WR/TE rec yds/TDs (NOT team wins). Higher primary line = higher market expectation.",
             },
             {
                 "key": "opportunity",
