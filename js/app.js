@@ -27,6 +27,16 @@ import {
   createDraftPoller,
   markDraftedByName,
 } from "./draft.js";
+import {
+  STRATEGIES,
+  recommendPicks,
+  attachValueAndTiers,
+  floorCeiling,
+  findHandcuff,
+  stackMates,
+  defaultLeagueSettings,
+  estimatePickNumber,
+} from "./decision.js";
 
 const state = {
   players: [],
@@ -49,6 +59,10 @@ const state = {
   sleeper: { userId: null, username: null, draftId: null },
   espn: { leagueId: null, teamId: null },
   selectedPlayer: null,
+  strategy: "balanced",
+  draftSlot: 1,
+  leagueTeams: 12,
+  lastRecs: [],
 };
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -102,7 +116,123 @@ function rosterTargets() {
     FLEX: r.FLEX ?? 1,
     K: r.K ?? 1,
     DST: r.DST ?? 1,
+    teams: state.leagueTeams,
   };
+}
+
+function persistMyRoster() {
+  try {
+    localStorage.setItem("ffg_my_roster", JSON.stringify(state.myRoster.map((p) => p.id)));
+    localStorage.setItem(
+      "ffg_league",
+      JSON.stringify({
+        strategy: state.strategy,
+        draftSlot: state.draftSlot,
+        leagueTeams: state.leagueTeams,
+        scoring: state.scoring,
+      })
+    );
+  } catch (_) {}
+}
+
+function loadLeaguePrefs() {
+  try {
+    const raw = localStorage.getItem("ffg_league");
+    if (!raw) return;
+    const o = JSON.parse(raw);
+    if (o.strategy) state.strategy = o.strategy;
+    if (o.draftSlot) state.draftSlot = o.draftSlot;
+    if (o.leagueTeams) state.leagueTeams = o.leagueTeams;
+    if (o.scoring) state.scoring = o.scoring;
+  } catch (_) {}
+}
+
+function valueTagHtml(tag) {
+  if (!tag) return "";
+  return `<span class="tag ${tag}">${tag.replace("-", " ")}</span>`;
+}
+
+function renderOnClock() {
+  const pickNo = estimatePickNumber(
+    state.draftSlot,
+    state.leagueTeams,
+    state.myRoster.length,
+    state.leagueTeams * 15
+  );
+  const { picks, scarcity, strategy } = recommendPicks(state.players, {
+    scoring: state.scoring,
+    weights: state.weights,
+    targets: rosterTargets(),
+    myRoster: state.myRoster,
+    strategy: state.strategy,
+    pickNumber: pickNo,
+    limit: 5,
+  });
+  state.lastRecs = picks;
+
+  $("#statStrategy").textContent = strategy.label || state.strategy;
+  $("#onClockMeta").textContent = `${strategy.label}: ${strategy.desc} · est. overall pick ~${pickNo}`;
+
+  $("#scarcityBar").innerHTML = ["RB", "WR", "TE", "QB"]
+    .map((pos) => {
+      const s = scarcity[pos];
+      if (!s) return "";
+      const cls = s.scarcity >= 55 ? "hot" : s.scarcity <= 30 ? "ok" : "";
+      return `<span class="scarcity-chip ${cls}">${pos}: ${s.left} left${s.need ? ` · need ${s.need}` : ""}</span>`;
+    })
+    .join("");
+
+  $("#onClockList").innerHTML = picks
+    .map((p, i) => {
+      const fc = floorCeiling(p);
+      return `<div class="on-clock-card ${i === 0 ? "pick-1" : ""}" data-id="${p.id}">
+        <div class="oc-top">
+          <span class="oc-rank">${i + 1}</span>
+          <span class="pos-badge ${p.pos}">${p.pos}</span>
+          <div>
+            <div class="oc-name">${p.name} ${valueTagHtml(p.valueTag)}<span class="tag tier">T${p.tier}</span></div>
+            <div class="oc-meta">${p.team} · model #${p.modelRank} · ADP ${p.adpRaw} · need ${p.needFit}% · F/C ${fc.floor}–${fc.ceiling}</div>
+          </div>
+        </div>
+        <ul>${(p.reasons || []).map((r) => `<li>${r}</li>`).join("")}</ul>
+        <div class="btn-row" style="margin-top:8px">
+          <button type="button" class="btn btn-primary oc-draft" data-id="${p.id}" style="font-size:0.75rem;padding:6px">Draft him</button>
+        </div>
+      </div>`;
+    })
+    .join("") || `<div class="help-text">No players left.</div>`;
+
+  $$("#onClockList .on-clock-card").forEach((card) => {
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".oc-draft")) return;
+      openPlayer(card.dataset.id);
+    });
+  });
+  $$("#onClockList .oc-draft").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      manualDraft(btn.dataset.id, true);
+    });
+  });
+
+  // Keep right-rail rec list in sync with AI picks
+  $("#recList").innerHTML = picks
+    .slice(0, 6)
+    .map(
+      (p) => `
+    <div class="rec-item" data-id="${p.id}">
+      <span class="pos-badge ${p.pos}">${p.pos}</span>
+      <div>
+        <div><strong>${p.name}</strong> ${valueTagHtml(p.valueTag)}</div>
+        <div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team} · #${p.modelRank} vs ADP ${p.adpRaw}</div>
+      </div>
+      <span class="score">${(p.displayTotal ?? p.total).toFixed(1)}</span>
+    </div>`
+    )
+    .join("");
+  $$("#recList .rec-item").forEach((el) => {
+    el.addEventListener("click", () => openPlayer(el.dataset.id));
+  });
 }
 
 function renderWeights() {
@@ -360,6 +490,9 @@ function renderBoard() {
 
   if (isFactor) {
     list = list.map((p, i) => ({ ...p, rank: i + 1 }));
+  } else {
+    // Summary: attach model rank, value vs ADP, tiers
+    list = attachValueAndTiers(list, state.scoring);
   }
 
   const available = state.players.filter((p) => !p.drafted).length;
@@ -477,8 +610,8 @@ function renderBoard() {
           <td>
             <div class="player-cell">
               <div>
-                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}</div>
-                <div class="meta">${p.team} · Bye ${p.bye}${p.age ? ` · Age ${p.age}` : ""}</div>
+                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}${p.tier ? `<span class="tag tier">T${p.tier}</span>` : ""}${valueTagHtml(p.valueTag)}</div>
+                <div class="meta">${p.team} · Bye ${p.bye}${p.age ? ` · Age ${p.age}` : ""}${p.value != null ? ` · vs ADP ${p.value > 0 ? "+" : ""}${p.value}` : ""}</div>
               </div>
             </div>
           </td>
@@ -529,19 +662,10 @@ function renderBoard() {
     });
   });
 
-  // Recommendations always use summary model with need boost
-  const recList = rankPlayers(state.players, {
-    scoring: state.scoring,
-    weights: state.weights,
-    hideDrafted: true,
-    rosterCounts: countRoster(state.myRoster),
-    targets: rosterTargets(),
-    enableNeed: state.enableNeed,
-  });
-
   renderNeedMeter();
-  renderRecommendations(recList);
+  renderOnClock();
   renderDraftLog();
+  persistMyRoster();
 }
 
 function setRankingView(view) {
@@ -589,6 +713,14 @@ function openPlayer(id) {
       </div>`;
   }).join("");
 
+  const enriched = { ...p, displayTotal: total, total, activeMetrics: m };
+  const fc = floorCeiling(enriched);
+  const cuff = findHandcuff(p, state.players);
+  const stacks = stackMates(p, state.players);
+  const adp = p.adp[state.scoring];
+  const modelRank = row ? ranked.findIndex((r) => r.id === p.id) + 1 : "—";
+  const value = typeof modelRank === "number" ? Math.round((adp - modelRank) * 10) / 10 : null;
+
   $("#modalBody").innerHTML = `
     <div class="modal-header">
       <div>
@@ -598,7 +730,8 @@ function openPlayer(id) {
         </div>
         <h3>${p.name}</h3>
         <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px">
-          Age ${p.age || "—"} · Bye ${p.bye} · ADP ${p.adp[state.scoring]}
+          Age ${p.age || "—"} · Bye ${p.bye} · ADP ${adp} · Model #${modelRank}
+          ${value != null ? ` · vs ADP ${value > 0 ? "+" : ""}${value}` : ""}
           ${p.rookie ? " · Rookie" : ""}
           ${p.drafted ? " · <strong style='color:var(--danger)'>DRAFTED</strong>" : ""}
         </p>
@@ -606,11 +739,13 @@ function openPlayer(id) {
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
     </div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
-      <div class="stat-pill">Model total <strong>${total.toFixed(1)}</strong> / 100</div>
-      <div class="stat-pill">2025 ${state.scoring === "ppr" ? "PPR" : "0.5 PPR"} <strong>${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</strong> FPts</div>
-      <div class="stat-pill">Playcaller <strong>${p.raw.playcaller_name}</strong> (${p.raw.playcaller}/32)</div>
+      <div class="stat-pill">Model <strong>${total.toFixed(1)}</strong>/100</div>
+      <div class="stat-pill">Floor–Ceiling <strong>${fc.floor}–${fc.ceiling}</strong></div>
+      <div class="stat-pill">2025 FPts <strong>${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</strong></div>
+      <div class="stat-pill">Playcaller <strong>${p.raw.playcaller_name}</strong></div>
       <div class="stat-pill">Vegas <strong>${formatMetric("vegas", m, state.scoring)}</strong></div>
-      <div class="stat-pill">Scheme <strong>${p.raw.scheme}</strong></div>
+      ${cuff ? `<div class="stat-pill">Handcuff <strong>${cuff.name}</strong></div>` : ""}
+      ${stacks.length ? `<div class="stat-pill">Stack <strong>${stacks.map((s) => s.name).join(", ")}</strong></div>` : ""}
     </div>
     <h2 style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px">Factor metrics (natural units)</h2>
     <div class="factor-grid">${factors}</div>
@@ -642,7 +777,7 @@ function manualDraft(id, isMine) {
   p.drafted = true;
   p.draftedBy = isMine ? "me" : "other";
   p.pickNo = (state.picks[state.picks.length - 1]?.pickNo || 0) + 1;
-  if (isMine) state.myRoster.push(p);
+  if (isMine && !state.myRoster.find((m) => m.id === p.id)) state.myRoster.push(p);
   state.picks.push({
     pickNo: p.pickNo,
     name: p.name,
@@ -652,6 +787,7 @@ function manualDraft(id, isMine) {
     localId: p.id,
   });
   if (!state.draftSource) state.draftSource = "manual";
+  persistMyRoster();
   renderBoard();
   toast(`${p.name} marked drafted${isMine ? " (your team)" : ""}`);
 }
@@ -665,6 +801,7 @@ function resetDraft() {
   state.myRoster = [];
   state.picks = [];
   state.draftSource = null;
+  persistMyRoster();
   if (state.poller) {
     state.poller.stop();
     state.poller = null;
@@ -836,11 +973,44 @@ function bindUI() {
     tab.addEventListener("click", () => setRankingView(tab.dataset.view));
   });
 
+  const stratSel = $("#strategySelect");
+  if (stratSel) {
+    stratSel.value = state.strategy;
+    const applyStrat = () => {
+      state.strategy = stratSel.value;
+      const s = STRATEGIES[state.strategy];
+      if ($("#strategyDesc") && s) $("#strategyDesc").textContent = s.desc;
+      persistMyRoster();
+      renderBoard();
+    };
+    stratSel.addEventListener("change", applyStrat);
+    applyStrat();
+  }
+  const teamsEl = $("#leagueTeams");
+  if (teamsEl) {
+    teamsEl.value = String(state.leagueTeams);
+    teamsEl.addEventListener("change", () => {
+      state.leagueTeams = Number(teamsEl.value) || 12;
+      persistMyRoster();
+      renderBoard();
+    });
+  }
+  const slotEl = $("#draftSlot");
+  if (slotEl) {
+    slotEl.value = String(state.draftSlot);
+    slotEl.addEventListener("change", () => {
+      state.draftSlot = Number(slotEl.value) || 1;
+      persistMyRoster();
+      renderBoard();
+    });
+  }
+
   // Scoring
   $$(".scoring-toggle button").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.scoring = btn.dataset.scoring;
       $$(".scoring-toggle button").forEach((b) => b.classList.toggle("active", b === btn));
+      persistMyRoster();
       renderBoard();
     });
   });
@@ -910,6 +1080,7 @@ function bindUI() {
       });
       if (!state.draftSource) state.draftSource = "manual";
       e.target.value = "";
+      persistMyRoster();
       renderBoard();
       toast(`Drafted ${local.name}`);
     }
@@ -925,6 +1096,7 @@ function bindUI() {
 
 async function init() {
   try {
+    loadLeaguePrefs();
     await loadData();
     // default scoring button
     $$(".scoring-toggle button").forEach((b) =>
@@ -933,7 +1105,7 @@ async function init() {
     renderWeights();
     bindUI();
     renderBoard();
-    toast(`Loaded ${state.players.length} players · 2026 guide ready`);
+    toast(`Loaded ${state.players.length} players · On-clock AI ready`);
   } catch (e) {
     console.error(e);
     toast("Failed to load data. Serve folder over HTTP (see README).", "err");

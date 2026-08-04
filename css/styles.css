@@ -885,3 +885,166 @@ table.board {
 }
 
 .checkbox-row input { accent-color: var(--accent); }
+
+/* On-clock AI */
+.on-clock-panel {
+  margin-bottom: 12px;
+  border-color: rgba(61, 220, 151, 0.35);
+  background: linear-gradient(180deg, rgba(61, 220, 151, 0.08), var(--bg-card));
+}
+
+.on-clock-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.on-clock-head h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.on-clock-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.on-clock-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: 0.12s ease;
+}
+
+.on-clock-card:hover {
+  border-color: var(--accent);
+}
+
+.on-clock-card.pick-1 {
+  border-color: rgba(61, 220, 151, 0.5);
+  box-shadow: 0 0 0 1px rgba(61, 220, 151, 0.2);
+}
+
+.on-clock-card .oc-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.on-clock-card .oc-rank {
+  font-family: var(--mono);
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 1.1rem;
+  min-width: 1.4rem;
+}
+
+.on-clock-card .oc-name { font-weight: 700; font-size: 0.92rem; }
+.on-clock-card .oc-meta { font-size: 0.72rem; color: var(--text-muted); }
+
+.on-clock-card ul {
+  margin: 6px 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.tag.steal, .tag.value { background: var(--accent-dim); color: var(--accent); }
+.tag.reach, .tag.slight-reach { background: rgba(255, 107, 107, 0.15); color: #ffb0b0; }
+.tag.fair { background: var(--bg-hover); color: var(--text-muted); }
+.tag.tier { background: var(--accent-2-dim); color: #a8c4ff; }
+
+.scarcity-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.scarcity-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.scarcity-chip.hot {
+  border-color: rgba(255, 107, 107, 0.4);
+  color: #ffb0b0;
+}
+
+.scarcity-chip.ok {
+  border-color: rgba(61, 220, 151, 0.35);
+  color: var(--accent);
+}
+
+/* Season lineup */
+.season-layout { grid-template-columns: 260px 1fr 300px; }
+@media (max-width: 1200px) {
+  .season-layout { grid-template-columns: 1fr; }
+}
+
+.lineup-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lineup-slot {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.lineup-slot .slot-label {
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.lineup-slot .slot-player {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.lineup-slot .meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.fc-inline {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}

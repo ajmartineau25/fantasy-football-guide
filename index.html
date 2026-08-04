@@ -11,11 +11,12 @@
     <header class="header">
       <div class="brand">
         <h1>Fantasy Football <span>Guide</span> 2026</h1>
-        <p>Multi-factor rankings · 0.5 PPR / 1 PPR · Live Sleeper &amp; ESPN draft board</p>
+        <p>On-clock AI · value vs ADP · live draft · season lineups &amp; waivers</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
         <nav class="site-nav">
           <a href="./index.html" class="active">Draft Board</a>
+          <a href="./season.html">Season Mode</a>
           <a href="./how-it-works.html">How It Works</a>
         </nav>
         <div class="scoring-toggle" role="group" aria-label="Scoring format">
@@ -28,6 +29,27 @@
     <div class="layout">
       <!-- Left: filters & weights -->
       <aside class="sidebar">
+        <section class="panel">
+          <h2>League settings</h2>
+          <label class="field" for="leagueTeams">Teams</label>
+          <select id="leagueTeams">
+            <option value="10">10</option>
+            <option value="12" selected>12</option>
+            <option value="14">14</option>
+          </select>
+          <label class="field" for="draftSlot">Your draft slot</label>
+          <input id="draftSlot" type="number" min="1" max="14" value="1" />
+          <label class="field" for="strategySelect">Strategy</label>
+          <select id="strategySelect">
+            <option value="balanced">Balanced</option>
+            <option value="zero_rb">Zero RB</option>
+            <option value="hero_rb">Hero RB</option>
+            <option value="robust_rb">Robust RB</option>
+            <option value="best_ball">Best Ball</option>
+          </select>
+          <p class="help-text" id="strategyDesc">Best blend of value + roster need</p>
+        </section>
+
         <section class="panel">
           <h2>Position</h2>
           <div class="pos-chips">
@@ -47,13 +69,13 @@
           </label>
           <label class="checkbox-row">
             <input type="checkbox" id="enableNeed" checked />
-            Boost by team need (12-team 1QB)
+            Boost by team need
           </label>
         </section>
 
         <section class="panel">
           <h2>Factor weights</h2>
-          <p class="help-text">Each factor uses natural units (FPts, ADP, wins, etc.). Weights control the 0–100 model total (aim for sum 100).</p>
+          <p class="help-text">Natural units (FPts, player props, ranks). Weights drive the 0–100 model + on-clock AI.</p>
           <div id="weights"></div>
           <div id="weightTotal" class="weight-total ok"><span>Weight sum</span><span>100</span></div>
           <div class="btn-row">
@@ -86,12 +108,22 @@
 
         <div class="view-banner" id="viewBanner"></div>
 
+        <section class="panel on-clock-panel" id="onClockPanel">
+          <div class="on-clock-head">
+            <h2>On the clock · AI picks</h2>
+            <span class="help-text" id="onClockMeta">Top recommendations for your roster + strategy</span>
+          </div>
+          <div id="scarcityBar" class="scarcity-bar"></div>
+          <div id="onClockList" class="on-clock-list"></div>
+        </section>
+
         <div class="stats-bar">
           <div class="stat-pill">Showing <strong id="statPlayers">0</strong></div>
           <div class="stat-pill">Available <strong id="statAvailable">0</strong></div>
           <div class="stat-pill">Drafted <strong id="statDrafted">0</strong></div>
           <div class="stat-pill">Scoring <strong id="statScoring">1 PPR</strong></div>
           <div class="stat-pill">View <strong id="statView">Summary</strong></div>
+          <div class="stat-pill">Strategy <strong id="statStrategy">Balanced</strong></div>
           <div class="stat-pill">
             <span id="liveDot" class="status-dot"></span>
             <span id="liveLabel">Not connected</span>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Season Mode · Lineups &amp; Waivers · 2026</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/docs.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <h1>Season <span>Mode</span></h1>
+        <p>Weekly lineups · waiver targets · matchup-aware sit/start</p>
+      </div>
+      <nav class="site-nav">
+        <a href="./index.html">Draft Board</a>
+        <a href="./season.html" class="active">Season Mode</a>
+        <a href="./how-it-works.html">How It Works</a>
+      </nav>
+    </header>
+
+    <div class="layout season-layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Week &amp; scoring</h2>
+          <label class="field" for="weekSelect">NFL week</label>
+          <select id="weekSelect"></select>
+          <label class="field" for="seasonScoring">Scoring</label>
+          <select id="seasonScoring">
+            <option value="ppr">1 PPR</option>
+            <option value="half">0.5 PPR</option>
+          </select>
+          <p class="help-text">Lineup scores blend model strength, schedule ease (SOS), and health. Sync your roster from draft or paste names.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Your roster</h2>
+          <p class="help-text">Load from a completed draft on the Draft Board (same browser), or add players:</p>
+          <input id="addRosterName" type="text" placeholder="Add player name + Enter" />
+          <div class="btn-row">
+            <button type="button" class="btn" id="btnLoadDraftRoster">Load draft roster</button>
+            <button type="button" class="btn btn-danger" id="btnClearRoster">Clear</button>
+          </div>
+          <div id="rosterList" class="rec-list" style="margin-top:10px"></div>
+        </section>
+      </aside>
+
+      <main class="main-panel">
+        <div class="stats-bar">
+          <div class="stat-pill">Week <strong id="statWeek">1</strong></div>
+          <div class="stat-pill">Roster <strong id="statRosterN">0</strong></div>
+          <div class="stat-pill">Starters set <strong id="statStarters">—</strong></div>
+        </div>
+
+        <section class="panel" style="margin-bottom:12px">
+          <h2>Optimal lineup</h2>
+          <p class="help-text">Auto-fills QB / 2RB / 2WR / TE / FLEX / K / DST from your roster.</p>
+          <div id="lineupGrid" class="lineup-grid"></div>
+          <div class="btn-row" style="margin-top:10px;max-width:280px">
+            <button type="button" class="btn btn-primary" id="btnOptimize">Optimize lineup</button>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-bottom:12px">
+          <h2>Bench</h2>
+          <div id="benchList" class="rec-list"></div>
+        </section>
+      </main>
+
+      <aside class="draft-panel">
+        <section class="panel">
+          <h2>Waiver / FA targets</h2>
+          <p class="help-text">Best available players for your roster holes (from the board pool not on your team).</p>
+          <div id="waiverList" class="rec-list"></div>
+        </section>
+        <section class="panel">
+          <h2>Sit / start notes</h2>
+          <div id="sitStartNotes" class="help-text"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="./js/season.js"></script>
+</body>
+</html>
