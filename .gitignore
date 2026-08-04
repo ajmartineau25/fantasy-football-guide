@@ -1,0 +1,10 @@
+.vercel
+.DS_Store
+Thumbs.db
+*.log
+node_modules
+_deploy_files.json
+_deploy_manifest.json
+_vercel_deploy_payload.json
+_parts/
+scripts/mcp_deploy_prep.py
