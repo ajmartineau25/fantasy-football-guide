@@ -1,0 +1,932 @@
+import {
+  FACTOR_KEYS,
+  FACTOR_LABELS,
+  FACTOR_TAB_LABELS,
+  FACTOR_DESCRIPTIONS,
+  FACTOR_META,
+  TEAM_LEVEL_FACTORS,
+  rankPlayers,
+  rankTeamsByFactor,
+  formatMetric,
+  metricUnit,
+  defaultSortDirForFactor,
+  countRoster,
+  emptyRosterCounts,
+} from "./rankings.js";
+import {
+  sleeperGetUser,
+  sleeperGetLeagues,
+  sleeperGetDraft,
+  sleeperGetPicks,
+  sleeperGetLeague,
+  sleeperGetLeagueDrafts,
+  sleeperHydratePlayerIds,
+  applySleeperPicks,
+  espnFetchLeague,
+  applyEspnDraft,
+  createDraftPoller,
+  markDraftedByName,
+} from "./draft.js";
+
+const state = {
+  players: [],
+  meta: null,
+  teams: null,
+  scoring: "ppr", // ppr | half
+  /** "summary" or a FACTOR_KEYS value */
+  view: "summary",
+  position: "ALL",
+  search: "",
+  hideDrafted: false,
+  sortKey: "total",
+  sortDir: "desc",
+  weights: {},
+  enableNeed: true,
+  myRoster: [],
+  picks: [],
+  draftSource: null, // sleeper | espn | manual
+  poller: null,
+  sleeper: { userId: null, username: null, draftId: null },
+  espn: { leagueId: null, teamId: null },
+  selectedPlayer: null,
+};
+
+const $ = (sel, el = document) => el.querySelector(sel);
+const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
+
+function toast(msg, type = "ok") {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 3200);
+}
+
+async function loadData() {
+  const [players, meta, teams] = await Promise.all([
+    fetch("./data/players.json").then((r) => r.json()),
+    fetch("./data/meta.json").then((r) => r.json()),
+    fetch("./data/teams.json").then((r) => r.json()),
+  ]);
+  state.players = players;
+  state.meta = meta;
+  state.teams = teams;
+  state.weights = { ...meta.default_weights };
+  state.scoring = meta.league_defaults?.scoring === "half" ? "half" : "ppr";
+}
+
+function rosterTargets() {
+  const r = state.meta?.league_defaults?.roster || {};
+  return {
+    QB: r.QB ?? 1,
+    RB: r.RB ?? 2,
+    WR: r.WR ?? 2,
+    TE: r.TE ?? 1,
+    FLEX: r.FLEX ?? 1,
+    K: r.K ?? 1,
+    DST: r.DST ?? 1,
+  };
+}
+
+function renderWeights() {
+  const box = $("#weights");
+  box.innerHTML = FACTOR_KEYS.map((key) => {
+    const val = state.weights[key] ?? 0;
+    const label = state.meta?.factors?.find((f) => f.key === key)?.label || FACTOR_LABELS[key];
+    return `
+      <div class="weight-row">
+        <label for="w-${key}">${label}</label>
+        <span class="val" id="wv-${key}">${val}</span>
+        <input type="range" id="w-${key}" min="0" max="30" value="${val}" data-key="${key}" />
+      </div>`;
+  }).join("");
+
+  box.querySelectorAll("input[type=range]").forEach((input) => {
+    input.addEventListener("input", () => {
+      const key = input.dataset.key;
+      state.weights[key] = Number(input.value);
+      $(`#wv-${key}`).textContent = input.value;
+      updateWeightTotal();
+      renderLayerLinks();
+      renderBoard();
+    });
+  });
+  updateWeightTotal();
+  renderLayerLinks();
+}
+
+function renderLayerLinks() {
+  const box = $("#layerLinks");
+  if (!box) return;
+  box.innerHTML = FACTOR_KEYS.map((key) => {
+    const label = FACTOR_TAB_LABELS[key] || FACTOR_LABELS[key];
+    const w = state.weights[key] ?? 0;
+    const active = state.view === key ? "active" : "";
+    return `<button type="button" class="layer-link ${active}" data-view="${key}">
+      <span>${label}</span><span class="w">w=${w}</span>
+    </button>`;
+  }).join("");
+  box.querySelectorAll(".layer-link").forEach((btn) => {
+    btn.addEventListener("click", () => setRankingView(btn.dataset.view));
+  });
+}
+
+function updateWeightTotal() {
+  const sum = FACTOR_KEYS.reduce((a, k) => a + (Number(state.weights[k]) || 0), 0);
+  const el = $("#weightTotal");
+  el.className = `weight-total ${sum === 100 ? "ok" : "bad"}`;
+  el.innerHTML = `<span>Weight sum</span><span>${sum}${sum === 100 ? " ✓" : " (aim for 100)"}</span>`;
+}
+
+function renderNeedMeter() {
+  const counts = countRoster(state.myRoster);
+  const t = rosterTargets();
+  const order = ["QB", "RB", "WR", "TE", "K", "DST"];
+  const depth = {
+    QB: t.QB + 1,
+    RB: t.RB + 2 + Math.ceil(t.FLEX * 0.4),
+    WR: t.WR + 2 + Math.ceil(t.FLEX * 0.5),
+    TE: t.TE + 1,
+    K: 1,
+    DST: 1,
+  };
+  $("#needMeter").innerHTML = order
+    .map((pos) => {
+      const have = counts[pos] || 0;
+      const want = depth[pos];
+      const pct = Math.min(100, Math.round((have / want) * 100));
+      const need = have === 0 ? "need-high" : have < want * 0.5 ? "need-med" : "";
+      return `
+        <div class="need-item ${need}">
+          <div class="pos">${pos}</div>
+          <div class="fill"><div style="width:${pct}%"></div></div>
+          <div class="count">${have} / ${want}</div>
+        </div>`;
+    })
+    .join("");
+}
+
+function topRecommendations(ranked, n = 5) {
+  const available = ranked.filter((p) => !p.drafted);
+  return available.slice(0, n);
+}
+
+function renderRecommendations(ranked) {
+  const recs = topRecommendations(ranked, 6);
+  $("#recList").innerHTML = recs
+    .map(
+      (p) => `
+    <div class="rec-item" data-id="${p.id}">
+      <span class="pos-badge ${p.pos}">${p.pos}</span>
+      <div>
+        <div><strong>${p.name}</strong></div>
+        <div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team} · ADP ${p.adp[state.scoring]}</div>
+      </div>
+      <span class="score">${p.displayTotal.toFixed(1)}</span>
+    </div>`
+    )
+    .join("");
+  $$("#recList .rec-item").forEach((el) => {
+    el.addEventListener("click", () => openPlayer(el.dataset.id));
+  });
+}
+
+function renderDraftLog() {
+  const log = $("#draftLog");
+  if (!state.picks.length) {
+    log.innerHTML = `<div class="help-text">No picks yet. Connect Sleeper/ESPN or mark picks manually.</div>`;
+    return;
+  }
+  const recent = [...state.picks].reverse().slice(0, 40);
+  log.innerHTML = recent
+    .map(
+      (p) => `
+    <div class="pick ${p.isMine ? "mine" : ""}">
+      <span class="num">#${p.pickNo ?? "—"}</span>
+      <span>${p.isMine ? "★ " : ""}${p.name} <span style="color:var(--text-muted)">${p.pos || ""} ${p.team || ""}</span></span>
+    </div>`
+    )
+    .join("");
+}
+
+/** Bar width from a 0–100 model percentile (or approx from factor). */
+function barWidthPct(pct) {
+  return Math.max(4, Math.round((Math.min(100, Math.max(0, pct)) / 100) * 48));
+}
+
+function isFactorView() {
+  return FACTOR_KEYS.includes(state.view);
+}
+
+function viewLabel() {
+  if (state.view === "summary") return "Summary";
+  return FACTOR_TAB_LABELS[state.view] || FACTOR_LABELS[state.view] || state.view;
+}
+
+function renderViewBanner() {
+  const banner = $("#viewBanner");
+  if (state.view === "summary") {
+    banner.innerHTML = `
+      <h3>Summary — multi-factor model total</h3>
+      <p>Players ranked by a <strong>0–100 model score</strong>: each factor is converted to a percentile in its natural units, then combined with your weights. Columns show the real metrics (FPts, ADP, win totals, etc.) — not a fake 1–32 for everything.</p>
+      <div class="banner-meta">
+        <div class="stat-pill">Model total <strong>0–100</strong></div>
+        <div class="stat-pill">Playcaller / QB / SOS <strong>1–32 teams</strong></div>
+        <div class="stat-pill">Last year <strong>FPts</strong> · ADP <strong>pick #</strong> · Vegas <strong>wins</strong></div>
+      </div>`;
+    return;
+  }
+
+  const key = state.view;
+  const label = FACTOR_TAB_LABELS[key] || FACTOR_LABELS[key];
+  const fm = FACTOR_META[key] || {};
+  const meta = state.meta?.factors?.find((f) => f.key === key);
+  const unit = meta?.unit || fm.unit || "";
+  const desc = meta?.desc || FACTOR_DESCRIPTIONS[key] || fm.desc || "";
+  const weight = state.weights[key] ?? 0;
+  const teamNote = TEAM_LEVEL_FACTORS.has(key)
+    ? " Team board below lists all 32 clubs."
+    : "";
+
+  banner.innerHTML = `
+    <h3>${label} <span style="color:var(--text-muted);font-weight:600">· natural scale</span></h3>
+    <p>${desc}${teamNote}</p>
+    <div class="banner-meta">
+      <div class="stat-pill">Unit <strong>${unit}</strong></div>
+      <div class="stat-pill">Scale <strong>${fm.scaleNote || unit}</strong></div>
+      <div class="stat-pill">Summary weight <strong>${weight}</strong></div>
+    </div>`;
+}
+
+function renderTeamRankPanel() {
+  const panel = $("#teamRankPanel");
+  if (!isFactorView() || !TEAM_LEVEL_FACTORS.has(state.view) || !state.teams) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+    return;
+  }
+
+  const key = state.view;
+  const rows = rankTeamsByFactor(state.teams, key);
+  const titleMap = {
+    playcaller: "All 32 playcallers (32 = best fantasy scheme → 1 = worst)",
+    vegas: "Vegas win totals (raw over/under wins)",
+    qb: "Team QB quality (32 = best starter → 1 = worst)",
+    sos: "Strength of schedule (32 = easiest → 1 = hardest)",
+  };
+
+  const cards = rows
+    .map((r) => {
+      const top = r.rank <= 3 ? "top3" : r.rank >= 30 ? "bottom3" : "";
+      let detail = r.detail;
+      let displayVal;
+      let unitSuffix;
+      if (key === "playcaller") {
+        detail = `${r.playcaller_name || detail}${r.scheme ? " · " + r.scheme : ""}`;
+        displayVal = r.value;
+        unitSuffix = "/32";
+      } else if (key === "vegas") {
+        detail = r.name;
+        displayVal = Number(r.win_total).toFixed(1);
+        unitSuffix = " wins";
+      } else if (key === "qb") {
+        detail = r.name;
+        displayVal = r.qb_rank;
+        unitSuffix = "/32";
+      } else if (key === "sos") {
+        detail = r.name;
+        displayVal = r.sos_rank;
+        unitSuffix = "/32";
+      }
+      return `
+        <div class="team-rank-card ${top}">
+          <div class="rk">${r.rank}</div>
+          <div>
+            <div class="team-abbr">${r.team}</div>
+            <div class="team-detail">${detail}</div>
+          </div>
+          <div class="team-score">${displayVal}<span>${unitSuffix}</span></div>
+        </div>`;
+    })
+    .join("");
+
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <h3>${titleMap[key] || "Team rankings"}</h3>
+    <div class="team-rank-grid">${cards}</div>
+    <p class="section-label" style="margin-top:14px">Players on this factor</p>`;
+}
+
+function getRankedList() {
+  const isFactor = isFactorView();
+  // Factor tabs: sort by the active factor unless user clicked another column header
+  let sortKey = state.sortKey;
+  if (isFactor && (sortKey === "total" || !sortKey)) {
+    sortKey = state.view;
+  }
+
+  return rankPlayers(state.players, {
+    scoring: state.scoring,
+    weights: state.weights,
+    position: state.position,
+    hideDrafted: state.hideDrafted,
+    search: state.search,
+    sortKey,
+    sortDir: state.sortDir,
+    rosterCounts: countRoster(state.myRoster),
+    targets: rosterTargets(),
+    enableNeed: !isFactor && state.enableNeed,
+  });
+}
+
+function renderBoard() {
+  renderViewBanner();
+  renderTeamRankPanel();
+
+  const isFactor = isFactorView();
+  let list = getRankedList();
+
+  if (isFactor) {
+    list = list.map((p, i) => ({ ...p, rank: i + 1 }));
+  }
+
+  const available = state.players.filter((p) => !p.drafted).length;
+  const drafted = state.players.filter((p) => p.drafted).length;
+
+  $("#statPlayers").textContent = String(list.length);
+  $("#statAvailable").textContent = String(available);
+  $("#statDrafted").textContent = String(drafted);
+  $("#statScoring").textContent = state.scoring === "ppr" ? "1 PPR" : "0.5 PPR";
+  $("#statView").textContent = viewLabel();
+
+  let thead;
+  let rows;
+
+  if (isFactor) {
+    const fk = state.view;
+    const flabel = FACTOR_LABELS[fk];
+    const unit = metricUnit(fk);
+    thead = `
+      <tr>
+        <th data-sort="${fk}" class="${state.sortKey === fk || state.sortKey === "total" ? "sorted" : ""}">#</th>
+        <th data-sort="name" class="${state.sortKey === "name" ? "sorted" : ""}">Player</th>
+        <th>Pos</th>
+        <th>Team</th>
+        <th data-sort="adpRaw" class="${state.sortKey === "adpRaw" ? "sorted" : ""}">ADP</th>
+        <th data-sort="fpts" class="${state.sortKey === "fpts" ? "sorted" : ""}">'25 FPts</th>
+        <th data-sort="${fk}" class="factor-focus-col ${state.sortKey === fk || state.sortKey === "total" ? "sorted" : ""}">${flabel} (${unit})</th>
+        <th data-sort="total">Model 0–100</th>
+        <th></th>
+      </tr>`;
+
+    rows = list
+      .map((p) => {
+        const myId = state.myRoster.some((m) => m.id === p.id);
+        const m = p.activeMetrics || p.activeScores || {};
+        const formatted = formatMetric(fk, m, state.scoring);
+        const pct = p.percentiles?.[fk] ?? 0;
+        const teamExtra =
+          fk === "playcaller"
+            ? p.raw?.playcaller_name || ""
+            : fk === "vegas"
+              ? `${p.team_name || p.team}`
+              : fk === "qb"
+                ? `QB quality ${m.qb}/32`
+                : fk === "sos"
+                  ? `SOS ${m.sos}/32`
+                  : fk === "opportunity"
+                    ? `Role rank at ${p.pos}`
+                    : fk === "efficiency"
+                      ? "0–100 rating"
+                      : fk === "injury"
+                        ? "Games played profile"
+                        : fk === "age"
+                          ? `Fitness ${Math.round(m.ageFitness || 0)}/100`
+                          : "";
+        return `
+        <tr class="${p.drafted ? "drafted" : ""} ${myId ? "my-pick" : ""}" data-id="${p.id}">
+          <td>${p.rank}</td>
+          <td>
+            <div class="player-cell">
+              <div>
+                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}</div>
+                <div class="meta">${teamExtra}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="pos-badge ${p.pos}">${p.pos}</span></td>
+          <td class="score-cell">${p.team}</td>
+          <td class="score-cell">${p.adp[state.scoring]}</td>
+          <td class="score-cell">${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</td>
+          <td class="score-cell score-total factor-focus-col">
+            <span class="score-bar" style="width:${barWidthPct(pct)}px"></span>
+            ${formatted}
+          </td>
+          <td class="score-cell">${p.total.toFixed(1)}</td>
+          <td>
+            <button class="btn draft-btn" data-id="${p.id}" style="width:auto;padding:4px 8px;font-size:0.72rem" ${p.drafted ? "disabled" : ""}>
+              ${p.drafted ? "Out" : "Draft"}
+            </button>
+          </td>
+        </tr>`;
+      })
+      .join("");
+  } else {
+    const factorHeaders = FACTOR_KEYS.map((k) => {
+      const u = metricUnit(k);
+      return `<th data-sort="${k}" class="${state.sortKey === k ? "sorted" : ""}" title="${FACTOR_TAB_LABELS[k]} (${u})">${FACTOR_LABELS[k]}</th>`;
+    }).join("");
+
+    thead = `
+      <tr>
+        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">#</th>
+        <th data-sort="name" class="${state.sortKey === "name" ? "sorted" : ""}">Player</th>
+        <th>Pos</th>
+        <th data-sort="adpRaw" class="${state.sortKey === "adpRaw" ? "sorted" : ""}">ADP</th>
+        <th data-sort="fpts" class="${state.sortKey === "fpts" ? "sorted" : ""}">'25 FPts</th>
+        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Model</th>
+        ${factorHeaders}
+        <th></th>
+      </tr>`;
+
+    const topIds = new Set(topRecommendations(list, 3).map((p) => p.id));
+
+    rows = list
+      .map((p) => {
+        const myId = state.myRoster.some((m) => m.id === p.id);
+        const m = p.activeMetrics || p.activeScores || {};
+        const scores = FACTOR_KEYS.map((k) => {
+          const text = formatMetric(k, m, state.scoring);
+          return `<td class="score-cell" title="${FACTOR_TAB_LABELS[k]}: ${text}">${text}</td>`;
+        }).join("");
+        return `
+        <tr class="${p.drafted ? "drafted" : ""} ${myId ? "my-pick" : ""} ${topIds.has(p.id) && !p.drafted ? "recommended" : ""}" data-id="${p.id}">
+          <td>${p.rank}</td>
+          <td>
+            <div class="player-cell">
+              <div>
+                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}</div>
+                <div class="meta">${p.team} · Bye ${p.bye}${p.age ? ` · Age ${p.age}` : ""}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="pos-badge ${p.pos}">${p.pos}</span></td>
+          <td class="score-cell">${p.adp[state.scoring]}</td>
+          <td class="score-cell">${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</td>
+          <td class="score-cell score-total">
+            <span class="score-bar" style="width:${barWidthPct(p.displayTotal)}px"></span>
+            ${p.displayTotal.toFixed(1)}
+          </td>
+          ${scores}
+          <td>
+            <button class="btn draft-btn" data-id="${p.id}" style="width:auto;padding:4px 8px;font-size:0.72rem" ${p.drafted ? "disabled" : ""}>
+              ${p.drafted ? "Out" : "Draft"}
+            </button>
+          </td>
+        </tr>`;
+      })
+      .join("");
+  }
+
+  $("#boardTable").innerHTML = `<thead>${thead}</thead><tbody>${rows || `<tr><td colspan="20" style="padding:24px;color:var(--text-muted)">No players match filters.</td></tr>`}</tbody>`;
+
+  $$("#boardTable th[data-sort]").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sort;
+      if (state.sortKey === key) {
+        state.sortDir = state.sortDir === "desc" ? "asc" : "desc";
+      } else {
+        state.sortKey = key;
+        state.sortDir = key === "name" || key === "adpRaw" ? "asc" : "desc";
+      }
+      renderBoard();
+    });
+  });
+
+  $$("#boardTable tbody tr[data-id]").forEach((tr) => {
+    tr.addEventListener("click", (e) => {
+      if (e.target.closest(".draft-btn")) return;
+      openPlayer(tr.dataset.id);
+    });
+  });
+
+  $$("#boardTable .draft-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      manualDraft(btn.dataset.id, true);
+    });
+  });
+
+  // Recommendations always use summary model with need boost
+  const recList = rankPlayers(state.players, {
+    scoring: state.scoring,
+    weights: state.weights,
+    hideDrafted: true,
+    rosterCounts: countRoster(state.myRoster),
+    targets: rosterTargets(),
+    enableNeed: state.enableNeed,
+  });
+
+  renderNeedMeter();
+  renderRecommendations(recList);
+  renderDraftLog();
+}
+
+function setRankingView(view) {
+  state.view = view;
+  if (view === "summary") {
+    state.sortKey = "total";
+    state.sortDir = "desc";
+  } else {
+    state.sortKey = view;
+    state.sortDir = defaultSortDirForFactor(view);
+  }
+  $$("#rankTabs .rank-tab").forEach((t) =>
+    t.classList.toggle("active", t.dataset.view === view)
+  );
+  renderLayerLinks();
+  renderBoard();
+}
+
+function openPlayer(id) {
+  const p = state.players.find((x) => x.id === id);
+  if (!p) return;
+  state.selectedPlayer = p;
+  const ranked = rankPlayers(state.players, {
+    scoring: state.scoring,
+    weights: state.weights,
+    enableNeed: false,
+  });
+  const row = ranked.find((r) => r.id === p.id);
+  const total = row?.total ?? 0;
+  const m = p.metrics?.[state.scoring] || p.scores?.[state.scoring] || {};
+  const pct = row?.percentiles || {};
+
+  const factors = FACTOR_KEYS.map((k) => {
+    const meta = state.meta?.factors?.find((f) => f.key === k);
+    const label = meta?.label || FACTOR_LABELS[k];
+    const unit = meta?.unit || metricUnit(k);
+    const text = formatMetric(k, m, state.scoring);
+    const bar = pct[k] ?? 0;
+    return `
+      <div class="factor-card">
+        <div class="label">${label} <span style="opacity:0.7">(${unit})</span></div>
+        <div class="num" style="font-size:1.15rem">${text}</div>
+        <div class="bar"><div style="width:${bar}%"></div></div>
+        <div style="font-size:0.68rem;color:var(--text-muted);margin-top:4px">model pct ${bar.toFixed(0)}</div>
+      </div>`;
+  }).join("");
+
+  $("#modalBody").innerHTML = `
+    <div class="modal-header">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <span class="pos-badge ${p.pos}">${p.pos}</span>
+          <span style="color:var(--text-muted);font-size:0.85rem">${p.team_name || p.team}</span>
+        </div>
+        <h3>${p.name}</h3>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px">
+          Age ${p.age || "—"} · Bye ${p.bye} · ADP ${p.adp[state.scoring]}
+          ${p.rookie ? " · Rookie" : ""}
+          ${p.drafted ? " · <strong style='color:var(--danger)'>DRAFTED</strong>" : ""}
+        </p>
+      </div>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="stat-pill">Model total <strong>${total.toFixed(1)}</strong> / 100</div>
+      <div class="stat-pill">2025 ${state.scoring === "ppr" ? "PPR" : "0.5 PPR"} <strong>${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</strong> FPts</div>
+      <div class="stat-pill">Playcaller <strong>${p.raw.playcaller_name}</strong> (${p.raw.playcaller}/32)</div>
+      <div class="stat-pill">Vegas <strong>${p.raw.vegas_win_total}</strong> wins</div>
+      <div class="stat-pill">Scheme <strong>${p.raw.scheme}</strong></div>
+    </div>
+    <h2 style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px">Factor metrics (natural units)</h2>
+    <div class="factor-grid">${factors}</div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" id="modalDraftBtn" ${p.drafted ? "disabled" : ""}>${p.drafted ? "Already drafted" : "Mark drafted (mine)"}</button>
+      <button class="btn" id="modalDraftOtherBtn" ${p.drafted ? "disabled" : ""}>Mark taken by league</button>
+    </div>
+  `;
+  $("#modal").classList.add("open");
+  $("#modalCloseBtn").onclick = closeModal;
+  $("#modalDraftBtn").onclick = () => {
+    manualDraft(p.id, true);
+    closeModal();
+  };
+  $("#modalDraftOtherBtn").onclick = () => {
+    manualDraft(p.id, false);
+    closeModal();
+  };
+}
+
+function closeModal() {
+  $("#modal").classList.remove("open");
+  state.selectedPlayer = null;
+}
+
+function manualDraft(id, isMine) {
+  const p = state.players.find((x) => x.id === id);
+  if (!p || p.drafted) return;
+  p.drafted = true;
+  p.draftedBy = isMine ? "me" : "other";
+  p.pickNo = (state.picks[state.picks.length - 1]?.pickNo || 0) + 1;
+  if (isMine) state.myRoster.push(p);
+  state.picks.push({
+    pickNo: p.pickNo,
+    name: p.name,
+    pos: p.pos,
+    team: p.team,
+    isMine,
+    localId: p.id,
+  });
+  if (!state.draftSource) state.draftSource = "manual";
+  renderBoard();
+  toast(`${p.name} marked drafted${isMine ? " (your team)" : ""}`);
+}
+
+function resetDraft() {
+  for (const p of state.players) {
+    p.drafted = false;
+    p.draftedBy = null;
+    p.pickNo = null;
+  }
+  state.myRoster = [];
+  state.picks = [];
+  state.draftSource = null;
+  if (state.poller) {
+    state.poller.stop();
+    state.poller = null;
+  }
+  setLiveStatus("idle");
+  renderBoard();
+  toast("Draft board reset");
+}
+
+function setLiveStatus(mode, text) {
+  const dot = $("#liveDot");
+  const label = $("#liveLabel");
+  dot.className = "status-dot";
+  if (mode === "live") {
+    dot.classList.add("live");
+    label.textContent = text || "Live polling";
+  } else if (mode === "error") {
+    dot.classList.add("error");
+    label.textContent = text || "Error";
+  } else {
+    label.textContent = text || "Not connected";
+  }
+}
+
+/* ---- Sleeper connect ---- */
+async function connectSleeper() {
+  const username = $("#sleeperUser").value.trim();
+  const leagueId = $("#sleeperLeague").value.trim();
+  const draftIdInput = $("#sleeperDraft").value.trim();
+  if (!username && !draftIdInput && !leagueId) {
+    toast("Enter Sleeper username, league ID, or draft ID", "err");
+    return;
+  }
+
+  try {
+    setLiveStatus("live", "Connecting…");
+    let draftId = draftIdInput;
+    let userId = null;
+
+    if (username) {
+      const user = await sleeperGetUser(username);
+      userId = user.user_id;
+      state.sleeper.userId = userId;
+      state.sleeper.username = username;
+      $("#sleeperUserInfo").textContent = `User: ${user.display_name || username} (${userId})`;
+
+      if (!draftId && !leagueId) {
+        const leagues = await sleeperGetLeagues(userId, "2026");
+        if (!leagues.length) {
+          // try 2025 fallback for testing
+          const old = await sleeperGetLeagues(userId, "2025");
+          if (old.length) {
+            toast(`No 2026 leagues; found ${old.length} from 2025 — pick a league ID`, "err");
+            $("#sleeperUserInfo").textContent += ` · ${old.map((l) => l.name + ":" + l.league_id).slice(0, 3).join(", ")}`;
+          } else {
+            toast("No leagues found for this user", "err");
+          }
+          setLiveStatus("error", "No leagues");
+          return;
+        }
+        const list = leagues.map((l) => `${l.name} → league ${l.league_id}`).join("\n");
+        $("#sleeperUserInfo").textContent += ` · Leagues: ${leagues.length}`;
+        toast(`Found ${leagues.length} leagues — paste a league or draft ID`, "ok");
+        console.log("Sleeper leagues:\n" + list);
+        // Auto-pick first league draft if only one
+        if (leagues.length === 1 && leagues[0].draft_id) {
+          draftId = leagues[0].draft_id;
+          $("#sleeperDraft").value = draftId;
+          $("#sleeperLeague").value = leagues[0].league_id;
+        } else {
+          setLiveStatus("idle", "Select league/draft");
+          return;
+        }
+      }
+    }
+
+    if (!draftId && leagueId) {
+      const drafts = await sleeperGetLeagueDrafts(leagueId);
+      if (!drafts.length) throw new Error("No drafts for league");
+      draftId = drafts[0].draft_id;
+      $("#sleeperDraft").value = draftId;
+    }
+
+    state.sleeper.draftId = draftId;
+    toast("Hydrating Sleeper player IDs…");
+    const hyd = await sleeperHydratePlayerIds(state.players);
+    if (hyd.matched) toast(`Matched ${hyd.matched}/${hyd.total} players to Sleeper`);
+
+    await refreshSleeperDraft();
+
+    if (state.poller) state.poller.stop();
+    state.poller = createDraftPoller(refreshSleeperDraft, 4000);
+    state.poller.start();
+    state.draftSource = "sleeper";
+    setLiveStatus("live", `Sleeper draft ${draftId}`);
+    toast("Sleeper live draft connected");
+  } catch (e) {
+    console.error(e);
+    setLiveStatus("error", "Sleeper error");
+    toast(String(e.message || e), "err");
+  }
+}
+
+async function refreshSleeperDraft() {
+  const draftId = state.sleeper.draftId || $("#sleeperDraft").value.trim();
+  if (!draftId) return;
+  const [draft, picks] = await Promise.all([sleeperGetDraft(draftId), sleeperGetPicks(draftId)]);
+  const result = applySleeperPicks(state.players, picks, {
+    userId: state.sleeper.userId,
+    draftOrder: draft.draft_order,
+    slotToRoster: draft.slot_to_roster_id,
+  });
+  state.myRoster = result.myRoster;
+  state.picks = result.picks;
+  state.draftSource = "sleeper";
+  renderBoard();
+  setLiveStatus("live", `Sleeper · ${picks.length} picks · ${draft.status}`);
+}
+
+/* ---- ESPN connect ---- */
+async function connectEspn() {
+  const leagueId = $("#espnLeague").value.trim();
+  const teamId = $("#espnTeam").value.trim();
+  const season = Number($("#espnSeason").value) || 2026;
+  const useProxy = $("#espnProxy").checked;
+  if (!leagueId) {
+    toast("Enter ESPN league ID", "err");
+    return;
+  }
+  try {
+    setLiveStatus("live", "ESPN connecting…");
+    state.espn.leagueId = leagueId;
+    state.espn.teamId = teamId ? Number(teamId) : null;
+
+    await refreshEspnDraft(season, useProxy);
+
+    if (state.poller) state.poller.stop();
+    state.poller = createDraftPoller(() => refreshEspnDraft(season, useProxy), 8000);
+    state.poller.start();
+    state.draftSource = "espn";
+    toast("ESPN draft connected (polling)");
+  } catch (e) {
+    console.error(e);
+    setLiveStatus("error", "ESPN error");
+    toast(String(e.message || e), "err");
+  }
+}
+
+async function refreshEspnDraft(season, useProxy) {
+  const leagueId = state.espn.leagueId;
+  const data = await espnFetchLeague({
+    leagueId,
+    season,
+    useProxy,
+  });
+  const result = applyEspnDraft(state.players, data, { teamId: state.espn.teamId });
+  state.myRoster = result.myRoster;
+  state.picks = result.picks;
+  renderBoard();
+  setLiveStatus(
+    "live",
+    `ESPN · ${result.picks.length} picks${result.draftComplete ? " · complete" : ""}`
+  );
+}
+
+function bindUI() {
+  // Ranking view tabs (Summary + each factor)
+  $$("#rankTabs .rank-tab").forEach((tab) => {
+    tab.addEventListener("click", () => setRankingView(tab.dataset.view));
+  });
+
+  // Scoring
+  $$(".scoring-toggle button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.scoring = btn.dataset.scoring;
+      $$(".scoring-toggle button").forEach((b) => b.classList.toggle("active", b === btn));
+      renderBoard();
+    });
+  });
+
+  // Positions
+  $$(".pos-chips .chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.position = chip.dataset.pos;
+      $$(".pos-chips .chip").forEach((c) => c.classList.toggle("active", c === chip));
+      renderBoard();
+    });
+  });
+
+  $("#searchInput").addEventListener("input", (e) => {
+    state.search = e.target.value;
+    renderBoard();
+  });
+
+  $("#hideDrafted").addEventListener("change", (e) => {
+    state.hideDrafted = e.target.checked;
+    renderBoard();
+  });
+
+  $("#enableNeed").addEventListener("change", (e) => {
+    state.enableNeed = e.target.checked;
+    renderBoard();
+  });
+
+  $("#resetWeights").addEventListener("click", () => {
+    state.weights = { ...state.meta.default_weights };
+    renderWeights();
+    renderBoard();
+    toast("Weights reset to defaults");
+  });
+
+  $("#btnSleeper").addEventListener("click", connectSleeper);
+  $("#btnEspn").addEventListener("click", connectEspn);
+  $("#btnResetDraft").addEventListener("click", resetDraft);
+  $("#btnStopPoll").addEventListener("click", () => {
+    if (state.poller) state.poller.stop();
+    setLiveStatus("idle", "Polling stopped");
+    toast("Stopped live polling");
+  });
+
+  $("#manualName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const name = e.target.value.trim();
+      if (!name) return;
+      const isMine = $("#manualMine").checked;
+      const local = markDraftedByName(state.players, name, isMine);
+      if (!local) {
+        toast(`No match for "${name}"`, "err");
+        return;
+      }
+      // markDraftedByName only sets flags — sync roster/picks
+      local.pickNo = (state.picks[state.picks.length - 1]?.pickNo || 0) + 1;
+      if (isMine && !state.myRoster.find((m) => m.id === local.id)) {
+        state.myRoster.push(local);
+      }
+      state.picks.push({
+        pickNo: local.pickNo,
+        name: local.name,
+        pos: local.pos,
+        team: local.team,
+        isMine,
+        localId: local.id,
+      });
+      if (!state.draftSource) state.draftSource = "manual";
+      e.target.value = "";
+      renderBoard();
+      toast(`Drafted ${local.name}`);
+    }
+  });
+
+  $("#modal").addEventListener("click", (e) => {
+    if (e.target.id === "modal") closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+}
+
+async function init() {
+  try {
+    await loadData();
+    // default scoring button
+    $$(".scoring-toggle button").forEach((b) =>
+      b.classList.toggle("active", b.dataset.scoring === state.scoring)
+    );
+    renderWeights();
+    bindUI();
+    renderBoard();
+    toast(`Loaded ${state.players.length} players · 2026 guide ready`);
+  } catch (e) {
+    console.error(e);
+    toast("Failed to load data. Serve folder over HTTP (see README).", "err");
+    $("#boardTable").innerHTML = `<tbody><tr><td style="padding:24px">Could not load ./data/*.json — open via a local server.</td></tr></tbody>`;
+  }
+}
+
+init();

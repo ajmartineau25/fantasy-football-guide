@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How It Works · 2026 Fantasy Football Guide</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/docs.css" />
+</head>
+<body>
+  <div class="app docs-app">
+    <header class="header">
+      <div class="brand">
+        <h1>How It <span>Works</span></h1>
+        <p>Methodology, factor definitions, scoring math, and live draft connections</p>
+      </div>
+      <nav class="site-nav">
+        <a href="./index.html">Draft Board</a>
+        <a href="./how-it-works.html" class="active">How It Works</a>
+      </nav>
+    </header>
+
+    <div class="docs-layout">
+      <aside class="docs-toc panel">
+        <h2>On this page</h2>
+        <ol>
+          <li><a href="#overview">Big picture</a></li>
+          <li><a href="#scoring">0.5 PPR vs 1 PPR</a></li>
+          <li><a href="#factors">Every factor explained</a></li>
+          <li><a href="#model">How the model total is built</a></li>
+          <li><a href="#tabs">Summary vs factor tabs</a></li>
+          <li><a href="#weights">Weights &amp; team need</a></li>
+          <li><a href="#draft">Sleeper &amp; ESPN live draft</a></li>
+          <li><a href="#limits">Limits &amp; honesty</a></li>
+          <li><a href="#updates">How updates get online</a></li>
+        </ol>
+      </aside>
+
+      <article class="docs-content">
+        <section class="panel docs-section" id="overview">
+          <h2>1. Big picture</h2>
+          <p>
+            This guide is a <strong>multi-factor draft board</strong> for a standard 12-team, 1QB redraft league.
+            It does <em>not</em> invent a single secret “projection.” Instead it scores every player on several
+            independent inputs (last year’s production, age, supporting cast, market ADP, Vegas team strength, etc.),
+            shows each input in <strong>natural units</strong>, and combines them into a transparent
+            <strong>0–100 model score</strong> you can re-weight yourself.
+          </p>
+          <div class="callout">
+            <strong>HTML dashboard is the right tool here.</strong>
+            Rankings + draft companion UIs are mostly static data + browser API calls.
+            Hosting as a static site (Vercel / GitHub Pages) means no laptop server: open the URL on phone or PC,
+            connect Sleeper/ESPN, draft. Updates = push code/data → redeploy.
+          </div>
+          <h3>What you get on the board</h3>
+          <ul>
+            <li><strong>Summary tab</strong> — full ranked list by model total, with every factor column visible.</li>
+            <li><strong>Factor tabs</strong> — rank by one input only (e.g. Playcaller leaderboard of all 32 OCs).</li>
+            <li><strong>Live draft</strong> — mark players taken from Sleeper, ESPN, or manual entry; boost thin roster spots.</li>
+            <li><strong>Weights</strong> — decide how much Last Year vs Opportunity vs ADP matters for <em>your</em> process.</li>
+          </ul>
+        </section>
+
+        <section class="panel docs-section" id="scoring">
+          <h2>2. 0.5 PPR vs 1 PPR</h2>
+          <p>
+            Toggle at the top of the draft board switches two scoring contexts at once:
+          </p>
+          <table class="docs-table">
+            <thead>
+              <tr><th>What changes</th><th>0.5 PPR</th><th>1 PPR</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Last-year fantasy points column</td>
+                <td>Half-PPR 2025 totals</td>
+                <td>Full-PPR 2025 totals</td>
+              </tr>
+              <tr>
+                <td>ADP column / ADP factor</td>
+                <td>Half-PPR market ADP</td>
+                <td>PPR market ADP</td>
+              </tr>
+              <tr>
+                <td>Model total</td>
+                <td>Recomputed with half metrics</td>
+                <td>Recomputed with PPR metrics</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Team factors (playcaller, Vegas wins, SOS, team QB quality) do <strong>not</strong> change with the toggle—
+            only production and market columns that depend on reception scoring do.
+          </p>
+        </section>
+
+        <section class="panel docs-section" id="factors">
+          <h2>3. Every factor explained</h2>
+          <p>
+            Early versions wrongly scored <em>everything</em> out of 32. That only makes sense when there are
+            exactly 32 things to rank (NFL teams / playcallers). Each factor now uses an applicable unit.
+          </p>
+
+          <div class="factor-doc" id="f-lastYear">
+            <h3>Last Year Stats <span class="unit-pill">unit: fantasy points</span></h3>
+            <p><strong>What you see:</strong> Actual 2025 fantasy points in the selected format (e.g. <code>366.9</code>).</p>
+            <p><strong>What it measures:</strong> Proven production last season. High last-year points raise floor confidence.</p>
+            <p><strong>How it ranks on its tab:</strong> Higher FPts first.</p>
+            <p><strong>In the model total:</strong> Converted to a <em>within-position percentile</em> (so a WR’s points
+              compete with other WRs, not with QBs who score more raw points).</p>
+            <p><strong>Limits:</strong> Rookies and players who missed most of 2025 show ~0 and rely on other factors (ADP, opportunity, age).</p>
+          </div>
+
+          <div class="factor-doc" id="f-age">
+            <h3>Age <span class="unit-pill">unit: years</span></h3>
+            <p><strong>What you see:</strong> Chronological age (e.g. <code>24</code>). DST has no age.</p>
+            <p><strong>What it measures:</strong> Where the player sits on a position-specific aging curve.</p>
+            <p><strong>Peak windows used in the model (not shown as a second number on the board):</strong></p>
+            <ul>
+              <li>RB ≈ 23–26</li>
+              <li>WR ≈ 24–28</li>
+              <li>TE ≈ 25–29</li>
+              <li>QB ≈ 26–32</li>
+              <li>K ≈ mid/late career stable longer</li>
+            </ul>
+            <p><strong>In the model total:</strong> Age is turned into an internal <em>fitness 0–100</em> (peak ages score highest;
+              old RBs fall fastest). You still only see years on the board so the number stays interpretable.</p>
+          </div>
+
+          <div class="factor-doc" id="f-qb">
+            <h3>Quarterback <span class="unit-pill">unit: 1–32 (32 NFL starters)</span></h3>
+            <p><strong>What you see:</strong> Team QB quality score <code>N/32</code> where <strong>32 = best</strong>, <strong>1 = worst</strong>.</p>
+            <p><strong>What it measures:</strong> How much the player’s offense is elevated (or dragged) by the starting QB.
+              For skill players, kickers: team starter quality. For QB players: a self talent/usage quality score.</p>
+            <p><strong>Why /32 is correct here:</strong> There are 32 starting QB situations league-wide—same logic as playcallers.</p>
+            <p><strong>On the QB tab:</strong> 32-team leaderboard + every player sorted by their QB environment score.</p>
+          </div>
+
+          <div class="factor-doc" id="f-playcaller">
+            <h3>Playcaller <span class="unit-pill">unit: 1–32 (32 OCs / schemes)</span></h3>
+            <p><strong>What you see:</strong> <code>N/32</code> plus playcaller name / scheme in detail views.</p>
+            <p><strong>What it measures:</strong> Fantasy-friendliness of the offensive playcaller and scheme
+              (pace, pass rate, creativity, history of producing fantasy production)—not “best NFL coach” in a football-IQ vacuum.</p>
+            <p><strong>Why /32:</strong> One primary offensive voice per team × 32 teams. Best playcaller = 32, worst = 1.</p>
+            <p><strong>On the Playcaller tab:</strong> Full 32-team grid (name, scheme, score) then players on those staffs.</p>
+          </div>
+
+          <div class="factor-doc" id="f-adp">
+            <h3>ADP <span class="unit-pill">unit: average draft position (pick #)</span></h3>
+            <p><strong>What you see:</strong> Market ADP such as <code>1.5</code> or <code>48.0</code>.</p>
+            <p><strong>What it measures:</strong> Where the public/industry is spending draft capital.
+              Early ADP = consensus elite; late ADP = cheaper / ignored.</p>
+            <p><strong>How the tab sorts:</strong> Lower pick number first (ADP 1 before ADP 100).</p>
+            <p><strong>In the model total:</strong> Lower ADP ranks as a stronger signal (earlier picks get higher percentiles).
+              You can down-weight ADP if you want a more “anti-market” board.</p>
+          </div>
+
+          <div class="factor-doc" id="f-vegas">
+            <h3>Vegas Lines <span class="unit-pill">unit: team win total</span></h3>
+            <p><strong>What you see:</strong> Sportsbook regular-season over/under wins (e.g. <code>11.5</code>, <code>4.5</code>).</p>
+            <p><strong>What it measures:</strong> Market-implied team strength and scoring environment.
+              Higher win totals usually mean more competitive games, better supporting casts, and more TD equity—
+              not a guarantee for every skill player.</p>
+            <p><strong>On the Vegas tab:</strong> All 32 teams ordered by win total, then players on those teams.</p>
+            <p><strong>Source note:</strong> Openers/moves from major books (e.g. DraftKings via public roundups). Update when lines move.</p>
+          </div>
+
+          <div class="factor-doc" id="f-opportunity">
+            <h3>Opportunity <span class="unit-pill">unit: rank within position</span></h3>
+            <p><strong>What you see:</strong> <code>#3 / 40</code> meaning 3rd-best projected role among 40 RBs in the database.</p>
+            <p><strong>What it measures:</strong> Expected volume and role security (carries, targets, routes, red-zone work, clear bellcow vs committee).</p>
+            <p><strong>How it ranks:</strong> <strong>1 = best opportunity</strong> at that position. Lower rank number is better.</p>
+            <p><strong>In the model total:</strong> Better (lower) ranks map to higher percentiles.</p>
+          </div>
+
+          <div class="factor-doc" id="f-efficiency">
+            <h3>Efficiency <span class="unit-pill">unit: 0–100 rating</span></h3>
+            <p><strong>What you see:</strong> A 0–100 composite (e.g. <code>100</code>, <code>72</code>).</p>
+            <p><strong>What it measures:</strong> How well the player turns touches into production—
+              yards per touch, TD rate, explosive-play profile—not pure volume.</p>
+            <p><strong>Why not /32:</strong> Efficiency is continuous quality, not a 32-team roster slot.</p>
+          </div>
+
+          <div class="factor-doc" id="f-injury">
+            <h3>Health <span class="unit-pill">unit: games played (0–17)</span></h3>
+            <p><strong>What you see:</strong> Estimated durability as games played, e.g. <code>15 GP</code>.</p>
+            <p><strong>What it measures:</strong> Availability risk. Higher GP profile = more trustworthy for season-long leagues.</p>
+            <p><strong>Limits:</strong> This is a modeled durability profile from public injury history / patterns, not a medical report.
+              Always check current injury news the week you draft.</p>
+          </div>
+
+          <div class="factor-doc" id="f-sos">
+            <h3>Strength of Schedule <span class="unit-pill">unit: 1–32 teams</span></h3>
+            <p><strong>What you see:</strong> <code>N/32</code> where <strong>32 = easiest fantasy schedule</strong>, <strong>1 = hardest</strong>.</p>
+            <p><strong>What it measures:</strong> Relative difficulty of the team’s 2026 slate for fantasy production contexts.</p>
+            <p><strong>Why /32:</strong> 32 team schedules. Same structural reason as playcaller ranks.</p>
+          </div>
+        </section>
+
+        <section class="panel docs-section" id="model">
+          <h2>4. How the model total (0–100) is built</h2>
+          <p>
+            You cannot add “366 FPts + 24 years + ADP 1.5 + 10.5 wins” into one meaningful sum.
+            So the Summary total works like this:
+          </p>
+          <ol class="steps">
+            <li><strong>Read natural metrics</strong> for the active scoring format (0.5 or 1 PPR).</li>
+            <li><strong>Percentile-rank each factor</strong> across the player pool (0 = worst in pool, 100 = best).
+              Last Year / Opportunity / Efficiency are percentile-ranked <em>within position</em> so positions stay fair.</li>
+            <li><strong>Flip direction when needed</strong> (e.g. lower ADP and better opportunity rank = higher percentile).</li>
+            <li><strong>Weighted average</strong> of those percentiles using your left-panel weights (default sum 100).</li>
+            <li><strong>Optional team-need multiplier</strong> if “Boost by team need” is on and your roster is thin at a position.</li>
+          </ol>
+          <pre class="formula">model_total = Σ ( weight_i × percentile_i ) / Σ weight_i
+→ result is 0–100</pre>
+          <p>
+            Changing weights does <strong>not</strong> change the raw FPts/ADP/Vegas numbers—only how much each
+            percentile contributes to the Summary ranking.
+          </p>
+        </section>
+
+        <section class="panel docs-section" id="tabs">
+          <h2>5. Summary tab vs factor tabs</h2>
+          <table class="docs-table">
+            <thead>
+              <tr><th>View</th><th>Sorted by</th><th>Best for</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Summary</strong></td>
+                <td>Model total (0–100), all columns</td>
+                <td>Your overall draft board / pick recommendations</td>
+              </tr>
+              <tr>
+                <td><strong>Last Year / Age / ADP / …</strong></td>
+                <td>That metric alone in natural units</td>
+                <td>Auditing one signal (“who did the model love for playcaller?”)</td>
+              </tr>
+              <tr>
+                <td><strong>Playcaller / QB / Vegas / SOS</strong></td>
+                <td>Also shows a 32-team leaderboard above the players</td>
+                <td>Understanding team environment before taking a player</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            The right-rail “Top picks for you” always uses the <strong>Summary model + team need</strong>,
+            even while you’re browsing a factor tab.
+          </p>
+        </section>
+
+        <section class="panel docs-section" id="weights">
+          <h2>6. Weights &amp; team need</h2>
+          <h3>Default weights (sum 100)</h3>
+          <table class="docs-table">
+            <thead><tr><th>Factor</th><th>Default weight</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>Last Year</td><td>20</td><td>Strongest single historical production signal</td></tr>
+              <tr><td>Opportunity</td><td>14</td><td>Volume drives fantasy more than raw talent alone</td></tr>
+              <tr><td>ADP</td><td>12</td><td>Market consensus / liquidity of draft capital</td></tr>
+              <tr><td>QB</td><td>10</td><td>Supporting cast / self for QBs</td></tr>
+              <tr><td>Playcaller</td><td>10</td><td>Scheme &amp; usage philosophy</td></tr>
+              <tr><td>Age</td><td>8</td><td>Decline / peak risk</td></tr>
+              <tr><td>Vegas</td><td>8</td><td>Team quality / game script environment</td></tr>
+              <tr><td>Efficiency</td><td>8</td><td>How well touches convert</td></tr>
+              <tr><td>Health</td><td>6</td><td>Games played reliability</td></tr>
+              <tr><td>SOS</td><td>4</td><td>Useful but weaker than role + talent</td></tr>
+            </tbody>
+          </table>
+          <h3>Team need boost (12-team 1QB defaults)</h3>
+          <p>Starter targets: 1 QB, 2 RB, 2 WR, 1 TE, 1 FLEX, 1 K, 1 DST, plus depth.</p>
+          <ul>
+            <li>Position at <strong>0 players</strong> → up to ~1.25× model total</li>
+            <li>Partially filled → mild boost</li>
+            <li>Fully stocked → slight de-prioritize (~0.85×)</li>
+          </ul>
+          <p>That reorders “Top picks for you” toward holes without deleting high-total players from the main board.</p>
+        </section>
+
+        <section class="panel docs-section" id="draft">
+          <h2>7. Sleeper &amp; ESPN live draft</h2>
+          <h3>Sleeper (recommended)</h3>
+          <ol class="steps">
+            <li>Enter your Sleeper username and/or league ID / draft ID.</li>
+            <li>The site calls Sleeper’s <strong>public read-only API</strong> (no password stored).</li>
+            <li>It matches picks to board players and greys out drafted names.</li>
+            <li>Your picks fill the need meter; polling continues every few seconds while connected.</li>
+          </ol>
+          <p>Works from a hosted URL the same as localhost—no extra backend required.</p>
+
+          <h3>ESPN</h3>
+          <ol class="steps">
+            <li>Paste league ID from the ESPN fantasy URL.</li>
+            <li>Optionally set your team ID so “your” picks are detected.</li>
+            <li>Public leagues usually work via the unofficial ESPN API + browser CORS proxy.</li>
+            <li>Private leagues often need cookies (<code>espn_s2</code>, <code>SWID</code>) through a future small proxy—
+              until then, use Manual entry or make the league viewable.</li>
+          </ol>
+
+          <h3>Manual</h3>
+          <p>Type a name + Enter during a party draft. Toggle “my pick” to update roster need.</p>
+        </section>
+
+        <section class="panel docs-section" id="limits">
+          <h2>8. Limits &amp; honesty</h2>
+          <ul>
+            <li>This is a <strong>decision framework</strong>, not guaranteed projections or gambling advice.</li>
+            <li>Player pool is a curated top board (~180), not every NFL player.</li>
+            <li>Playcaller / opportunity / efficiency / SOS are <strong>model composites</strong> from public context—challenge them.</li>
+            <li>ADP and Vegas lines move; regenerate data or ask for an update push when camp news hits.</li>
+            <li>Always cross-check injuries and depth charts the day you draft.</li>
+          </ul>
+        </section>
+
+        <section class="panel docs-section" id="updates">
+          <h2>9. How this stays online &amp; how updates work</h2>
+          <p>
+            The app is static files: HTML, CSS, JS, JSON. Hosted on a CDN (Vercel), it needs
+            <strong>no always-on laptop process</strong>.
+          </p>
+          <ol class="steps">
+            <li>You (or Grok) edit rankings data / UI in the project folder.</li>
+            <li>Optional: <code>python scripts/generate_data.py</code> to rebuild JSON.</li>
+            <li>Deploy / push → production URL updates in under a minute.</li>
+            <li>Open the same URL anytime; connect Sleeper/ESPN for that night’s draft.</li>
+          </ol>
+          <p>
+            When you want changes, tell Grok what to tweak (weights, players, copy, new factors).
+            Deploy again. No local server required for day-to-day use.
+          </p>
+          <p class="back-link"><a href="./index.html">← Back to draft board</a></p>
+        </section>
+      </article>
+    </div>
+  </div>
+</body>
+</html>
