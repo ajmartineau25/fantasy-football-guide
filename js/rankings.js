@@ -4,20 +4,23 @@
  * Display metrics use natural units:
  *   lastYear → fantasy points
  *   age → years (fitness curve for model only)
- *   qb / playcaller / sos → 1–32 among 32 NFL teams
+ *   qb → team QB 1–32 for WR/TE only (null elsewhere)
+ *   oline → OL 1–32 for RB/QB only (null elsewhere)
+ *   playcaller → 1–32 for QB/RB/WR/TE only (null for K/DST)
+ *   sos → 1–32 teams
  *   adp → actual ADP pick number
- *   vegas → player season prop primary line (yards / sacks / points)
- *   opportunity → rank within position (1 = best)
- *   efficiency → 0–100 rating
- *   injury → games played (0–17)
+ *   vegas → player season prop primary line
+ *   opportunity / efficiency / injury as before
  *
- * Summary total = weighted average of 0–100 percentiles so mixed units combine cleanly.
+ * Summary total = weighted average of applicable 0–100 percentiles
+ * (N/A factors skipped; remaining weights renormalized per player).
  */
 
 export const FACTOR_KEYS = [
   "lastYear",
   "age",
   "qb",
+  "oline",
   "playcaller",
   "adp",
   "vegas",
@@ -31,6 +34,7 @@ export const FACTOR_LABELS = {
   lastYear: "Last Year",
   age: "Age",
   qb: "QB",
+  oline: "O-Line",
   playcaller: "Playcaller",
   adp: "ADP",
   vegas: "Vegas",
@@ -44,6 +48,7 @@ export const FACTOR_TAB_LABELS = {
   lastYear: "Last Year Stats",
   age: "Age",
   qb: "Quarterback",
+  oline: "Offensive Line",
   playcaller: "Playcaller",
   adp: "ADP",
   vegas: "Vegas Lines",
@@ -53,9 +58,15 @@ export const FACTOR_TAB_LABELS = {
   sos: "Strength of Schedule",
 };
 
-/** Factors that map to all 32 NFL teams (1–32 scale is legitimate). */
-/** Team-level only (32 clubs). Vegas is per-player props — not included. */
-export const TEAM_LEVEL_FACTORS = new Set(["playcaller", "qb", "sos"]);
+/** Which positions use which env factors (null = N/A). */
+export const FACTOR_APPLIES = {
+  qb: new Set(["WR", "TE"]),
+  oline: new Set(["RB", "QB"]),
+  playcaller: new Set(["QB", "RB", "WR", "TE"]),
+};
+
+/** Team-level leaderboard tabs (32 clubs). */
+export const TEAM_LEVEL_FACTORS = new Set(["playcaller", "qb", "oline", "sos"]);
 
 /** Meta for each factor's display + sort direction. */
 export const FACTOR_META = {
@@ -74,14 +85,20 @@ export const FACTOR_META = {
   qb: {
     unit: "of 32",
     higherBetter: true,
-    scaleNote: "32 NFL starters (32=best)",
-    desc: "Team QB quality among 32 starters (32 = best, 1 = worst). QBs use a self quality score.",
+    scaleNote: "WR/TE only (32=best)",
+    desc: "Team QB quality. Applies to WR & TE only — not QB, RB, K, or DST.",
+  },
+  oline: {
+    unit: "of 32",
+    higherBetter: true,
+    scaleNote: "RB/QB only (32=best)",
+    desc: "Offensive line quality. Applies to RB & QB only — not WR, TE, K, or DST.",
   },
   playcaller: {
     unit: "of 32",
     higherBetter: true,
-    scaleNote: "32 NFL playcallers (32=best)",
-    desc: "Fantasy-friendly OC/scheme among all 32 playcallers (32 = best, 1 = worst).",
+    scaleNote: "offense only (32=best)",
+    desc: "OC/scheme fantasy friendliness. Applies to QB/RB/WR/TE — never K or DST.",
   },
   adp: {
     unit: "pick",
@@ -157,15 +174,17 @@ export function isHigherBetter(key) {
 export function formatMetric(key, metrics, scoring) {
   if (!metrics) return "—";
   const v = metrics[key];
-  if (v == null) return "—";
+  if (v == null || v === undefined) return "—";
   switch (key) {
     case "lastYear":
       return Number(v).toFixed(1);
     case "age":
       return metrics.age ? String(metrics.age) : "—";
     case "qb":
+    case "oline":
     case "playcaller":
     case "sos":
+      if (v == null) return "—";
       return `${v}/32`;
     case "adp":
       return Number(v).toFixed(1);
@@ -213,16 +232,22 @@ function percentileMap(values, higherBetter = true) {
   return map;
 }
 
+function rawMetricValue(m, key) {
+  if (!m) return null;
+  if (key === "age") return m.ageFitness ?? 50;
+  if (m[key] == null) return null;
+  return m[key];
+}
+
 /**
  * Build 0–100 percentile for each factor across the player pool (for model total).
- * Opportunity/lastYear can be within-position for fairness.
+ * Null metrics (N/A for position) get no percentile — skipped in weighted total.
  */
 export function buildPercentiles(players, scoring = "ppr") {
   const result = players.map(() => ({}));
 
   for (const key of FACTOR_KEYS) {
     if (key === "lastYear" || key === "opportunity" || key === "efficiency") {
-      // Within-position percentiles
       const byPos = {};
       players.forEach((p, i) => {
         byPos[p.pos] = byPos[p.pos] || [];
@@ -231,17 +256,29 @@ export function buildPercentiles(players, scoring = "ppr") {
       for (const idxs of Object.values(byPos)) {
         const vals = idxs.map((i) => {
           const m = players[i].metrics?.[scoring] || players[i].scores?.[scoring] || {};
-          if (key === "age") return m.ageFitness ?? 50;
           if (key === "adp" || key === "opportunity") return m[key] ?? 999;
           return m[key] ?? 0;
         });
-        const hb = isHigherBetter(key);
-        // For ADP/opportunity, lower raw is better → higherBetter false
-        const pct = percentileMap(vals, hb);
+        const pct = percentileMap(vals, isHigherBetter(key));
         idxs.forEach((playerIdx, j) => {
           result[playerIdx][key] = pct.get(j) ?? 0;
         });
       }
+    } else if (key === "qb" || key === "oline" || key === "playcaller") {
+      // Only players with a non-null value for this env factor
+      const eligible = [];
+      players.forEach((p, i) => {
+        const m = p.metrics?.[scoring] || p.scores?.[scoring] || {};
+        const v = rawMetricValue(m, key);
+        if (v != null) eligible.push({ i, v });
+      });
+      if (!eligible.length) continue;
+      const vals = eligible.map((e) => e.v);
+      const pct = percentileMap(vals, isHigherBetter(key));
+      eligible.forEach((e, j) => {
+        result[e.i][key] = pct.get(j) ?? 0;
+      });
+      // leave result[i][key] undefined for N/A players
     } else {
       const vals = players.map((p) => {
         const m = p.metrics?.[scoring] || p.scores?.[scoring] || {};
@@ -259,7 +296,8 @@ export function buildPercentiles(players, scoring = "ppr") {
 }
 
 /**
- * Weighted model total 0–100 from percentile object + weights.
+ * Weighted model total 0–100. Skips factors with no percentile (N/A for position)
+ * and renormalizes remaining weights.
  */
 export function computeWeightedTotal(percentiles, weights) {
   let num = 0;
@@ -267,7 +305,8 @@ export function computeWeightedTotal(percentiles, weights) {
   for (const key of FACTOR_KEYS) {
     const w = Number(weights[key] ?? 0);
     if (w <= 0) continue;
-    num += (percentiles[key] ?? 0) * w;
+    if (percentiles[key] == null || Number.isNaN(percentiles[key])) continue;
+    num += percentiles[key] * w;
     den += w;
   }
   if (den === 0) return 0;
@@ -319,7 +358,11 @@ export function rankTeamsByFactor(teams, factorKey) {
       unit = "of 32";
     } else if (factorKey === "qb") {
       value = t.qb_rank;
-      detail = "Team QB quality";
+      detail = "Team QB (WR/TE only)";
+      unit = "of 32";
+    } else if (factorKey === "oline") {
+      value = t.ol_rank ?? 16;
+      detail = "Offensive line (RB/QB only)";
       unit = "of 32";
     } else if (factorKey === "sos") {
       value = t.sos_rank;
@@ -337,6 +380,7 @@ export function rankTeamsByFactor(teams, factorKey) {
       scheme: t.scheme,
       win_total: t.win_total,
       qb_rank: t.qb_rank,
+      ol_rank: t.ol_rank,
       sos_rank: t.sos_rank,
       playcaller: t.playcaller,
     };
@@ -407,16 +451,17 @@ export function rankPlayers(players, {
       av = a.fpts_2025[scoring] ?? a.fpts_2025.ppr;
       bv = b.fpts_2025[scoring] ?? b.fpts_2025.ppr;
     } else if (FACTOR_KEYS.includes(sortKey)) {
-      // Natural sort by display metric
+      // Natural sort by display metric; null (N/A) sorts last
       if (sortKey === "age") {
-        // Prefer better age fitness when sorting Age column on summary; on age tab show years
         av = a.activeMetrics.age ?? 0;
         bv = b.activeMetrics.age ?? 0;
       } else {
-        av = a.activeMetrics[sortKey] ?? 0;
-        bv = b.activeMetrics[sortKey] ?? 0;
+        av = a.activeMetrics[sortKey];
+        bv = b.activeMetrics[sortKey];
+        if (av == null && bv == null) return a.name.localeCompare(b.name);
+        if (av == null) return 1;
+        if (bv == null) return -1;
       }
-      // Default dir for lower-is-better factors when user first opens tab: handled by caller
     } else {
       av = a[sortKey];
       bv = b[sortKey];

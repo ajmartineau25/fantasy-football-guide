@@ -418,8 +418,9 @@ function renderTeamRankPanel() {
   const key = state.view;
   const rows = rankTeamsByFactor(state.teams, key);
   const titleMap = {
-    playcaller: "All 32 playcallers (32 = best fantasy scheme → 1 = worst)",
-    qb: "Team QB quality (32 = best starter → 1 = worst)",
+    playcaller: "All 32 playcallers — applies to QB/RB/WR/TE only (not K/DST)",
+    qb: "Team QB quality — applies to WR & TE only (not RB/QB/K/DST)",
+    oline: "Offensive line — applies to RB & QB only (not WR/TE/K/DST)",
     sos: "Strength of schedule (32 = easiest → 1 = hardest)",
   };
 
@@ -434,8 +435,12 @@ function renderTeamRankPanel() {
         displayVal = r.value;
         unitSuffix = "/32";
       } else if (key === "qb") {
-        detail = r.name;
+        detail = r.name + " · WR/TE only";
         displayVal = r.qb_rank;
+        unitSuffix = "/32";
+      } else if (key === "oline") {
+        detail = r.name + " · RB/QB only";
+        displayVal = r.ol_rank ?? r.value;
         unitSuffix = "/32";
       } else if (key === "sos") {
         detail = r.name;
@@ -538,7 +543,13 @@ function renderBoard() {
             : fk === "vegas"
               ? `${m.vegasYardsLabel || "Yds"} O/U · ${m.vegasTdLabel || "TDs"} O/U`
               : fk === "qb"
-                ? `QB quality ${m.qb}/32`
+                ? m.qb != null
+                  ? `Team QB ${m.qb}/32 (WR/TE)`
+                  : "N/A for this position"
+                : fk === "oline"
+                  ? m.oline != null
+                    ? `OL ${m.oline}/32 (RB/QB)`
+                    : "N/A for this position"
                 : fk === "sos"
                   ? `SOS ${m.sos}/32`
                   : fk === "opportunity"
@@ -744,7 +755,9 @@ function openPlayer(id) {
       <div class="stat-pill">Model <strong>${total.toFixed(1)}</strong>/100</div>
       <div class="stat-pill">Floor–Ceiling <strong>${fc.floor}–${fc.ceiling}</strong></div>
       <div class="stat-pill">2025 FPts <strong>${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</strong></div>
-      <div class="stat-pill">Playcaller <strong>${p.raw.playcaller_name}</strong></div>
+      <div class="stat-pill">Playcaller <strong>${m.playcaller != null ? p.raw.playcaller_name + " (" + m.playcaller + "/32)" : "N/A"}</strong></div>
+      <div class="stat-pill">QB env <strong>${m.qb != null ? m.qb + "/32" : "N/A"}</strong></div>
+      <div class="stat-pill">O-Line <strong>${m.oline != null ? m.oline + "/32" : "N/A"}</strong></div>
       <div class="stat-pill">Vegas <strong>${formatMetric("vegas", m, state.scoring)}</strong></div>
       ${cuff ? `<div class="stat-pill">Handcuff <strong>${cuff.name}</strong></div>` : ""}
       ${stacks.length ? `<div class="stat-pill">Stack <strong>${stacks.map((s) => s.name).join(", ")}</strong></div>` : ""}

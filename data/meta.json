@@ -25,14 +25,21 @@
       "label": "Quarterback",
       "unit": "of 32",
       "higherBetter": true,
-      "desc": "Team QB quality among 32 NFL starters (32 = best, 1 = worst). QBs use a self quality score."
+      "desc": "Team QB quality (32 = best). Applies to WR & TE only. N/A for QB, RB, K, DST."
+    },
+    {
+      "key": "oline",
+      "label": "Offensive Line",
+      "unit": "of 32",
+      "higherBetter": true,
+      "desc": "OL quality (32 = best run/pass blocking). Applies to RB & QB only. N/A for WR, TE, K, DST."
     },
     {
       "key": "playcaller",
       "label": "Playcaller",
       "unit": "of 32",
       "higherBetter": true,
-      "desc": "Fantasy-friendly OC/scheme among all 32 NFL playcallers (32 = best, 1 = worst)"
+      "desc": "OC/scheme (32 = best). Applies to QB/RB/WR/TE only \u2014 never K or DST."
     },
     {
       "key": "adp",
@@ -78,16 +85,17 @@
     }
   ],
   "default_weights": {
-    "lastYear": 20,
-    "age": 8,
-    "qb": 10,
-    "playcaller": 10,
+    "lastYear": 18,
+    "age": 7,
+    "qb": 8,
+    "oline": 8,
+    "playcaller": 8,
     "adp": 12,
     "vegas": 8,
     "opportunity": 14,
     "efficiency": 8,
     "injury": 6,
-    "sos": 4
+    "sos": 3
   },
   "league_defaults": {
     "teams": 12,
@@ -103,11 +111,27 @@
     },
     "scoring": "ppr"
   },
-  "model_notes": "Display values use natural units. The Summary total is a weighted average of 0\u2013100 percentiles of each factor (so FPts, ADP, win totals, etc. can combine).",
+  "model_notes": "Natural units; weighted 0\u2013100 percentiles. N/A env factors (QB only WR/TE; OL only RB/QB; playcaller never K/DST) are dropped and remaining weights renormalized.",
+  "factor_applicability": {
+    "qb": [
+      "WR",
+      "TE"
+    ],
+    "oline": [
+      "RB",
+      "QB"
+    ],
+    "playcaller": [
+      "QB",
+      "RB",
+      "WR",
+      "TE"
+    ]
+  },
   "sources": [
     "2025 fantasy scoring leaders (public leaderboards)",
     "2026 consensus ADP (Sleeper/RTSports/FantasyPros-style)",
-    "2026 Vegas win totals (DraftKings via FOX Sports, Jul 2026)",
-    "Playcaller/QB ranks: model composite for 2026 staffs (1\u201332 among 32 teams)"
+    "Per-player Vegas props (modeled season lines)",
+    "Playcaller / QB / OL ranks: model composite for 2026 (1\u201332 among 32 teams)"
   ]
 }

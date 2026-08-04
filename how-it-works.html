@@ -132,21 +132,24 @@
           </div>
 
           <div class="factor-doc" id="f-qb">
-            <h3>Quarterback <span class="unit-pill">unit: 1–32 (32 NFL starters)</span></h3>
-            <p><strong>What you see:</strong> Team QB quality score <code>N/32</code> where <strong>32 = best</strong>, <strong>1 = worst</strong>.</p>
-            <p><strong>What it measures:</strong> How much the player’s offense is elevated (or dragged) by the starting QB.
-              For skill players, kickers: team starter quality. For QB players: a self talent/usage quality score.</p>
-            <p><strong>Why /32 is correct here:</strong> There are 32 starting QB situations league-wide—same logic as playcallers.</p>
-            <p><strong>On the QB tab:</strong> 32-team leaderboard + every player sorted by their QB environment score.</p>
+            <h3>Quarterback <span class="unit-pill">unit: 1–32 · WR &amp; TE only</span></h3>
+            <p><strong>What you see:</strong> Team QB quality <code>N/32</code> (32 = best), or <code>—</code> if N/A.</p>
+            <p><strong>Applies to:</strong> <strong>WR and TE only</strong>. Does <em>not</em> score QB, RB, K, or DST.</p>
+            <p><strong>In the model:</strong> When N/A, this factor is dropped and other weights are renormalized for that player.</p>
+          </div>
+
+          <div class="factor-doc" id="f-oline">
+            <h3>Offensive Line <span class="unit-pill">unit: 1–32 · RB &amp; QB only</span></h3>
+            <p><strong>What you see:</strong> Team OL quality <code>N/32</code> (32 = best run/pass blocking).</p>
+            <p><strong>Applies to:</strong> <strong>RB and QB only</strong>. Does <em>not</em> score WR, TE, K, or DST.</p>
+            <p><strong>What it measures:</strong> Pocket protection and run-blocking environment for fantasy production.</p>
           </div>
 
           <div class="factor-doc" id="f-playcaller">
-            <h3>Playcaller <span class="unit-pill">unit: 1–32 (32 OCs / schemes)</span></h3>
-            <p><strong>What you see:</strong> <code>N/32</code> plus playcaller name / scheme in detail views.</p>
-            <p><strong>What it measures:</strong> Fantasy-friendliness of the offensive playcaller and scheme
-              (pace, pass rate, creativity, history of producing fantasy production)—not “best NFL coach” in a football-IQ vacuum.</p>
-            <p><strong>Why /32:</strong> One primary offensive voice per team × 32 teams. Best playcaller = 32, worst = 1.</p>
-            <p><strong>On the Playcaller tab:</strong> Full 32-team grid (name, scheme, score) then players on those staffs.</p>
+            <h3>Playcaller <span class="unit-pill">unit: 1–32 · offense only</span></h3>
+            <p><strong>What you see:</strong> <code>N/32</code> plus playcaller name / scheme, or <code>—</code> if N/A.</p>
+            <p><strong>Applies to:</strong> <strong>QB, RB, WR, TE only</strong>. Never K or DST.</p>
+            <p><strong>What it measures:</strong> Fantasy-friendliness of the OC/scheme (pace, pass rate, usage philosophy).</p>
           </div>
 
           <div class="factor-doc" id="f-adp">
@@ -264,16 +267,17 @@
           <table class="docs-table">
             <thead><tr><th>Factor</th><th>Default weight</th><th>Why</th></tr></thead>
             <tbody>
-              <tr><td>Last Year</td><td>20</td><td>Strongest single historical production signal</td></tr>
-              <tr><td>Opportunity</td><td>14</td><td>Volume drives fantasy more than raw talent alone</td></tr>
-              <tr><td>ADP</td><td>12</td><td>Market consensus / liquidity of draft capital</td></tr>
-              <tr><td>QB</td><td>10</td><td>Supporting cast / self for QBs</td></tr>
-              <tr><td>Playcaller</td><td>10</td><td>Scheme &amp; usage philosophy</td></tr>
-              <tr><td>Age</td><td>8</td><td>Decline / peak risk</td></tr>
-              <tr><td>Vegas</td><td>8</td><td>Team quality / game script environment</td></tr>
+              <tr><td>Last Year</td><td>18</td><td>Historical production</td></tr>
+              <tr><td>Opportunity</td><td>14</td><td>Volume / role</td></tr>
+              <tr><td>ADP</td><td>12</td><td>Market draft capital</td></tr>
+              <tr><td>QB</td><td>8</td><td>WR/TE only — team passer quality</td></tr>
+              <tr><td>O-Line</td><td>8</td><td>RB/QB only — blocking environment</td></tr>
+              <tr><td>Playcaller</td><td>8</td><td>QB/RB/WR/TE only — not K/DST</td></tr>
+              <tr><td>Vegas</td><td>8</td><td>Player prop lines</td></tr>
               <tr><td>Efficiency</td><td>8</td><td>How well touches convert</td></tr>
-              <tr><td>Health</td><td>6</td><td>Games played reliability</td></tr>
-              <tr><td>SOS</td><td>4</td><td>Useful but weaker than role + talent</td></tr>
+              <tr><td>Age</td><td>7</td><td>Peak / decline curve</td></tr>
+              <tr><td>Health</td><td>6</td><td>Games played profile</td></tr>
+              <tr><td>SOS</td><td>3</td><td>Schedule ease</td></tr>
             </tbody>
           </table>
           <h3>Team need boost (12-team 1QB defaults)</h3>

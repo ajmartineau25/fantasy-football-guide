@@ -8,42 +8,44 @@ OUT = Path(__file__).resolve().parents[1] / "data"
 
 # Vegas win totals (DraftKings via FOX Sports, Jul 2026)
 # Playcaller rank 32=best fantasy-friendly OC/scheme, 1=worst
-# qb_rank for team starter quality (32=elite)
+# qb_rank 32=elite team starter (applies to WR/TE only in player metrics)
+# ol_rank 32=best OL (applies to RB/QB only)
 # sos_rank 32=easiest schedule for fantasy (inverted SOS)
+# playcaller applies to QB/RB/WR/TE only — never K/DST
 
 TEAMS = {
-    "ARI": {"name": "Arizona Cardinals", "win_total": 3.5, "playcaller": 8, "qb_rank": 6, "sos_rank": 8, "scheme": "Balanced", "playcaller_name": "OC staff"},
-    "ATL": {"name": "Atlanta Falcons", "win_total": 6.5, "playcaller": 14, "qb_rank": 12, "sos_rank": 16, "scheme": "West Coast", "playcaller_name": "Stefanski / staff"},
-    "BAL": {"name": "Baltimore Ravens", "win_total": 11.5, "playcaller": 28, "qb_rank": 30, "sos_rank": 14, "scheme": "RPO / Option", "playcaller_name": "Jesse Minter staff"},
-    "BUF": {"name": "Buffalo Bills", "win_total": 10.5, "playcaller": 30, "qb_rank": 32, "sos_rank": 12, "scheme": "Spread / Motion", "playcaller_name": "Joe Brady"},
-    "CAR": {"name": "Carolina Panthers", "win_total": 7.5, "playcaller": 18, "qb_rank": 16, "sos_rank": 18, "scheme": "Spread", "playcaller_name": "Canales staff"},
-    "CHI": {"name": "Chicago Bears", "win_total": 9.5, "playcaller": 31, "qb_rank": 24, "sos_rank": 2, "scheme": "Lions-style", "playcaller_name": "Ben Johnson"},
-    "CIN": {"name": "Cincinnati Bengals", "win_total": 10.5, "playcaller": 29, "qb_rank": 28, "sos_rank": 30, "scheme": "Air Coryell-ish", "playcaller_name": "Zac Taylor / OC"},
-    "CLE": {"name": "Cleveland Browns", "win_total": 5.5, "playcaller": 22, "qb_rank": 8, "sos_rank": 32, "scheme": "Monken vertical", "playcaller_name": "Todd Monken"},
-    "DAL": {"name": "Dallas Cowboys", "win_total": 9.5, "playcaller": 26, "qb_rank": 25, "sos_rank": 22, "scheme": "Air raid lite", "playcaller_name": "Schottenheimer / OC"},
-    "DEN": {"name": "Denver Broncos", "win_total": 9.5, "playcaller": 25, "qb_rank": 22, "sos_rank": 15, "scheme": "Spread option", "playcaller_name": "Sean Payton"},
-    "DET": {"name": "Detroit Lions", "win_total": 10.5, "playcaller": 27, "qb_rank": 26, "sos_rank": 27, "scheme": "Aggressive / 13p", "playcaller_name": "John Morton / staff"},
-    "GB":  {"name": "Green Bay Packers", "win_total": 9.5, "playcaller": 23, "qb_rank": 20, "sos_rank": 4, "scheme": "West Coast", "playcaller_name": "MLF / OC"},
-    "HOU": {"name": "Houston Texans", "win_total": 9.5, "playcaller": 21, "qb_rank": 18, "sos_rank": 17, "scheme": "Spread", "playcaller_name": "Bobby Slowik successor"},
-    "IND": {"name": "Indianapolis Colts", "win_total": 7.5, "playcaller": 17, "qb_rank": 17, "sos_rank": 19, "scheme": "Balanced", "playcaller_name": "Shane Steichen"},
-    "JAX": {"name": "Jacksonville Jaguars", "win_total": 8.5, "playcaller": 32, "qb_rank": 27, "sos_rank": 20, "scheme": "McVay/Coen", "playcaller_name": "Liam Coen"},
-    "KC":  {"name": "Kansas City Chiefs", "win_total": 10.5, "playcaller": 24, "qb_rank": 31, "sos_rank": 13, "scheme": "Reid motion", "playcaller_name": "Andy Reid"},
-    "LV":  {"name": "Las Vegas Raiders", "win_total": 5.5, "playcaller": 12, "qb_rank": 10, "sos_rank": 21, "scheme": "Pro style", "playcaller_name": "OC staff"},
-    "LAC": {"name": "Los Angeles Chargers", "win_total": 9.5, "playcaller": 20, "qb_rank": 23, "sos_rank": 11, "scheme": "McDaniel / Harbaugh", "playcaller_name": "Mike McDaniel"},
-    "LAR": {"name": "Los Angeles Rams", "win_total": 11.5, "playcaller": 30, "qb_rank": 29, "sos_rank": 10, "scheme": "McVay", "playcaller_name": "Sean McVay"},
-    "MIA": {"name": "Miami Dolphins", "win_total": 4.5, "playcaller": 10, "qb_rank": 9, "sos_rank": 3, "scheme": "Rebuild", "playcaller_name": "Jeff Hafley staff"},
-    "MIN": {"name": "Minnesota Vikings", "win_total": 8.5, "playcaller": 19, "qb_rank": 14, "sos_rank": 14, "scheme": "Outside zone", "playcaller_name": "KOC / OC"},
-    "NE":  {"name": "New England Patriots", "win_total": 10.5, "playcaller": 28, "qb_rank": 28, "sos_rank": 6, "scheme": "Mayo / modern", "playcaller_name": "Josh McDaniels / staff"},
-    "NO":  {"name": "New Orleans Saints", "win_total": 7.5, "playcaller": 16, "qb_rank": 13, "sos_rank": 31, "scheme": "Spread", "playcaller_name": "OC staff"},
-    "NYG": {"name": "New York Giants", "win_total": 7.5, "playcaller": 15, "qb_rank": 15, "sos_rank": 18, "scheme": "Harbaugh power", "playcaller_name": "John Harbaugh staff"},
-    "NYJ": {"name": "New York Jets", "win_total": 5.5, "playcaller": 11, "qb_rank": 11, "sos_rank": 23, "scheme": "Glenn / staff", "playcaller_name": "OC staff"},
-    "PHI": {"name": "Philadelphia Eagles", "win_total": 10.5, "playcaller": 22, "qb_rank": 25, "sos_rank": 12, "scheme": "Tush push / gap", "playcaller_name": "Sean Mannion"},
-    "PIT": {"name": "Pittsburgh Steelers", "win_total": 8.5, "playcaller": 13, "qb_rank": 14, "sos_rank": 16, "scheme": "McCarthy / West Coast", "playcaller_name": "Mike McCarthy"},
-    "SF":  {"name": "San Francisco 49ers", "win_total": 9.5, "playcaller": 29, "qb_rank": 19, "sos_rank": 9, "scheme": "Shanahan", "playcaller_name": "Kyle Shanahan"},
-    "SEA": {"name": "Seattle Seahawks", "win_total": 10.5, "playcaller": 24, "qb_rank": 21, "sos_rank": 11, "scheme": "Macdonald / OC", "playcaller_name": "OC staff"},
-    "TB":  {"name": "Tampa Bay Buccaneers", "win_total": 8.5, "playcaller": 18, "qb_rank": 20, "sos_rank": 15, "scheme": "Spread", "playcaller_name": "Liam Coen successor"},
-    "TEN": {"name": "Tennessee Titans", "win_total": 6.5, "playcaller": 20, "qb_rank": 12, "sos_rank": 25, "scheme": "Daboll", "playcaller_name": "Brian Daboll"},
-    "WAS": {"name": "Washington Commanders", "win_total": 7.5, "playcaller": 26, "qb_rank": 27, "sos_rank": 17, "scheme": "Kingsbury", "playcaller_name": "Kliff Kingsbury"},
+    "ARI": {"name": "Arizona Cardinals", "win_total": 3.5, "playcaller": 8, "qb_rank": 6, "ol_rank": 8, "sos_rank": 8, "scheme": "Balanced", "playcaller_name": "OC staff"},
+    "ATL": {"name": "Atlanta Falcons", "win_total": 6.5, "playcaller": 14, "qb_rank": 12, "ol_rank": 14, "sos_rank": 16, "scheme": "West Coast", "playcaller_name": "Stefanski / staff"},
+    "BAL": {"name": "Baltimore Ravens", "win_total": 11.5, "playcaller": 28, "qb_rank": 30, "ol_rank": 26, "sos_rank": 14, "scheme": "RPO / Option", "playcaller_name": "Jesse Minter staff"},
+    "BUF": {"name": "Buffalo Bills", "win_total": 10.5, "playcaller": 30, "qb_rank": 32, "ol_rank": 28, "sos_rank": 12, "scheme": "Spread / Motion", "playcaller_name": "Joe Brady"},
+    "CAR": {"name": "Carolina Panthers", "win_total": 7.5, "playcaller": 18, "qb_rank": 16, "ol_rank": 10, "sos_rank": 18, "scheme": "Spread", "playcaller_name": "Canales staff"},
+    "CHI": {"name": "Chicago Bears", "win_total": 9.5, "playcaller": 31, "qb_rank": 24, "ol_rank": 20, "sos_rank": 2, "scheme": "Lions-style", "playcaller_name": "Ben Johnson"},
+    "CIN": {"name": "Cincinnati Bengals", "win_total": 10.5, "playcaller": 29, "qb_rank": 28, "ol_rank": 18, "sos_rank": 30, "scheme": "Air Coryell-ish", "playcaller_name": "Zac Taylor / OC"},
+    "CLE": {"name": "Cleveland Browns", "win_total": 5.5, "playcaller": 22, "qb_rank": 8, "ol_rank": 12, "sos_rank": 32, "scheme": "Monken vertical", "playcaller_name": "Todd Monken"},
+    "DAL": {"name": "Dallas Cowboys", "win_total": 9.5, "playcaller": 26, "qb_rank": 25, "ol_rank": 27, "sos_rank": 22, "scheme": "Air raid lite", "playcaller_name": "Schottenheimer / OC"},
+    "DEN": {"name": "Denver Broncos", "win_total": 9.5, "playcaller": 25, "qb_rank": 22, "ol_rank": 22, "sos_rank": 15, "scheme": "Spread option", "playcaller_name": "Sean Payton"},
+    "DET": {"name": "Detroit Lions", "win_total": 10.5, "playcaller": 27, "qb_rank": 26, "ol_rank": 30, "sos_rank": 27, "scheme": "Aggressive / 13p", "playcaller_name": "John Morton / staff"},
+    "GB":  {"name": "Green Bay Packers", "win_total": 9.5, "playcaller": 23, "qb_rank": 20, "ol_rank": 24, "sos_rank": 4, "scheme": "West Coast", "playcaller_name": "MLF / OC"},
+    "HOU": {"name": "Houston Texans", "win_total": 9.5, "playcaller": 21, "qb_rank": 18, "ol_rank": 19, "sos_rank": 17, "scheme": "Spread", "playcaller_name": "Bobby Slowik successor"},
+    "IND": {"name": "Indianapolis Colts", "win_total": 7.5, "playcaller": 17, "qb_rank": 17, "ol_rank": 21, "sos_rank": 19, "scheme": "Balanced", "playcaller_name": "Shane Steichen"},
+    "JAX": {"name": "Jacksonville Jaguars", "win_total": 8.5, "playcaller": 32, "qb_rank": 27, "ol_rank": 17, "sos_rank": 20, "scheme": "McVay/Coen", "playcaller_name": "Liam Coen"},
+    "KC":  {"name": "Kansas City Chiefs", "win_total": 10.5, "playcaller": 24, "qb_rank": 31, "ol_rank": 29, "sos_rank": 13, "scheme": "Reid motion", "playcaller_name": "Andy Reid"},
+    "LV":  {"name": "Las Vegas Raiders", "win_total": 5.5, "playcaller": 12, "qb_rank": 10, "ol_rank": 11, "sos_rank": 21, "scheme": "Pro style", "playcaller_name": "OC staff"},
+    "LAC": {"name": "Los Angeles Chargers", "win_total": 9.5, "playcaller": 20, "qb_rank": 23, "ol_rank": 23, "sos_rank": 11, "scheme": "McDaniel / Harbaugh", "playcaller_name": "Mike McDaniel"},
+    "LAR": {"name": "Los Angeles Rams", "win_total": 11.5, "playcaller": 30, "qb_rank": 29, "ol_rank": 25, "sos_rank": 10, "scheme": "McVay", "playcaller_name": "Sean McVay"},
+    "MIA": {"name": "Miami Dolphins", "win_total": 4.5, "playcaller": 10, "qb_rank": 9, "ol_rank": 9, "sos_rank": 3, "scheme": "Rebuild", "playcaller_name": "Jeff Hafley staff"},
+    "MIN": {"name": "Minnesota Vikings", "win_total": 8.5, "playcaller": 19, "qb_rank": 14, "ol_rank": 16, "sos_rank": 14, "scheme": "Outside zone", "playcaller_name": "KOC / OC"},
+    "NE":  {"name": "New England Patriots", "win_total": 10.5, "playcaller": 28, "qb_rank": 28, "ol_rank": 15, "sos_rank": 6, "scheme": "Mayo / modern", "playcaller_name": "Josh McDaniels / staff"},
+    "NO":  {"name": "New Orleans Saints", "win_total": 7.5, "playcaller": 16, "qb_rank": 13, "ol_rank": 13, "sos_rank": 31, "scheme": "Spread", "playcaller_name": "OC staff"},
+    "NYG": {"name": "New York Giants", "win_total": 7.5, "playcaller": 15, "qb_rank": 15, "ol_rank": 12, "sos_rank": 18, "scheme": "Harbaugh power", "playcaller_name": "John Harbaugh staff"},
+    "NYJ": {"name": "New York Jets", "win_total": 5.5, "playcaller": 11, "qb_rank": 11, "ol_rank": 7, "sos_rank": 23, "scheme": "Glenn / staff", "playcaller_name": "OC staff"},
+    "PHI": {"name": "Philadelphia Eagles", "win_total": 10.5, "playcaller": 22, "qb_rank": 25, "ol_rank": 32, "sos_rank": 12, "scheme": "Tush push / gap", "playcaller_name": "Sean Mannion"},
+    "PIT": {"name": "Pittsburgh Steelers", "win_total": 8.5, "playcaller": 13, "qb_rank": 14, "ol_rank": 18, "sos_rank": 16, "scheme": "McCarthy / West Coast", "playcaller_name": "Mike McCarthy"},
+    "SF":  {"name": "San Francisco 49ers", "win_total": 9.5, "playcaller": 29, "qb_rank": 19, "ol_rank": 31, "sos_rank": 9, "scheme": "Shanahan", "playcaller_name": "Kyle Shanahan"},
+    "SEA": {"name": "Seattle Seahawks", "win_total": 10.5, "playcaller": 24, "qb_rank": 21, "ol_rank": 20, "sos_rank": 11, "scheme": "Macdonald / OC", "playcaller_name": "OC staff"},
+    "TB":  {"name": "Tampa Bay Buccaneers", "win_total": 8.5, "playcaller": 18, "qb_rank": 20, "ol_rank": 16, "sos_rank": 15, "scheme": "Spread", "playcaller_name": "Liam Coen successor"},
+    "TEN": {"name": "Tennessee Titans", "win_total": 6.5, "playcaller": 20, "qb_rank": 12, "ol_rank": 14, "sos_rank": 25, "scheme": "Daboll", "playcaller_name": "Brian Daboll"},
+    "WAS": {"name": "Washington Commanders", "win_total": 7.5, "playcaller": 26, "qb_rank": 27, "ol_rank": 19, "sos_rank": 17, "scheme": "Kingsbury", "playcaller_name": "Kliff Kingsbury"},
 }
 
 # Player fields:
@@ -423,6 +425,35 @@ def estimate_player_props(p: dict) -> dict:
     }
 
 
+def position_env_metrics(pos: str, team_meta: dict) -> dict:
+    """
+    Environment factors apply only to certain positions:
+      - qb (team QB quality): WR & TE only
+      - oline (OL quality): RB & QB only
+      - playcaller: QB, RB, WR, TE only (never K / DST)
+    N/A factors are null and excluded from model weight renormalization.
+    """
+    # Team QB → only pass catchers
+    if pos in ("WR", "TE"):
+        qb = team_meta["qb_rank"]
+    else:
+        qb = None
+
+    # Offensive line → run game + QB protection
+    if pos in ("RB", "QB"):
+        oline = team_meta.get("ol_rank", 16)
+    else:
+        oline = None
+
+    # Playcaller / scheme → skill offense only
+    if pos in ("QB", "RB", "WR", "TE"):
+        playcaller = team_meta["playcaller"]
+    else:
+        playcaller = None
+
+    return {"qb": qb, "oline": oline, "playcaller": playcaller}
+
+
 def build_players():
     # Opportunity: rank within position by legacy volume score (1 = best role)
     opp_rank = pos_rank_map(PLAYERS, lambda x: x["opportunity"], reverse=True)
@@ -430,14 +461,7 @@ def build_players():
     enriched = []
     for i, p in enumerate(PLAYERS):
         t = TEAMS[p["team"]]
-        # Team QB quality is already 1–32 among 32 clubs (32=best)
-        if p["pos"] == "QB":
-            # Self: blend of volume/efficiency proxies as 1–32 quality among QBs later re-ranked by value
-            qb_quality = int(round((p["opportunity"] + p["efficiency"]) / 2))
-        elif p["pos"] == "DST":
-            qb_quality = t["playcaller"]  # proxy for defensive / team infrastructure
-        else:
-            qb_quality = t["qb_rank"]
+        env = position_env_metrics(p["pos"], t)
 
         gp = games_played_estimate(p["injury"])
         eff = efficiency_rating(p["efficiency"])
@@ -455,10 +479,12 @@ def build_players():
                 # Age in years (fitness used only in model via ageFitness)
                 "age": p["age"] if p["pos"] != "DST" else 0,
                 "ageFitness": fitness,
-                # Among 32 team QBs / quality score 32=best
-                "qb": qb_quality,
-                # Among 32 playcallers, 32=best
-                "playcaller": t["playcaller"],
+                # WR/TE only (null otherwise)
+                "qb": env["qb"],
+                # RB/QB only (null otherwise)
+                "oline": env["oline"],
+                # Offense only — not K/DST
+                "playcaller": env["playcaller"],
                 # Real ADP (lower = drafted earlier)
                 "adp": adp,
                 # PLAYER prop primary line (yards/sacks/points) — NOT team wins
@@ -494,7 +520,8 @@ def build_players():
                 "playcaller": t["playcaller"],
                 "playcaller_name": t["playcaller_name"],
                 "scheme": t["scheme"],
-                "qb_rank": qb_quality,
+                "qb_rank": t["qb_rank"],
+                "ol_rank": t.get("ol_rank", 16),
                 "sos_rank": t["sos_rank"],
                 "games_played": gp,
                 "efficiency_rating": eff,
@@ -502,6 +529,11 @@ def build_players():
                 "opp_of": n_at_pos,
                 "age_fitness": fitness,
                 "vegas_props": props,
+                "env_applies": {
+                    "qb": env["qb"] is not None,
+                    "oline": env["oline"] is not None,
+                    "playcaller": env["playcaller"] is not None,
+                },
             },
             # Applicable metric values used for display + ranking
             "metrics": {
@@ -545,14 +577,21 @@ def main():
                 "label": "Quarterback",
                 "unit": "of 32",
                 "higherBetter": True,
-                "desc": "Team QB quality among 32 NFL starters (32 = best, 1 = worst). QBs use a self quality score.",
+                "desc": "Team QB quality (32 = best). Applies to WR & TE only. N/A for QB, RB, K, DST.",
+            },
+            {
+                "key": "oline",
+                "label": "Offensive Line",
+                "unit": "of 32",
+                "higherBetter": True,
+                "desc": "OL quality (32 = best run/pass blocking). Applies to RB & QB only. N/A for WR, TE, K, DST.",
             },
             {
                 "key": "playcaller",
                 "label": "Playcaller",
                 "unit": "of 32",
                 "higherBetter": True,
-                "desc": "Fantasy-friendly OC/scheme among all 32 NFL playcallers (32 = best, 1 = worst)",
+                "desc": "OC/scheme (32 = best). Applies to QB/RB/WR/TE only — never K or DST.",
             },
             {
                 "key": "adp",
@@ -598,16 +637,17 @@ def main():
             },
         ],
         "default_weights": {
-            "lastYear": 20,
-            "age": 8,
-            "qb": 10,
-            "playcaller": 10,
+            "lastYear": 18,
+            "age": 7,
+            "qb": 8,
+            "oline": 8,
+            "playcaller": 8,
             "adp": 12,
             "vegas": 8,
             "opportunity": 14,
             "efficiency": 8,
             "injury": 6,
-            "sos": 4,
+            "sos": 3,
         },
         "league_defaults": {
             "teams": 12,
@@ -615,14 +655,19 @@ def main():
             "scoring": "ppr",
         },
         "model_notes": (
-            "Display values use natural units. The Summary total is a weighted average of "
-            "0–100 percentiles of each factor (so FPts, ADP, win totals, etc. can combine)."
+            "Natural units; weighted 0–100 percentiles. N/A env factors (QB only WR/TE; "
+            "OL only RB/QB; playcaller never K/DST) are dropped and remaining weights renormalized."
         ),
+        "factor_applicability": {
+            "qb": ["WR", "TE"],
+            "oline": ["RB", "QB"],
+            "playcaller": ["QB", "RB", "WR", "TE"],
+        },
         "sources": [
             "2025 fantasy scoring leaders (public leaderboards)",
             "2026 consensus ADP (Sleeper/RTSports/FantasyPros-style)",
-            "2026 Vegas win totals (DraftKings via FOX Sports, Jul 2026)",
-            "Playcaller/QB ranks: model composite for 2026 staffs (1–32 among 32 teams)",
+            "Per-player Vegas props (modeled season lines)",
+            "Playcaller / QB / OL ranks: model composite for 2026 (1–32 among 32 teams)",
         ],
     }
     with open(OUT / "teams.json", "w", encoding="utf-8") as f:
