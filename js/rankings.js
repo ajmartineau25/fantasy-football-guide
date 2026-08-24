@@ -34,13 +34,13 @@ export const FACTOR_KEYS = [
 /**
  * Five prevalent ranking styles — replaces fiddly per-factor sliders.
  * Each preset is a full weight map that sums to 100.
- * Balanced keeps ~25% Flock Fantasy draft-sheet consensus (user request).
+ * Balanced keeps ~25% expert-consensus draft-sheet rank.
  */
 export const WEIGHT_PRESETS = [
   {
     id: "balanced",
     label: "Balanced",
-    desc: "Flock ~25% + even blend of production, role, situation, and market.",
+    desc: "Consensus ~25% + even blend of production, role, situation, and market.",
     weights: {
       flock: 25,
       lastYear: 14,
@@ -59,7 +59,7 @@ export const WEIGHT_PRESETS = [
   {
     id: "situation",
     label: "Overall Situation",
-    desc: "Env (QB/OL/playcaller/SOS) capped at ~30%; surplus into Flock (~32%). Role still matters.",
+    desc: "Env (QB/OL/playcaller/SOS) capped at ~30%; surplus into Consensus (~32%). Role still matters.",
     weights: {
       flock: 32,
       lastYear: 5,
@@ -78,7 +78,7 @@ export const WEIGHT_PRESETS = [
   {
     id: "production",
     label: "Prior Production",
-    desc: "Last-year points, efficiency, opportunity, Vegas — Flock ~20%.",
+    desc: "Last-year points, efficiency, opportunity, Vegas — Consensus ~20%.",
     weights: {
       flock: 20,
       lastYear: 22,
@@ -97,7 +97,7 @@ export const WEIGHT_PRESETS = [
   {
     id: "upside",
     label: "Youth & Upside",
-    desc: "Age curve + opportunity + health — Flock ~18%.",
+    desc: "Age curve + opportunity + health — Consensus ~18%.",
     weights: {
       flock: 18,
       lastYear: 6,
@@ -116,7 +116,7 @@ export const WEIGHT_PRESETS = [
   {
     id: "market",
     label: "Beat the Market",
-    desc: "Flock + ADP + Vegas — lean into consensus boards (~28% Flock).",
+    desc: "Consensus + ADP + Vegas — lean into public boards (~28% Consensus).",
     weights: {
       flock: 28,
       lastYear: 8,
@@ -139,7 +139,7 @@ export function presetById(id) {
 }
 
 export const FACTOR_LABELS = {
-  flock: "Flock",
+  flock: "Consensus",
   lastYear: "Last Year",
   age: "Age",
   qb: "QB",
@@ -154,7 +154,7 @@ export const FACTOR_LABELS = {
 };
 
 export const FACTOR_TAB_LABELS = {
-  flock: "Flock Consensus",
+  flock: "Expert Consensus",
   lastYear: "Last Year Stats",
   age: "Age",
   qb: "Quarterback",
@@ -183,8 +183,8 @@ export const FACTOR_META = {
   flock: {
     unit: "rank",
     higherBetter: false,
-    scaleNote: "Flock overall rank",
-    desc: "Flock Fantasy overall draft-sheet rank (1 = best). Medium prior in Balanced (~25%).",
+    scaleNote: "expert-consensus overall rank",
+    desc: "Expert-consensus overall draft rank (1 = best). Medium prior in Balanced (~25%).",
   },
   lastYear: {
     unit: "FPts",

@@ -304,7 +304,7 @@ input:focus, select:focus {
   text-align: center;
 }
 
-/* Sheet header (Flock-style) */
+/* Sheet header */
 .sheet-header {
   display: flex;
   flex-wrap: wrap;
@@ -395,7 +395,7 @@ input:focus, select:focus {
 
 .hidden { display: none !important; }
 
-/* Ranking style presets (Flock-like chips) */
+/* Ranking style presets */
 .preset-grid {
   display: flex;
   flex-direction: column;

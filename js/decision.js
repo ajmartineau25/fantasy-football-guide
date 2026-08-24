@@ -67,7 +67,7 @@ export const STRATEGIES = {
   },
   value: {
     label: "Value / Beat ADP",
-    desc: "Lean into Flock + ADP + Vegas consensus; take falls, avoid reaches.",
+    desc: "Lean into Consensus + ADP + Vegas; take falls, avoid reaches.",
     needStrength: 0.1,
     posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 0.9, DST: 0.9 },
     suggestedPreset: "market",

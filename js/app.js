@@ -155,12 +155,12 @@ function renderSheetHeader() {
   if (!sub || !badges) return;
   const scoring = state.scoring === "ppr" ? "PPR" : "0.5 PPR";
   const preset = presetById(state.weightPreset);
-  const flockW = state.weights?.flock ?? 0;
-  sub.textContent = `${state.leagueTeams}-team · ${rosterLabel()} · ${preset.label} · Flock blend ${flockW}%`;
+  const consensusW = state.weights?.flock ?? 0;
+  sub.textContent = `${state.leagueTeams}-team · ${rosterLabel()} · ${preset.label} · Consensus blend ${consensusW}%`;
   badges.innerHTML = `
     <span class="sheet-badge accent">${scoring}</span>
     <span class="sheet-badge">${state.leagueTeams} TEAM</span>
-    <span class="sheet-badge">Flock ${flockW}%</span>
+    <span class="sheet-badge">Consensus ${consensusW}%</span>
     <span class="sheet-badge muted">Aug 24</span>
   `;
 }
@@ -503,7 +503,7 @@ function renderViewBanner() {
     const teams = state.leagueTeams || 12;
   banner.innerHTML = `
       <h3>Summary — factor model → then VORP blend</h3>
-      <p><strong>Step 1:</strong> weighted factors (Flock, production, situation…) → 0–100 model score.
+      <p><strong>Step 1:</strong> weighted factors (Consensus, production, situation…) → 0–100 model score.
       <strong>Step 2:</strong> VORP = model − replacement starter in your <strong>${teams}-team</strong> league (teams × roster slots).
       Final rank blends both (~55% model / ~45% VORP when VORP is on). VORP is <em>not</em> a factor slider — it runs after weights.</p>
       <div class="banner-meta">
@@ -721,7 +721,7 @@ function renderBoard() {
       })
       .join("");
   } else {
-    // Flock-style draft sheet + VORP
+    // Draft sheet layout + VORP
     thead = `
       <tr>
         <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Rank</th>

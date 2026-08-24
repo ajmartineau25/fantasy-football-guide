@@ -5,14 +5,14 @@
     "half",
     "ppr"
   ],
-  "flock_source": "Flock Fantasy draft sheets \u00b7 2026-08-24",
+  "consensus_source": "Expert consensus draft ranks \u00b7 2026-08-24",
   "factors": [
     {
       "key": "flock",
-      "label": "Flock Consensus",
+      "label": "Expert Consensus",
       "unit": "rank",
       "higherBetter": false,
-      "desc": "Flock Fantasy overall draft-sheet rank (1 = best). Medium prior (~25% in Balanced)."
+      "desc": "Expert-consensus overall draft rank (1 = best). Medium prior (~25% in Balanced)."
     },
     {
       "key": "lastYear",
@@ -110,12 +110,12 @@
     {
       "id": "balanced",
       "label": "Balanced",
-      "desc": "Flock ~25% + even blend of production, role, situation, market."
+      "desc": "Consensus ~25% + even blend of production, role, situation, market."
     },
     {
       "id": "situation",
       "label": "Overall Situation",
-      "desc": "Env (QB/OL/playcaller/SOS) ~30%; surplus into Flock (~32%)."
+      "desc": "Env (QB/OL/playcaller/SOS) ~30%; surplus into Consensus (~32%)."
     },
     {
       "id": "production",
@@ -130,7 +130,7 @@
     {
       "id": "market",
       "label": "Beat the Market",
-      "desc": "Flock + ADP + Vegas \u2014 lean into consensus boards."
+      "desc": "Consensus + ADP + Vegas \u2014 lean into public boards."
     }
   ],
   "league_defaults": {
@@ -168,9 +168,6 @@
     "2025 fantasy scoring leaders (public leaderboards)",
     "2026 consensus ADP (Sleeper/RTSports/FantasyPros-style)",
     "Per-player Vegas props (modeled season lines)",
-    "Playcaller / QB / OL ranks: model composite for 2026 (1\u201332 among 32 teams)",
-    "Sleeper NFL players API roster scrub 2026-08-24",
-    "Camp/injury news sweep 2026-08-24",
-    "Consensus 2026 PPR ADP refresh 2026-08-24"
+    "Playcaller / QB / OL ranks: model composite for 2026 (1\u201332 among 32 teams)"
   ]
 }

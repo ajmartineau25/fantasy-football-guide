@@ -16,7 +16,7 @@ def _norm_name(s: str) -> str:
 
 
 def load_flock_ranks() -> dict:
-    """Overall ranks from Flock draft sheet PDF (1 = best)."""
+    """Overall expert-consensus ranks from draft sheet import (1 = best)."""
     path = OUT / "flock_ranks.json"
     if not path.exists():
         return {}
@@ -191,7 +191,7 @@ PLAYERS = [
     {"name": "Dontayvion Wicks", "pos": "WR", "team": "PHI", "age": 25, "adp_ppr": 110.0, "adp_half": 112.0, "fpts_ppr": 140.0, "fpts_half": 125.0, "opportunity": 18, "efficiency": 20, "injury": 24, "bye": 9},
     # 2026 draft class WRs (NFL Draft Apr 2026)
     {"name": "Carnell Tate", "pos": "WR", "team": "TEN", "age": 21, "adp_ppr": 72.0, "adp_half": 71.5, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 24, "efficiency": 22, "injury": 28, "bye": 10, "rookie": True},
-    {"name": "Jordyn Tyson", "pos": "WR", "team": "NO", "age": 22, "adp_ppr": 145.0, "adp_half": 148.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 14, "efficiency": 23, "injury": 8, "bye": 11, "rookie": True},
+    {"name": "Jordyn Tyson", "pos": "WR", "team": "NO", "age": 22, "adp_ppr": 190.0, "adp_half": 189.5, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 14, "efficiency": 23, "injury": 8, "bye": 11, "rookie": True},
     {"name": "Makai Lemon", "pos": "WR", "team": "PHI", "age": 21, "adp_ppr": 105.0, "adp_half": 104.5, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 20, "efficiency": 22, "injury": 19, "bye": 9, "rookie": True},
     {"name": "KC Concepcion", "pos": "WR", "team": "CLE", "age": 22, "adp_ppr": 100.0, "adp_half": 99.5, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 21, "efficiency": 21, "injury": 27, "bye": 9, "rookie": True},
     {"name": "Omar Cooper Jr.", "pos": "WR", "team": "NYJ", "age": 22, "adp_ppr": 118.0, "adp_half": 122.0, "fpts_ppr": 0.0, "fpts_half": 0.0, "opportunity": 18, "efficiency": 20, "injury": 28, "bye": 9, "rookie": True},
@@ -555,7 +555,7 @@ def build_players():
                 "playcaller": env["playcaller"],
                 # Real ADP (lower = drafted earlier)
                 "adp": adp,
-                # Flock Fantasy overall draft-sheet rank (1 = best); medium prior
+                # Expert-consensus overall draft rank (1 = best); medium prior
                 "flock": flock_rank,
                 # PLAYER prop primary line (yards/sacks/points) — NOT team wins
                 "vegas": props["primary"],
@@ -584,6 +584,8 @@ def build_players():
             "age": p["age"],
             "bye": p.get("bye", 0),
             "rookie": bool(p.get("rookie", False)),
+            "years_exp": p.get("years_exp"),
+            "rookie_year": p.get("rookie_year"),
             "flock_rank": flock_rank,
             "adp": {"ppr": p["adp_ppr"], "half": p["adp_half"]},
             "fpts_2025": {"ppr": p["fpts_ppr"], "half": p["fpts_half"]},
@@ -629,14 +631,14 @@ def main():
         "season": 2026,
         "updated": "2026-08-24",
         "scoring_modes": ["half", "ppr"],
-        "flock_source": "Flock Fantasy draft sheets · 2026-08-24",
+        "consensus_source": "Expert consensus draft ranks · 2026-08-24",
         "factors": [
             {
                 "key": "flock",
-                "label": "Flock Consensus",
+                "label": "Expert Consensus",
                 "unit": "rank",
                 "higherBetter": False,
-                "desc": "Flock Fantasy overall draft-sheet rank (1 = best). Medium prior (~25% in Balanced).",
+                "desc": "Expert-consensus overall draft rank (1 = best). Medium prior (~25% in Balanced).",
             },
             {
                 "key": "lastYear",
@@ -731,11 +733,11 @@ def main():
             "sos": 2,
         },
         "weight_presets": [
-            {"id": "balanced", "label": "Balanced", "desc": "Flock ~25% + even blend of production, role, situation, market."},
-            {"id": "situation", "label": "Overall Situation", "desc": "Env (QB/OL/playcaller/SOS) ~30%; surplus into Flock (~32%)."},
+            {"id": "balanced", "label": "Balanced", "desc": "Consensus ~25% + even blend of production, role, situation, market."},
+            {"id": "situation", "label": "Overall Situation", "desc": "Env (QB/OL/playcaller/SOS) ~30%; surplus into Consensus (~32%)."},
             {"id": "production", "label": "Prior Production", "desc": "Last-year points, efficiency, opportunity, Vegas."},
             {"id": "upside", "label": "Youth & Upside", "desc": "Age curve, opportunity, health — chase breakouts."},
-            {"id": "market", "label": "Beat the Market", "desc": "Flock + ADP + Vegas — lean into consensus boards."},
+            {"id": "market", "label": "Beat the Market", "desc": "Consensus + ADP + Vegas — lean into public boards."},
         ],
         "league_defaults": {
             "teams": 12,
