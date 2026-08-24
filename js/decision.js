@@ -14,7 +14,7 @@ export const STRATEGIES = {
     label: "BPA / Balanced",
     desc: "Best player available every pick; soft roster-need tilt. Default for most redraft.",
     needStrength: 0.12,
-    posBias: { QB: 1, RB: 1, WR: 1, TE: 0.94, K: 1, DST: 1 },
+    posBias: { QB: 1, RB: 1, WR: 1, TE: 0.97, K: 1, DST: 1 },
     suggestedPreset: "balanced",
     bestRounds: "All rounds (default)",
     roundGuide: "Use all draft. Best when the board is messy or you’re unsure — never force a build.",
@@ -347,7 +347,7 @@ export function recommendPicks(players, {
     hideDrafted: true,
     enableNeed: false,
     enableVorp: true,
-    vorpBlend: 0.5,
+    vorpBlend: 0.3,
     rosterCounts,
     targets,
   });

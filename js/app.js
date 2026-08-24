@@ -655,7 +655,7 @@ function getRankedList() {
     targets: rosterTargets(),
     enableNeed: !isFactor && state.enableNeed,
     enableVorp: state.enableVorp !== false,
-    vorpBlend: 0.45,
+    vorpBlend: 0.3,
   });
 }
 

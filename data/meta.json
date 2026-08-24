@@ -12,7 +12,7 @@
       "label": "Expert Consensus",
       "unit": "rank",
       "higherBetter": false,
-      "desc": "Expert-consensus overall draft rank (1 = best). Medium prior (~25% in Balanced)."
+      "desc": "Expert-consensus overall draft rank (1 = best). Primary anchor in Balanced (~40%)."
     },
     {
       "key": "lastYear",
@@ -93,44 +93,44 @@
     }
   ],
   "default_weights": {
-    "flock": 25,
-    "lastYear": 14,
-    "age": 5,
-    "qb": 6,
-    "oline": 6,
-    "playcaller": 6,
-    "adp": 9,
-    "vegas": 6,
-    "opportunity": 10,
-    "efficiency": 6,
-    "injury": 5,
-    "sos": 2
+    "flock": 40,
+    "lastYear": 11,
+    "age": 4,
+    "qb": 5,
+    "oline": 5,
+    "playcaller": 5,
+    "adp": 8,
+    "vegas": 5,
+    "opportunity": 8,
+    "efficiency": 5,
+    "injury": 3,
+    "sos": 1
   },
   "weight_presets": [
     {
       "id": "balanced",
       "label": "Balanced",
-      "desc": "Consensus ~25% + even blend of production, role, situation, market."
+      "desc": "Consensus ~40% anchor + light blend of production, role, situation, market."
     },
     {
       "id": "situation",
       "label": "Overall Situation",
-      "desc": "Env (QB/OL/playcaller/SOS) ~30%; surplus into Consensus (~32%)."
+      "desc": "Env (QB/OL/playcaller/SOS) ~28%; Consensus ~38%."
     },
     {
       "id": "production",
       "label": "Prior Production",
-      "desc": "Last-year points, efficiency, opportunity, Vegas."
+      "desc": "Last-year points, efficiency, opportunity, Vegas (Consensus ~28%)."
     },
     {
       "id": "upside",
       "label": "Youth & Upside",
-      "desc": "Age curve, opportunity, health \u2014 chase breakouts."
+      "desc": "Age curve, opportunity, health \u2014 Consensus ~28%."
     },
     {
       "id": "market",
       "label": "Beat the Market",
-      "desc": "Consensus + ADP + Vegas \u2014 lean into public boards."
+      "desc": "Consensus + ADP + Vegas \u2014 lean into public boards (~35%)."
     }
   ],
   "league_defaults": {

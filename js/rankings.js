@@ -34,99 +34,100 @@ export const FACTOR_KEYS = [
 /**
  * Five prevalent ranking styles — replaces fiddly per-factor sliders.
  * Each preset is a full weight map that sums to 100.
- * Balanced keeps ~25% expert-consensus draft-sheet rank.
+ * Balanced anchors ~40% expert-consensus so the top of the board stays close,
+ * with our model supplying small residual biases (TE / rookies / situation).
  */
 export const WEIGHT_PRESETS = [
   {
     id: "balanced",
     label: "Balanced",
-    desc: "Consensus ~25% + even blend of production, role, situation, and market.",
+    desc: "Consensus ~40% anchor + light blend of production, role, situation, and market.",
     weights: {
-      flock: 25,
-      lastYear: 14,
-      age: 5,
-      qb: 6,
-      oline: 6,
-      playcaller: 6,
-      adp: 9,
-      vegas: 6,
-      opportunity: 10,
-      efficiency: 6,
-      injury: 5,
-      sos: 2,
+      flock: 40,
+      lastYear: 11,
+      age: 4,
+      qb: 5,
+      oline: 5,
+      playcaller: 5,
+      adp: 8,
+      vegas: 5,
+      opportunity: 8,
+      efficiency: 5,
+      injury: 3,
+      sos: 1,
     },
   },
   {
     id: "situation",
     label: "Overall Situation",
-    desc: "Env (QB/OL/playcaller/SOS) capped at ~30%; surplus into Consensus (~32%). Role still matters.",
+    desc: "Env (QB/OL/playcaller/SOS) ~28%; Consensus ~38% so the board still tracks the sheet.",
     weights: {
-      flock: 32,
+      flock: 38,
       lastYear: 5,
       age: 3,
-      qb: 9,
-      oline: 9,
-      playcaller: 9,
+      qb: 8,
+      oline: 8,
+      playcaller: 8,
       adp: 5,
       vegas: 5,
-      opportunity: 12,
+      opportunity: 10,
       efficiency: 5,
       injury: 3,
-      sos: 3,
+      sos: 2,
     },
   },
   {
     id: "production",
     label: "Prior Production",
-    desc: "Last-year points, efficiency, opportunity, Vegas — Consensus ~20%.",
+    desc: "Last-year points, efficiency, opportunity, Vegas — Consensus ~28%.",
     weights: {
-      flock: 20,
-      lastYear: 22,
+      flock: 28,
+      lastYear: 20,
       age: 3,
       qb: 3,
       oline: 3,
       playcaller: 3,
       adp: 6,
-      vegas: 12,
-      opportunity: 14,
-      efficiency: 10,
-      injury: 3,
+      vegas: 11,
+      opportunity: 12,
+      efficiency: 8,
+      injury: 2,
       sos: 1,
     },
   },
   {
     id: "upside",
     label: "Youth & Upside",
-    desc: "Age curve + opportunity + health — Consensus ~18%.",
+    desc: "Age curve + opportunity + health — Consensus ~28%.",
     weights: {
-      flock: 18,
-      lastYear: 6,
-      age: 18,
-      qb: 5,
-      oline: 7,
-      playcaller: 7,
+      flock: 28,
+      lastYear: 5,
+      age: 16,
+      qb: 4,
+      oline: 6,
+      playcaller: 6,
       adp: 5,
-      vegas: 6,
-      opportunity: 15,
-      efficiency: 6,
+      vegas: 5,
+      opportunity: 14,
+      efficiency: 5,
       injury: 5,
-      sos: 2,
+      sos: 1,
     },
   },
   {
     id: "market",
     label: "Beat the Market",
-    desc: "Consensus + ADP + Vegas — lean into public boards (~28% Consensus).",
+    desc: "Consensus + ADP + Vegas — lean into public boards (~35% Consensus).",
     weights: {
-      flock: 28,
-      lastYear: 8,
-      age: 4,
-      qb: 4,
-      oline: 4,
-      playcaller: 4,
+      flock: 35,
+      lastYear: 6,
+      age: 3,
+      qb: 3,
+      oline: 3,
+      playcaller: 3,
       adp: 22,
       vegas: 12,
-      opportunity: 8,
+      opportunity: 7,
       efficiency: 4,
       injury: 2,
       sos: 0,
@@ -184,7 +185,7 @@ export const FACTOR_META = {
     unit: "rank",
     higherBetter: false,
     scaleNote: "expert-consensus overall rank",
-    desc: "Expert-consensus overall draft rank (1 = best). Medium prior in Balanced (~25%).",
+    desc: "Expert-consensus overall draft rank (1 = best). Primary anchor in Balanced (~40%).",
   },
   lastYear: {
     unit: "FPts",
@@ -446,10 +447,10 @@ export const POSITION_PRIORS = {
   DST: 0.97,
 };
 
-/** True first-year players (no NFL sample) get an upside prior. */
-export const ROOKIE_BOOST = 1.07;
-/** Year-2 players get a smaller youth prior (draft capital still baking in). */
-export const SOPHOMORE_BOOST = 1.03;
+/** True first-year players (no NFL sample) get a small upside prior. */
+export const ROOKIE_BOOST = 1.04;
+/** Year-2 players get a tiny youth prior. */
+export const SOPHOMORE_BOOST = 1.015;
 
 /**
  * Model total for one player. Rookies skip lastYear (and soft-pedal efficiency)
@@ -621,9 +622,9 @@ export function rankPlayers(players, {
   rosterCounts = {},
   targets = {},
   enableNeed = false,
-  /** Blend league-size VORP into ranking (0–1). Default 0.45 when enabled. */
+  /** Blend league-size VORP into ranking (0–1). Keep light so top stays near consensus. */
   enableVorp = true,
-  vorpBlend = 0.45,
+  vorpBlend = 0.3,
 } = {}) {
   const percentiles = buildPercentiles(players, scoring);
   const q = search.trim().toLowerCase();
@@ -655,16 +656,16 @@ export function rankPlayers(players, {
       // TE scarcity premium is too strong in 1-TE leagues — cut VORP influence
       // (elite TE1/TE2 still fine; mid TEs lose the fake scarcity bump)
       // Slight TE VORP dampen (1-TE scarcity is real for TE1, fake for TE8)
-      const vorpAdj = p.pos === "TE" ? v.vorp * 0.75 : v.vorp;
+      const vorpAdj = p.pos === "TE" ? v.vorp * 0.85 : v.vorp;
       const vorpScore = Math.max(0, Math.min(100, 50 + vorpAdj));
       let blended = base * (1 - blend) + vorpScore * blend;
       blended *= POSITION_PRIORS[p.pos] ?? 1;
-      // Mid/streaming TEs (TE6+) were ranking like WR2s — cut them, not Bowers/McBride
-      if (p.pos === "TE" && (v.posRank || 99) > 5) blended *= 0.88;
+      // Mid/streaming TEs (TE6+) — small haircut only (keep elite TEs near consensus)
+      if (p.pos === "TE" && (v.posRank || 99) > 5) blended *= 0.94;
       if (p.rookie) {
-        // Earlier ADP rookies get a bigger upside prior
+        // Small ADP-tiered upside prior — don't leapfrog the consensus sheet
         const adp = Number(p.adp?.[scoring] ?? p.adp?.ppr ?? 150);
-        const rookBoost = adp <= 40 ? 1.1 : adp <= 80 ? ROOKIE_BOOST : 1.04;
+        const rookBoost = adp <= 40 ? 1.05 : adp <= 80 ? ROOKIE_BOOST : 1.02;
         blended *= rookBoost;
       } else if (Number(p.years_exp) === 1) {
         blended *= SOPHOMORE_BOOST;
@@ -686,11 +687,11 @@ export function rankPlayers(players, {
       let d = p.displayTotal * (POSITION_PRIORS[p.pos] ?? 1);
       if (p.pos === "TE") {
         // Without VORP we lack posRank — mild TE haircut only
-        d *= 0.97;
+        d *= 0.98;
       }
       if (p.rookie) {
         const adp = Number(p.adp?.[scoring] ?? p.adp?.ppr ?? 150);
-        d *= adp <= 40 ? 1.1 : adp <= 80 ? ROOKIE_BOOST : 1.04;
+        d *= adp <= 40 ? 1.05 : adp <= 80 ? ROOKIE_BOOST : 1.02;
       } else if (Number(p.years_exp) === 1) {
         d *= SOPHOMORE_BOOST;
       }

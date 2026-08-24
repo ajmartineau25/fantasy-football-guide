@@ -8,20 +8,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ps = json.loads((ROOT / "data" / "players.json").read_text(encoding="utf-8"))
 
-# Balanced weights (js/rankings.js)
+# Balanced weights (js/rankings.js) — consensus-anchored
 WEIGHTS = {
-    "flock": 25,
-    "lastYear": 14,
-    "age": 5,
-    "qb": 6,
-    "oline": 6,
-    "playcaller": 6,
-    "adp": 9,
-    "vegas": 6,
-    "opportunity": 10,
-    "efficiency": 6,
-    "injury": 5,
-    "sos": 2,
+    "flock": 40,
+    "lastYear": 11,
+    "age": 4,
+    "qb": 5,
+    "oline": 5,
+    "playcaller": 5,
+    "adp": 8,
+    "vegas": 5,
+    "opportunity": 8,
+    "efficiency": 5,
+    "injury": 3,
+    "sos": 1,
 }
 HIGHER_BETTER = {
     "flock": False,
@@ -134,11 +134,11 @@ def starter_demand():
 
 
 POS_PRIORS = {"QB": 1.0, "RB": 1.0, "WR": 1.0, "TE": 1.0, "K": 0.97, "DST": 0.97}
-ROOKIE_BOOST = 1.07
-SOPHOMORE_BOOST = 1.03
+ROOKIE_BOOST = 1.04
+SOPHOMORE_BOOST = 1.015
 
 
-def apply_vorp(rows, teams=12, blend=0.45):
+def apply_vorp(rows, teams=12, blend=0.3):
     demand = starter_demand()
     by_pos = {}
     for r in rows:
@@ -157,15 +157,15 @@ def apply_vorp(rows, teams=12, blend=0.45):
             99,
         )
         vorp = round(r["total"] - replacement.get(r["pos"], 0), 1)
-        vorp_adj = vorp * 0.75 if r["pos"] == "TE" else vorp
+        vorp_adj = vorp * 0.85 if r["pos"] == "TE" else vorp
         vorp_score = max(0, min(100, 50 + vorp_adj))
         display = r["total"] * (1 - blend) + vorp_score * blend
         display *= POS_PRIORS.get(r["pos"], 1.0)
         if r["pos"] == "TE" and pos_rank > 5:
-            display *= 0.88
+            display *= 0.94
         if r.get("rookie"):
             adp = float(r.get("adp") or 150)
-            rook_boost = 1.1 if adp <= 40 else (ROOKIE_BOOST if adp <= 80 else 1.04)
+            rook_boost = 1.05 if adp <= 40 else (ROOKIE_BOOST if adp <= 80 else 1.02)
             display *= rook_boost
         elif r.get("years_exp") == 1:
             display *= SOPHOMORE_BOOST
