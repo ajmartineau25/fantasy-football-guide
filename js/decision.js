@@ -14,7 +14,7 @@ export const STRATEGIES = {
     label: "BPA / Balanced",
     desc: "Best player available every pick; soft roster-need tilt. Default for most redraft.",
     needStrength: 0.12,
-    posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DST: 1 },
+    posBias: { QB: 1, RB: 1, WR: 1, TE: 0.94, K: 1, DST: 1 },
     suggestedPreset: "balanced",
     bestRounds: "All rounds (default)",
     roundGuide: "Use all draft. Best when the board is messy or you’re unsure — never force a build.",
@@ -170,9 +170,9 @@ function needScore(pos, rosterCounts, targets) {
   if (pos === "DST" && dstSlots <= 0) return 0;
   const depth = {
     QB: (targets.QB || 1) + 1,
-    RB: (targets.RB || 2) + 2 + Math.ceil((targets.FLEX || 1) * 0.4),
-    WR: (targets.WR || 2) + 2 + Math.ceil((targets.FLEX || 1) * 0.5),
-    TE: (targets.TE || 1) + 1,
+    RB: (targets.RB || 2) + 2 + Math.ceil((targets.FLEX || 1) * 0.45),
+    WR: (targets.WR || 2) + 2 + Math.ceil((targets.FLEX || 1) * 0.55),
+    TE: Math.max(1, targets.TE || 1),
     K: Math.max(0, kSlots),
     DST: Math.max(0, dstSlots),
   };
@@ -301,7 +301,7 @@ export function buildRisks(p, ctx = {}) {
     risks.push("Injury / games-played profile is shaky");
   }
   if ((m.ageFitness ?? 80) < 45) risks.push("Age curve: decline risk elevated");
-  if (p.rookie) risks.push("Rookie variance — role may lag Week 1–4");
+  if (p.rookie) risks.push("Rookie — no NFL sample yet, but draft capital / role baked into upside");
   if ((m.opportunity ?? 20) >= 18) risks.push("Role not locked — committee / unproven path");
   if (p.valueTag === "reach") risks.push("Market disagrees (ADP much later) — be sure you want him");
   const exp = ctx.teammateExp || teammateExposure(p, ctx.myRoster || []);

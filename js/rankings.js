@@ -433,6 +433,39 @@ export function computeWeightedTotal(percentiles, weights) {
 }
 
 /**
+ * Soft priors after model + VORP.
+ * TE is dampened: 1-TE leagues create fake scarcity that vaults mid TEs too high.
+ */
+export const POSITION_PRIORS = {
+  QB: 1.0,
+  RB: 1.0,
+  WR: 1.0,
+  // Elite TEs stay neutral; mid-TE cut is applied separately below
+  TE: 1.0,
+  K: 0.97,
+  DST: 0.97,
+};
+
+/** True first-year players (no NFL sample) get an upside prior. */
+export const ROOKIE_BOOST = 1.07;
+/** Year-2 players get a smaller youth prior (draft capital still baking in). */
+export const SOPHOMORE_BOOST = 1.03;
+
+/**
+ * Model total for one player. Rookies skip lastYear (and soft-pedal efficiency)
+ * so a 0.0 fantasy-point season doesn't crush draft capital.
+ */
+export function computePlayerModelTotal(player, percentiles, weights) {
+  let w = weights;
+  if (player?.rookie) {
+    w = { ...weights, lastYear: 0 };
+    // Placeholder efficiency with no NFL tape — don't let it dominate
+    if (Number(w.efficiency) > 0) w = { ...w, efficiency: Math.min(Number(w.efficiency), 3) };
+  }
+  return computeWeightedTotal(percentiles, w);
+}
+
+/**
  * Whether a position is drafted in this league.
  * K / DST are omitted when roster slots are 0 (common in best ball / SF leagues).
  */
@@ -442,15 +475,17 @@ export function isPositionInLeague(pos, targets = {}) {
   return true;
 }
 
-/** Starters demanded per team (FLEX split across RB/WR/TE). 0 slots stay 0. */
+/** Starters demanded per team (FLEX mostly to RB/WR — not TE). 0 slots stay 0. */
 export function starterDemand(targets = {}) {
   const k = Number(targets.K ?? 1);
   const dst = Number(targets.DST ?? 1);
+  const flex = Number(targets.FLEX ?? 1) || 0;
   return {
     QB: Number(targets.QB ?? 1) || 1,
-    RB: (Number(targets.RB ?? 2) || 2) + Math.ceil((Number(targets.FLEX ?? 1) || 0) * 0.4),
-    WR: (Number(targets.WR ?? 2) || 2) + Math.ceil((Number(targets.FLEX ?? 1) || 0) * 0.5),
-    TE: (Number(targets.TE ?? 1) || 1) + Math.ceil((Number(targets.FLEX ?? 1) || 0) * 0.1),
+    RB: (Number(targets.RB ?? 2) || 2) + Math.ceil(flex * 0.45),
+    WR: (Number(targets.WR ?? 2) || 2) + Math.ceil(flex * 0.55),
+    // Do not gift TE extra VORP scarcity from FLEX — that overrates the position
+    TE: Number(targets.TE ?? 1) || 1,
     K: Math.max(0, k),
     DST: Math.max(0, dst),
   };
@@ -505,7 +540,8 @@ export function needMultiplier(pos, rosterCounts, targets) {
     QB: starters.QB + 1,
     RB: starters.RB + 2,
     WR: starters.WR + 2,
-    TE: starters.TE + 1,
+    // One starter TE is enough — don't invent bench-TE need that pushes TE2s up
+    TE: Math.max(1, starters.TE),
     K: Math.max(0, starters.K),
     DST: Math.max(0, starters.DST),
   };
@@ -594,7 +630,7 @@ export function rankPlayers(players, {
 
   let list = players.map((p, i) => {
     const metrics = p.metrics?.[scoring] || p.scores?.[scoring] || {};
-    const total = computeWeightedTotal(percentiles[i], weights);
+    const total = computePlayerModelTotal(p, percentiles[i], weights);
     const needTotal = computeNeedScore(total, p.pos, rosterCounts, targets, enableNeed);
     return {
       ...p,
@@ -616,8 +652,24 @@ export function rankPlayers(players, {
       // Scale: display = (1-blend)*base + blend*(50 + vorp)
       // vorp is typically about -30..+40 on 0–100 totals
       const base = p.displayTotal;
-      const vorpScore = Math.max(0, Math.min(100, 50 + v.vorp));
-      const blended = Math.round((base * (1 - blend) + vorpScore * blend) * 10) / 10;
+      // TE scarcity premium is too strong in 1-TE leagues — cut VORP influence
+      // (elite TE1/TE2 still fine; mid TEs lose the fake scarcity bump)
+      // Slight TE VORP dampen (1-TE scarcity is real for TE1, fake for TE8)
+      const vorpAdj = p.pos === "TE" ? v.vorp * 0.75 : v.vorp;
+      const vorpScore = Math.max(0, Math.min(100, 50 + vorpAdj));
+      let blended = base * (1 - blend) + vorpScore * blend;
+      blended *= POSITION_PRIORS[p.pos] ?? 1;
+      // Mid/streaming TEs (TE6+) were ranking like WR2s — cut them, not Bowers/McBride
+      if (p.pos === "TE" && (v.posRank || 99) > 5) blended *= 0.88;
+      if (p.rookie) {
+        // Earlier ADP rookies get a bigger upside prior
+        const adp = Number(p.adp?.[scoring] ?? p.adp?.ppr ?? 150);
+        const rookBoost = adp <= 40 ? 1.1 : adp <= 80 ? ROOKIE_BOOST : 1.04;
+        blended *= rookBoost;
+      } else if (Number(p.years_exp) === 1) {
+        blended *= SOPHOMORE_BOOST;
+      }
+      blended = Math.round(blended * 10) / 10;
       return {
         ...p,
         vorp: v.vorp,
@@ -627,6 +679,22 @@ export function rankPlayers(players, {
         displayTotal: blended,
         modelOnly: base,
       };
+    });
+  } else {
+    // Still apply position / youth priors when VORP is off
+    list = list.map((p) => {
+      let d = p.displayTotal * (POSITION_PRIORS[p.pos] ?? 1);
+      if (p.pos === "TE") {
+        // Without VORP we lack posRank — mild TE haircut only
+        d *= 0.97;
+      }
+      if (p.rookie) {
+        const adp = Number(p.adp?.[scoring] ?? p.adp?.ppr ?? 150);
+        d *= adp <= 40 ? 1.1 : adp <= 80 ? ROOKIE_BOOST : 1.04;
+      } else if (Number(p.years_exp) === 1) {
+        d *= SOPHOMORE_BOOST;
+      }
+      return { ...p, displayTotal: Math.round(d * 10) / 10, modelOnly: p.displayTotal };
     });
   }
 
