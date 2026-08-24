@@ -248,89 +248,9 @@ function valueTagHtml(tag) {
   return `<span class="tag ${tag}">${tag.replace("-", " ")}</span>`;
 }
 
+/** On-the-clock UI lives on on-clock.html — rankings page only greys the board. */
 function renderOnClock() {
-  const pickNo = estimatePickNumber(
-    state.draftSlot,
-    state.leagueTeams,
-    state.myRoster.length,
-    state.leagueTeams * 15
-  );
-  const { picks, scarcity, strategy, mode } = recommendPicks(state.players, {
-    scoring: state.scoring,
-    weights: state.weights,
-    targets: rosterTargets(),
-    myRoster: state.myRoster,
-    strategy: state.strategy,
-    pickNumber: pickNo,
-    limit: 5,
-  });
-  state.lastRecs = picks;
-
-  $("#statStrategy").textContent = strategy.label || state.strategy;
-  const modeLabel = mode === "bpa" ? "Best player available (empty roster)" : "BPA among remaining + soft roster fit";
-  $("#onClockMeta").textContent = `${modeLabel} · ${strategy.label} · ~pick ${pickNo}`;
-
-  $("#scarcityBar").innerHTML = ["RB", "WR", "TE", "QB"]
-    .map((pos) => {
-      const s = scarcity[pos];
-      if (!s) return "";
-      const cls = s.scarcity >= 55 ? "hot" : s.scarcity <= 30 ? "ok" : "";
-      return `<span class="scarcity-chip ${cls}">${pos}: ${s.left} left${s.need ? ` · need ${s.need}` : ""}</span>`;
-    })
-    .join("");
-
-  $("#onClockList").innerHTML = picks
-    .map((p, i) => {
-      const fc = floorCeiling(p);
-      const score = (p.bpaScore ?? p.displayTotal ?? p.total ?? 0).toFixed(1);
-      return `<div class="on-clock-card ${i === 0 ? "pick-1" : ""}" data-id="${p.id}">
-        <div class="oc-top">
-          <span class="oc-rank">${i + 1}</span>
-          <span class="pos-badge ${p.pos}">${p.pos}</span>
-          <div>
-            <div class="oc-name">${p.name} <span class="tag tier">BPA #${p.modelRank}</span>${p.tier ? `<span class="tag tier">T${p.tier}</span>` : ""}${valueTagHtml(p.valueTag)}</div>
-            <div class="oc-meta">${p.team} · model <strong>${score}</strong> · ADP ${p.adpRaw} · F/C ${fc.floor}–${fc.ceiling}${p.needFit >= 70 ? ` · fills need` : ""}</div>
-          </div>
-        </div>
-        <ul>${(p.reasons || []).map((r) => `<li>${r}</li>`).join("")}</ul>
-        <div class="btn-row" style="margin-top:8px">
-          <button type="button" class="btn btn-primary oc-draft" data-id="${p.id}" style="font-size:0.75rem;padding:6px">Draft him</button>
-        </div>
-      </div>`;
-    })
-    .join("") || `<div class="help-text">No players left on the board.</div>`;
-
-  $$("#onClockList .on-clock-card").forEach((card) => {
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".oc-draft")) return;
-      openPlayer(card.dataset.id);
-    });
-  });
-  $$("#onClockList .oc-draft").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      manualDraft(btn.dataset.id, true);
-    });
-  });
-
-  // Right rail = same BPA list
-  $("#recList").innerHTML = picks
-    .slice(0, 6)
-    .map(
-      (p) => `
-    <div class="rec-item" data-id="${p.id}">
-      <span class="pos-badge ${p.pos}">${p.pos}</span>
-      <div>
-        <div><strong>${p.name}</strong></div>
-        <div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team} · BPA #${p.modelRank} · model ${(p.bpaScore ?? p.total).toFixed(1)}</div>
-      </div>
-      <span class="score">${(p.bpaScore ?? p.displayTotal ?? p.total).toFixed(1)}</span>
-    </div>`
-    )
-    .join("");
-  $$("#recList .rec-item").forEach((el) => {
-    el.addEventListener("click", () => openPlayer(el.dataset.id));
-  });
+  /* no-op on rankings */
 }
 
 function applyWeightPreset(id, { silent = false } = {}) {
@@ -427,24 +347,8 @@ function topRecommendations(ranked, n = 5) {
   return available.slice(0, n);
 }
 
-function renderRecommendations(ranked) {
-  const recs = topRecommendations(ranked, 6);
-  $("#recList").innerHTML = recs
-    .map(
-      (p) => `
-    <div class="rec-item" data-id="${p.id}">
-      <span class="pos-badge ${p.pos}">${p.pos}</span>
-      <div>
-        <div><strong>${p.name}</strong></div>
-        <div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team} · ADP ${p.adp[state.scoring]}</div>
-      </div>
-      <span class="score">${p.displayTotal.toFixed(1)}</span>
-    </div>`
-    )
-    .join("");
-  $$("#recList .rec-item").forEach((el) => {
-    el.addEventListener("click", () => openPlayer(el.dataset.id));
-  });
+function renderRecommendations(_ranked) {
+  /* moved to On the Clock tab */
 }
 
 function renderDraftLog() {
@@ -921,6 +825,7 @@ function resetDraft() {
 function setLiveStatus(mode, text) {
   const dot = $("#liveDot");
   const label = $("#liveLabel");
+  if (!dot || !label) return;
   dot.className = "status-dot";
   if (mode === "live") {
     dot.classList.add("live");
@@ -1175,16 +1080,11 @@ function bindUI() {
     resetBtn.addEventListener("click", () => applyWeightPreset("balanced"));
   }
 
-  $("#btnSleeper").addEventListener("click", connectSleeper);
-  $("#btnEspn").addEventListener("click", connectEspn);
-  $("#btnResetDraft").addEventListener("click", resetDraft);
-  $("#btnStopPoll").addEventListener("click", () => {
-    if (state.poller) state.poller.stop();
-    setLiveStatus("idle", "Polling stopped");
-    toast("Stopped live polling");
-  });
+  const resetDraftBtn = $("#btnResetDraft");
+  if (resetDraftBtn) resetDraftBtn.addEventListener("click", resetDraft);
 
-  $("#manualName").addEventListener("keydown", (e) => {
+  const manualName = $("#manualName");
+  if (manualName) manualName.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       const name = e.target.value.trim();
       if (!name) return;
@@ -1235,7 +1135,7 @@ async function init() {
     renderWeights();
     bindUI();
     renderBoard();
-    toast(`Loaded ${state.players.length} players · On-clock AI ready`);
+    toast(`Loaded ${state.players.length} players · open On the Clock to draft`);
   } catch (e) {
     console.error(e);
     toast("Failed to load data. Serve folder over HTTP (see README).", "err");

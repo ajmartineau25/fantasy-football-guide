@@ -11,12 +11,13 @@
     <header class="header">
       <div class="brand">
         <h1>Fantasy Football <span>Guide</span> 2026</h1>
-        <p>Creator-style board · situation presets · live draft · on-clock AI</p>
+        <p>Simple rankings sheet · Flock blend · presets by situation</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
         <nav class="site-nav">
-          <a href="./index.html" class="active">Draft Board</a>
-          <a href="./season.html">Season Mode</a>
+          <a href="./index.html" class="active">Rankings</a>
+          <a href="./on-clock.html">On the Clock</a>
+          <a href="./season.html">Season</a>
           <a href="./how-it-works.html">How It Works</a>
         </nav>
         <div class="scoring-toggle" role="group" aria-label="Scoring format">
@@ -133,26 +134,12 @@
 
         <div class="view-banner" id="viewBanner"></div>
 
-        <section class="panel on-clock-panel" id="onClockPanel">
-          <div class="on-clock-head">
-            <h2>On the clock · Best available</h2>
-            <span class="help-text" id="onClockMeta">Highest model scores still on the board (not ADP “sleepers”)</span>
-          </div>
-          <div id="scarcityBar" class="scarcity-bar"></div>
-          <div id="onClockList" class="on-clock-list"></div>
-        </section>
-
         <div class="stats-bar">
           <div class="stat-pill">Showing <strong id="statPlayers">0</strong></div>
           <div class="stat-pill">Available <strong id="statAvailable">0</strong></div>
           <div class="stat-pill">Drafted <strong id="statDrafted">0</strong></div>
           <div class="stat-pill">Scoring <strong id="statScoring">1 PPR</strong></div>
           <div class="stat-pill">View <strong id="statView">Summary</strong></div>
-          <div class="stat-pill">Strategy <strong id="statStrategy">Balanced</strong></div>
-          <div class="stat-pill">
-            <span id="liveDot" class="status-dot"></span>
-            <span id="liveLabel">Not connected</span>
-          </div>
         </div>
 
         <div id="teamRankPanel" class="team-rank-panel hidden"></div>
@@ -162,7 +149,7 @@
         </div>
       </main>
 
-      <!-- Right: draft -->
+      <!-- Right: tips + jump to draft room -->
       <aside class="draft-panel">
         <section class="panel">
           <h2>Your roster need</h2>
@@ -170,61 +157,24 @@
         </section>
 
         <section class="panel">
-          <h2>Top picks for you</h2>
-          <div class="rec-list" id="recList"></div>
+          <h2>Live draft room</h2>
+          <p class="help-text">
+            Pick recommendations live on <strong>On the Clock</strong> — connect Sleeper, ESPN, or Manual first, then get one clear pick + 3 backups.
+          </p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="./on-clock.html" style="text-align:center;text-decoration:none;display:block">Open On the Clock →</a>
+          </div>
         </section>
 
         <section class="panel">
-          <div class="tabs">
-            <button type="button" class="tab active" data-tab="sleeper">Sleeper</button>
-            <button type="button" class="tab" data-tab="espn">ESPN</button>
-            <button type="button" class="tab" data-tab="manual">Manual</button>
-          </div>
-
-          <div id="tab-sleeper">
-            <label class="field" for="sleeperUser">Sleeper username</label>
-            <input id="sleeperUser" type="text" placeholder="your_username" />
-            <label class="field" for="sleeperLeague">League ID (optional)</label>
-            <input id="sleeperLeague" type="text" placeholder="from sleeper URL" />
-            <label class="field" for="sleeperDraft">Draft ID (optional)</label>
-            <input id="sleeperDraft" type="text" placeholder="auto from league" />
-            <p class="help-text" id="sleeperUserInfo">Public API · no key required. League/draft IDs are in the Sleeper URL.</p>
-            <div class="btn-row">
-              <button type="button" class="btn btn-primary" id="btnSleeper">Connect Sleeper</button>
-            </div>
-          </div>
-
-          <div id="tab-espn" class="hidden">
-            <label class="field" for="espnLeague">ESPN league ID</label>
-            <input id="espnLeague" type="text" placeholder="from fantasy.espn.com URL" />
-            <label class="field" for="espnTeam">Your team ID (optional)</label>
-            <input id="espnTeam" type="number" placeholder="1–12" />
-            <label class="field" for="espnSeason">Season</label>
-            <input id="espnSeason" type="number" value="2026" />
-            <label class="checkbox-row">
-              <input type="checkbox" id="espnProxy" checked />
-              Use CORS proxy (needed in browser)
-            </label>
-            <p class="help-text">
-              Works best for <strong>public</strong> leagues. Private leagues need espn_s2 + SWID cookies via a local proxy (see README).
-            </p>
-            <div class="btn-row">
-              <button type="button" class="btn btn-secondary" id="btnEspn">Connect ESPN</button>
-            </div>
-          </div>
-
-          <div id="tab-manual" class="hidden">
-            <label class="field" for="manualName">Mark pick (type name, Enter)</label>
-            <input id="manualName" type="text" placeholder="e.g. Jahmyr Gibbs" />
-            <label class="checkbox-row">
-              <input type="checkbox" id="manualMine" checked />
-              This is my pick
-            </label>
-            <p class="help-text">Use during a party draft or when live APIs aren’t available.</p>
-          </div>
-
+          <h2>Quick mark (optional)</h2>
+          <label class="field" for="manualName">Grey a name on this board</label>
+          <input id="manualName" type="text" placeholder="e.g. Jahmyr Gibbs" />
+          <label class="checkbox-row">
+            <input type="checkbox" id="manualMine" checked />
+            Count as my pick (need meter)
+          </label>
           <div class="btn-row" style="margin-top:10px">
-            <button type="button" class="btn" id="btnStopPoll">Stop poll</button>
             <button type="button" class="btn btn-danger" id="btnResetDraft">Reset board</button>
           </div>
         </section>

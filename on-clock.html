@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>On the Clock · Live Draft Assistant · 2026</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <h1>On the <span>Clock</span></h1>
+        <p>Connect your draft · one clear pick · live remaining board</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <nav class="site-nav">
+          <a href="./index.html">Rankings</a>
+          <a href="./on-clock.html" class="active">On the Clock</a>
+          <a href="./season.html">Season</a>
+          <a href="./how-it-works.html">How It Works</a>
+        </nav>
+        <div class="scoring-toggle" role="group" aria-label="Scoring format">
+          <button type="button" data-scoring="half">0.5 PPR</button>
+          <button type="button" data-scoring="ppr" class="active">1 PPR</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout oc-layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>1 · Connect draft</h2>
+          <div class="tabs">
+            <button type="button" class="tab active" data-tab="sleeper">Sleeper</button>
+            <button type="button" class="tab" data-tab="espn">ESPN</button>
+            <button type="button" class="tab" data-tab="manual">Manual</button>
+          </div>
+
+          <div id="tab-sleeper">
+            <label class="field" for="sleeperUser">Sleeper username</label>
+            <input id="sleeperUser" type="text" placeholder="your_username" />
+            <label class="field" for="sleeperLeague">League ID (optional)</label>
+            <input id="sleeperLeague" type="text" placeholder="from sleeper URL" />
+            <label class="field" for="sleeperDraft">Draft ID (optional)</label>
+            <input id="sleeperDraft" type="text" placeholder="auto from league" />
+            <p class="help-text">Public API · no key required.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="btnSleeper">Connect Sleeper</button>
+            </div>
+          </div>
+
+          <div id="tab-espn" class="hidden">
+            <label class="field" for="espnLeague">ESPN league ID</label>
+            <input id="espnLeague" type="text" placeholder="from fantasy.espn.com URL" />
+            <label class="field" for="espnTeam">Your team ID (optional)</label>
+            <input id="espnTeam" type="number" placeholder="1–12" />
+            <label class="field" for="espnSeason">Season</label>
+            <input id="espnSeason" type="number" value="2026" />
+            <label class="checkbox-row">
+              <input type="checkbox" id="espnProxy" checked />
+              Use CORS proxy
+            </label>
+            <div class="btn-row">
+              <button type="button" class="btn btn-secondary" id="btnEspn">Connect ESPN</button>
+            </div>
+          </div>
+
+          <div id="tab-manual" class="hidden">
+            <p class="help-text">Party draft? Connect Manual, then type picks as they happen.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="btnManualConnect">Start Manual draft</button>
+            </div>
+            <label class="field" for="manualName" style="margin-top:10px">Mark pick (Enter)</label>
+            <input id="manualName" type="text" placeholder="e.g. Jahmyr Gibbs" disabled />
+            <label class="checkbox-row">
+              <input type="checkbox" id="manualMine" checked />
+              This is my pick
+            </label>
+          </div>
+
+          <div class="btn-row" style="margin-top:10px">
+            <button type="button" class="btn" id="btnStopPoll">Stop poll</button>
+            <button type="button" class="btn btn-danger" id="btnResetDraft">Reset</button>
+          </div>
+          <p class="help-text" style="margin-top:8px">
+            <span id="liveDot" class="status-dot"></span>
+            <span id="liveLabel">Not connected — connect to unlock picks</span>
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>League</h2>
+          <label class="field" for="leagueTeams">Teams</label>
+          <select id="leagueTeams">
+            <option value="10">10</option>
+            <option value="12" selected>12</option>
+            <option value="14">14</option>
+          </select>
+          <label class="field" for="draftSlot">Your draft slot</label>
+          <input id="draftSlot" type="number" min="1" max="14" value="1" />
+          <label class="field" for="strategySelect">Strategy</label>
+          <select id="strategySelect">
+            <option value="balanced">Balanced</option>
+            <option value="zero_rb">Zero RB</option>
+            <option value="hero_rb">Hero RB</option>
+            <option value="robust_rb">Robust RB</option>
+            <option value="best_ball">Best Ball</option>
+          </select>
+          <p class="help-text" id="strategyDesc">Best player available; soft roster fit</p>
+        </section>
+
+        <section class="panel">
+          <h2>Your roster</h2>
+          <div class="need-grid" id="needMeter"></div>
+          <div class="rec-list" id="myRosterList" style="margin-top:10px"></div>
+        </section>
+      </aside>
+
+      <main class="main-panel">
+        <!-- Gate until connected -->
+        <section class="panel oc-gate" id="ocGate">
+          <h2>Connect a draft to get your pick</h2>
+          <p class="oc-gate-copy">
+            Recommendations stay locked until you link <strong>Sleeper</strong>, <strong>ESPN</strong>, or start a
+            <strong>Manual</strong> party draft. That way every suggestion uses the live remaining board — not a static list.
+          </p>
+          <div class="oc-gate-steps">
+            <div><span class="oc-step-num">1</span> Connect in the left panel</div>
+            <div><span class="oc-step-num">2</span> We sync picks live</div>
+            <div><span class="oc-step-num">3</span> One clear pick + 3 backups</div>
+          </div>
+        </section>
+
+        <!-- Active draft room -->
+        <div id="ocRoom" class="hidden">
+          <div class="oc-turn-bar" id="ocTurnBar">
+            <div>
+              <div class="oc-turn-label" id="ocTurnLabel">Waiting for picks…</div>
+              <div class="help-text" id="ocTurnMeta"></div>
+            </div>
+            <div class="oc-need-chips" id="ocNeedChips"></div>
+          </div>
+
+          <section class="panel oc-hero" id="ocHero">
+            <!-- filled by JS -->
+          </section>
+
+          <section class="panel">
+            <h2>Also consider</h2>
+            <div class="oc-alts" id="ocAlts"></div>
+          </section>
+
+          <section class="panel">
+            <h2>Likely gone before you’re up</h2>
+            <p class="help-text" id="ocGoneMeta">Players with ADP at or before your next pick</p>
+            <div class="oc-gone" id="ocGone"></div>
+          </section>
+
+          <section class="panel">
+            <div class="oc-board-head">
+              <h2>Remaining board</h2>
+              <span class="help-text" id="ocBoardMeta">Live · undrafted only</span>
+            </div>
+            <div class="table-wrap oc-board-wrap">
+              <table class="board" id="ocBoardTable"></table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>Draft log</h2>
+            <div class="draft-log" id="draftLog"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Player</h3>
+        <button type="button" class="modal-close" id="modalClose" aria-label="Close">×</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/onclock.js"></script>
+</body>
+</html>
