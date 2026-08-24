@@ -1,0 +1,623 @@
+{
+  "team_changes": [
+    {
+      "name": "David Montgomery",
+      "from": "DET",
+      "to": "HOU"
+    },
+    {
+      "name": "Rachaad White",
+      "from": "TB",
+      "to": "WAS"
+    },
+    {
+      "name": "Brian Robinson Jr.",
+      "from": "WAS",
+      "to": "ATL"
+    },
+    {
+      "name": "Najee Harris",
+      "from": "LAC",
+      "to": "NYG"
+    },
+    {
+      "name": "Rico Dowdle",
+      "from": "CAR",
+      "to": "PIT"
+    },
+    {
+      "name": "Tank Bigsby",
+      "from": "JAX",
+      "to": "PHI"
+    },
+    {
+      "name": "Mike Evans",
+      "from": "TB",
+      "to": "SF"
+    },
+    {
+      "name": "Jauan Jennings",
+      "from": "SF",
+      "to": "MIN"
+    },
+    {
+      "name": "Stefon Diggs",
+      "from": "NE",
+      "to": "WAS"
+    },
+    {
+      "name": "Rashid Shaheed",
+      "from": "NO",
+      "to": "SEA"
+    },
+    {
+      "name": "Deebo Samuel",
+      "from": "WAS",
+      "to": "SF"
+    },
+    {
+      "name": "Michael Pittman Jr.",
+      "from": "IND",
+      "to": "PIT"
+    },
+    {
+      "name": "Keenan Allen",
+      "from": "LAC",
+      "to": "IND"
+    },
+    {
+      "name": "Wan'Dale Robinson",
+      "from": "NYG",
+      "to": "TEN"
+    },
+    {
+      "name": "David Njoku",
+      "from": "CLE",
+      "to": "LAC"
+    },
+    {
+      "name": "Evan Engram",
+      "from": "JAX",
+      "to": "DEN"
+    },
+    {
+      "name": "Isaiah Likely",
+      "from": "BAL",
+      "to": "NYG"
+    },
+    {
+      "name": "Chig Okonkwo",
+      "from": "TEN",
+      "to": "WAS"
+    },
+    {
+      "name": "Matt Gay",
+      "from": "WAS",
+      "to": "LV"
+    },
+    {
+      "name": "Daniel Carlson",
+      "from": "LV",
+      "to": "NO"
+    }
+  ],
+  "injury_updates": [
+    {
+      "name": "Christian McCaffrey",
+      "injury": 19,
+      "note": "Tightness / workload watch",
+      "adp_bump": 1
+    },
+    {
+      "name": "Saquon Barkley",
+      "injury": 20,
+      "note": "Foot/ankle checked \u2014 monitor",
+      "adp_bump": 2
+    },
+    {
+      "name": "Ashton Jeanty",
+      "injury": 17,
+      "note": "Ankle sprain (Schefter) \u2014 timeline TBD",
+      "adp_bump": 12
+    },
+    {
+      "name": "Alvin Kamara",
+      "injury": 10,
+      "note": "MCL sprain 4\u20136 weeks",
+      "adp_bump": 25
+    },
+    {
+      "name": "Breece Hall",
+      "injury": 20,
+      "note": "Groin",
+      "adp_bump": 3
+    },
+    {
+      "name": "James Conner",
+      "injury": 14,
+      "note": "Foot/ankle 2\u20133 weeks",
+      "adp_bump": 15
+    },
+    {
+      "name": "Isiah Pacheco",
+      "injury": 12,
+      "note": "MCL 3+ weeks",
+      "adp_bump": 20
+    },
+    {
+      "name": "Chuba Hubbard",
+      "injury": 20,
+      "note": "Hamstring",
+      "adp_bump": 4
+    },
+    {
+      "name": "Jeremiyah Love",
+      "injury": 16,
+      "note": "High ankle sprain \u2014 Week 1 uncertain",
+      "adp_bump": 8
+    },
+    {
+      "name": "Zach Charbonnet",
+      "injury": 5,
+      "note": "ACL \u2014 TBD",
+      "adp_bump": 40
+    },
+    {
+      "name": "Puka Nacua",
+      "injury": 20,
+      "note": "Groin \u2014 limited",
+      "adp_bump": 2
+    },
+    {
+      "name": "Malik Nabers",
+      "injury": 18,
+      "note": "ACL recovery \u2014 possibly Week 1",
+      "adp_bump": 5
+    },
+    {
+      "name": "Mike Evans",
+      "injury": 21,
+      "note": "Quad",
+      "adp_bump": 2
+    },
+    {
+      "name": "Khalil Shakir",
+      "injury": 20,
+      "note": "Undisclosed",
+      "adp_bump": 3
+    },
+    {
+      "name": "Xavier Worthy",
+      "injury": 21,
+      "note": "Shoulder",
+      "adp_bump": 2
+    },
+    {
+      "name": "Jordyn Tyson",
+      "injury": 8,
+      "note": "Hamstring ~2 months / possible IR",
+      "adp_bump": 60
+    },
+    {
+      "name": "Makai Lemon",
+      "injury": 19,
+      "note": "Hamstring",
+      "adp_bump": 10
+    },
+    {
+      "name": "Michael Pittman Jr.",
+      "injury": 18,
+      "note": "Hamstring 1\u20132 weeks",
+      "adp_bump": 8
+    },
+    {
+      "name": "Emeka Egbuka",
+      "injury": 21,
+      "note": "Toe",
+      "adp_bump": 2
+    },
+    {
+      "name": "Patrick Mahomes",
+      "injury": 18,
+      "note": "ACL/LCL recovery \u2014 Week 1 watch",
+      "adp_bump": 8
+    },
+    {
+      "name": "George Kittle",
+      "injury": 19,
+      "note": "Achilles recovery watch",
+      "adp_bump": 4
+    },
+    {
+      "name": "Sam LaPorta",
+      "injury": 20,
+      "note": "Hip \u2014 limited",
+      "adp_bump": 3
+    },
+    {
+      "name": "Tucker Kraft",
+      "injury": 18,
+      "note": "ACL/meniscus recovery",
+      "adp_bump": 10
+    },
+    {
+      "name": "Tyler Warren",
+      "injury": 18,
+      "note": "Injury concern (camp)",
+      "adp_bump": 6
+    }
+  ],
+  "adp_updates": [
+    {
+      "name": "Jahmyr Gibbs",
+      "adp": 1.5
+    },
+    {
+      "name": "Bijan Robinson",
+      "adp": 2.5
+    },
+    {
+      "name": "Christian McCaffrey",
+      "adp": 8.0
+    },
+    {
+      "name": "Jonathan Taylor",
+      "adp": 8.5
+    },
+    {
+      "name": "Saquon Barkley",
+      "adp": 20.5
+    },
+    {
+      "name": "De'Von Achane",
+      "adp": 13.5
+    },
+    {
+      "name": "Ashton Jeanty",
+      "adp": 30.0
+    },
+    {
+      "name": "Bucky Irving",
+      "adp": 29.5
+    },
+    {
+      "name": "Josh Jacobs",
+      "adp": 30.0
+    },
+    {
+      "name": "Chase Brown",
+      "adp": 15.5
+    },
+    {
+      "name": "James Cook",
+      "adp": 12.5
+    },
+    {
+      "name": "Omarion Hampton",
+      "adp": 21.5
+    },
+    {
+      "name": "Kenneth Walker III",
+      "adp": 22.5
+    },
+    {
+      "name": "Kyren Williams",
+      "adp": 31.5
+    },
+    {
+      "name": "Alvin Kamara",
+      "adp": 100.0
+    },
+    {
+      "name": "Derrick Henry",
+      "adp": 19.0
+    },
+    {
+      "name": "Breece Hall",
+      "adp": 35.0
+    },
+    {
+      "name": "Quinshon Judkins",
+      "adp": 52.0
+    },
+    {
+      "name": "James Conner",
+      "adp": 87.0
+    },
+    {
+      "name": "David Montgomery",
+      "adp": 64.0
+    },
+    {
+      "name": "Tony Pollard",
+      "adp": 78.0
+    },
+    {
+      "name": "Isiah Pacheco",
+      "adp": 88.0
+    },
+    {
+      "name": "Rhamondre Stevenson",
+      "adp": 70.5
+    },
+    {
+      "name": "Travis Etienne Jr.",
+      "adp": 38.5
+    },
+    {
+      "name": "Javonte Williams",
+      "adp": 36.5
+    },
+    {
+      "name": "Chuba Hubbard",
+      "adp": 62.5
+    },
+    {
+      "name": "D'Andre Swift",
+      "adp": 60.5
+    },
+    {
+      "name": "Cam Skattebo",
+      "adp": 58.0
+    },
+    {
+      "name": "Jeremiyah Love",
+      "adp": 36.0
+    },
+    {
+      "name": "Jadarian Price",
+      "adp": 55.0
+    },
+    {
+      "name": "Mike Washington Jr.",
+      "adp": 140.0
+    },
+    {
+      "name": "Puka Nacua",
+      "adp": 6.5
+    },
+    {
+      "name": "Ja'Marr Chase",
+      "adp": 3.5
+    },
+    {
+      "name": "Jaxon Smith-Njigba",
+      "adp": 5.5
+    },
+    {
+      "name": "Amon-Ra St. Brown",
+      "adp": 7.5
+    },
+    {
+      "name": "Drake London",
+      "adp": 16.5
+    },
+    {
+      "name": "CeeDee Lamb",
+      "adp": 10.0
+    },
+    {
+      "name": "Justin Jefferson",
+      "adp": 11.5
+    },
+    {
+      "name": "Rashee Rice",
+      "adp": 23.0
+    },
+    {
+      "name": "A.J. Brown",
+      "adp": 19.5
+    },
+    {
+      "name": "Chris Olave",
+      "adp": 26.0
+    },
+    {
+      "name": "George Pickens",
+      "adp": 24.5
+    },
+    {
+      "name": "Nico Collins",
+      "adp": 23.5
+    },
+    {
+      "name": "Zay Flowers",
+      "adp": 28.5
+    },
+    {
+      "name": "Malik Nabers",
+      "adp": 35.5
+    },
+    {
+      "name": "Brian Thomas Jr.",
+      "adp": 27.0
+    },
+    {
+      "name": "Tee Higgins",
+      "adp": 36.0
+    },
+    {
+      "name": "Ladd McConkey",
+      "adp": 34.0
+    },
+    {
+      "name": "Garrett Wilson",
+      "adp": 37.0
+    },
+    {
+      "name": "DJ Moore",
+      "adp": 48.5
+    },
+    {
+      "name": "Marvin Harrison Jr.",
+      "adp": 44.0
+    },
+    {
+      "name": "Terry McLaurin",
+      "adp": 46.5
+    },
+    {
+      "name": "Mike Evans",
+      "adp": 54.0
+    },
+    {
+      "name": "DK Metcalf",
+      "adp": 54.0
+    },
+    {
+      "name": "Jaylen Waddle",
+      "adp": 33.0
+    },
+    {
+      "name": "Courtland Sutton",
+      "adp": 56.0
+    },
+    {
+      "name": "Jameson Williams",
+      "adp": 58.0
+    },
+    {
+      "name": "Rome Odunze",
+      "adp": 57.0
+    },
+    {
+      "name": "Jordan Addison",
+      "adp": 65.0
+    },
+    {
+      "name": "Calvin Ridley",
+      "adp": 70.0
+    },
+    {
+      "name": "Stefon Diggs",
+      "adp": 72.0
+    },
+    {
+      "name": "Khalil Shakir",
+      "adp": 58.5
+    },
+    {
+      "name": "Xavier Worthy",
+      "adp": 62.0
+    },
+    {
+      "name": "Carnell Tate",
+      "adp": 72.0
+    },
+    {
+      "name": "Jordyn Tyson",
+      "adp": 190.0
+    },
+    {
+      "name": "Makai Lemon",
+      "adp": 105.0
+    },
+    {
+      "name": "KC Concepcion",
+      "adp": 100.0
+    },
+    {
+      "name": "Tetairoa McMillan",
+      "adp": 35.0
+    },
+    {
+      "name": "Emeka Egbuka",
+      "adp": 40.0
+    },
+    {
+      "name": "Josh Allen",
+      "adp": 31.0
+    },
+    {
+      "name": "Lamar Jackson",
+      "adp": 40.0
+    },
+    {
+      "name": "Drake Maye",
+      "adp": 70.0
+    },
+    {
+      "name": "Joe Burrow",
+      "adp": 45.0
+    },
+    {
+      "name": "Jalen Hurts",
+      "adp": 46.0
+    },
+    {
+      "name": "Patrick Mahomes",
+      "adp": 56.0
+    },
+    {
+      "name": "Jayden Daniels",
+      "adp": 42.0
+    },
+    {
+      "name": "Baker Mayfield",
+      "adp": 82.0
+    },
+    {
+      "name": "Bo Nix",
+      "adp": 75.0
+    },
+    {
+      "name": "Justin Herbert",
+      "adp": 78.0
+    },
+    {
+      "name": "Caleb Williams",
+      "adp": 80.0
+    },
+    {
+      "name": "Fernando Mendoza",
+      "adp": 165.0
+    },
+    {
+      "name": "Ty Simpson",
+      "adp": 185.0
+    },
+    {
+      "name": "Trey McBride",
+      "adp": 21.0
+    },
+    {
+      "name": "Brock Bowers",
+      "adp": 22.0
+    },
+    {
+      "name": "George Kittle",
+      "adp": 59.0
+    },
+    {
+      "name": "Sam LaPorta",
+      "adp": 53.0
+    },
+    {
+      "name": "Tucker Kraft",
+      "adp": 72.0
+    },
+    {
+      "name": "Tyler Warren",
+      "adp": 91.0
+    },
+    {
+      "name": "Colston Loveland",
+      "adp": 48.0
+    },
+    {
+      "name": "Kenyon Sadiq",
+      "adp": 105.0
+    }
+  ],
+  "unmatched_inj": [
+    "Jayden Higgins",
+    "Tank Dell",
+    "Alec Pierce"
+  ],
+  "unmatched_adp": [
+    "DeVonta Smith"
+  ],
+  "players_patched": 207,
+  "sleeper_ids_found": 191,
+  "team_change_count": 20
+}

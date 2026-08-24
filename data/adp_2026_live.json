@@ -1,0 +1,233 @@
+{
+  "updated": "2026-08-24",
+  "adp": {
+    "Jahmyr Gibbs": 1.5,
+    "Bijan Robinson": 2.5,
+    "Ja'Marr Chase": 3.5,
+    "Puka Nacua": 6.5,
+    "Jaxon Smith-Njigba": 5.5,
+    "Christian McCaffrey": 8.0,
+    "Amon-Ra St. Brown": 7.5,
+    "Jonathan Taylor": 8.5,
+    "CeeDee Lamb": 10.0,
+    "Ashton Jeanty": 30.0,
+    "Justin Jefferson": 11.5,
+    "James Cook": 12.5,
+    "De'Von Achane": 13.5,
+    "Chase Brown": 15.5,
+    "Saquon Barkley": 20.5,
+    "A.J. Brown": 19.5,
+    "Trey McBride": 21.0,
+    "Omarion Hampton": 21.5,
+    "Brock Bowers": 22.0,
+    "Rashee Rice": 23.0,
+    "Nico Collins": 23.5,
+    "Kenneth Walker III": 22.5,
+    "Chris Olave": 26.0,
+    "Drake London": 16.5,
+    "Derrick Henry": 19.0,
+    "George Pickens": 24.5,
+    "Jeremiyah Love": 36.0,
+    "Josh Jacobs": 30.0,
+    "DeVonta Smith": 29.0,
+    "Zay Flowers": 28.5,
+    "Malik Nabers": 35.5,
+    "Breece Hall": 35.0,
+    "Kyren Williams": 31.5,
+    "Josh Allen": 31.0,
+    "Tee Higgins": 36.0,
+    "Garrett Wilson": 37.0,
+    "Tetairoa McMillan": 35.0,
+    "Emeka Egbuka": 40.0,
+    "Javonte Williams": 36.5,
+    "Travis Etienne Jr.": 38.5,
+    "Ladd McConkey": 34.0,
+    "Jaylen Waddle": 33.0,
+    "Brian Thomas Jr.": 27.0,
+    "Bucky Irving": 29.5,
+    "Lamar Jackson": 40.0,
+    "Patrick Mahomes": 56.0,
+    "Jayden Daniels": 42.0,
+    "Joe Burrow": 45.0,
+    "Jalen Hurts": 46.0,
+    "Sam LaPorta": 53.0,
+    "George Kittle": 59.0,
+    "Tucker Kraft": 72.0,
+    "Colston Loveland": 48.0,
+    "Mike Evans": 54.0,
+    "DK Metcalf": 54.0,
+    "Marvin Harrison Jr.": 44.0,
+    "Terry McLaurin": 46.5,
+    "DJ Moore": 48.5,
+    "Courtland Sutton": 56.0,
+    "Jameson Williams": 58.0,
+    "Xavier Worthy": 62.0,
+    "Khalil Shakir": 58.5,
+    "Rome Odunze": 57.0,
+    "Jordan Addison": 65.0,
+    "Calvin Ridley": 70.0,
+    "Stefon Diggs": 72.0,
+    "Alvin Kamara": 100.0,
+    "Chuba Hubbard": 62.5,
+    "D'Andre Swift": 60.5,
+    "Isiah Pacheco": 88.0,
+    "James Conner": 87.0,
+    "Tony Pollard": 78.0,
+    "Rhamondre Stevenson": 70.5,
+    "David Montgomery": 64.0,
+    "Quinshon Judkins": 52.0,
+    "Cam Skattebo": 58.0,
+    "Jadarian Price": 55.0,
+    "Carnell Tate": 72.0,
+    "Jordyn Tyson": 190.0,
+    "Makai Lemon": 105.0,
+    "Kenyon Sadiq": 105.0,
+    "KC Concepcion": 100.0,
+    "Bo Nix": 75.0,
+    "Baker Mayfield": 82.0,
+    "Justin Herbert": 78.0,
+    "Drake Maye": 70.0,
+    "Caleb Williams": 80.0,
+    "Tyler Warren": 91.0,
+    "Mike Washington Jr.": 140.0,
+    "Fernando Mendoza": 165.0,
+    "Ty Simpson": 185.0
+  },
+  "injuries": {
+    "Jayden Higgins": {
+      "injury": 4,
+      "note": "ACL \u2014 season",
+      "adp_bump": 80
+    },
+    "Zach Charbonnet": {
+      "injury": 5,
+      "note": "ACL \u2014 TBD",
+      "adp_bump": 40
+    },
+    "Tank Dell": {
+      "injury": 6,
+      "note": "ACL+MCL",
+      "adp_bump": 50
+    },
+    "Jordyn Tyson": {
+      "injury": 8,
+      "note": "Hamstring ~2 months / possible IR",
+      "adp_bump": 60
+    },
+    "Alvin Kamara": {
+      "injury": 10,
+      "note": "MCL sprain 4\u20136 weeks",
+      "adp_bump": 25
+    },
+    "Isiah Pacheco": {
+      "injury": 12,
+      "note": "MCL 3+ weeks",
+      "adp_bump": 20
+    },
+    "James Conner": {
+      "injury": 14,
+      "note": "Foot/ankle 2\u20133 weeks",
+      "adp_bump": 15
+    },
+    "Alec Pierce": {
+      "injury": 12,
+      "note": "Ankle / PUP concern",
+      "adp_bump": 25
+    },
+    "Jeremiyah Love": {
+      "injury": 16,
+      "note": "High ankle sprain \u2014 Week 1 uncertain",
+      "adp_bump": 8
+    },
+    "Ashton Jeanty": {
+      "injury": 17,
+      "note": "Ankle sprain (Schefter) \u2014 timeline TBD",
+      "adp_bump": 12
+    },
+    "Malik Nabers": {
+      "injury": 18,
+      "note": "ACL recovery \u2014 possibly Week 1",
+      "adp_bump": 5
+    },
+    "Patrick Mahomes": {
+      "injury": 18,
+      "note": "ACL/LCL recovery \u2014 Week 1 watch",
+      "adp_bump": 8
+    },
+    "Tucker Kraft": {
+      "injury": 18,
+      "note": "ACL/meniscus recovery",
+      "adp_bump": 10
+    },
+    "Michael Pittman Jr.": {
+      "injury": 18,
+      "note": "Hamstring 1\u20132 weeks",
+      "adp_bump": 8
+    },
+    "Puka Nacua": {
+      "injury": 20,
+      "note": "Groin \u2014 limited",
+      "adp_bump": 2
+    },
+    "Sam LaPorta": {
+      "injury": 20,
+      "note": "Hip \u2014 limited",
+      "adp_bump": 3
+    },
+    "Chuba Hubbard": {
+      "injury": 20,
+      "note": "Hamstring",
+      "adp_bump": 4
+    },
+    "Breece Hall": {
+      "injury": 20,
+      "note": "Groin",
+      "adp_bump": 3
+    },
+    "Makai Lemon": {
+      "injury": 19,
+      "note": "Hamstring",
+      "adp_bump": 10
+    },
+    "Christian McCaffrey": {
+      "injury": 19,
+      "note": "Tightness / workload watch",
+      "adp_bump": 1
+    },
+    "Khalil Shakir": {
+      "injury": 20,
+      "note": "Undisclosed",
+      "adp_bump": 3
+    },
+    "George Kittle": {
+      "injury": 19,
+      "note": "Achilles recovery watch",
+      "adp_bump": 4
+    },
+    "Xavier Worthy": {
+      "injury": 21,
+      "note": "Shoulder",
+      "adp_bump": 2
+    },
+    "Mike Evans": {
+      "injury": 21,
+      "note": "Quad",
+      "adp_bump": 2
+    },
+    "Emeka Egbuka": {
+      "injury": 21,
+      "note": "Toe",
+      "adp_bump": 2
+    },
+    "Saquon Barkley": {
+      "injury": 20,
+      "note": "Foot/ankle checked \u2014 monitor",
+      "adp_bump": 2
+    },
+    "Tyler Warren": {
+      "injury": 18,
+      "note": "Injury concern (camp)",
+      "adp_bump": 6
+    }
+  }
+}
