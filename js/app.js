@@ -202,10 +202,23 @@ function persistMyRoster() {
 }
 
 function syncFromSharedDraft(draft) {
-  const applied = applyStoredDraftToPlayers(state.players, draft || readDraftState());
+  const d = draft || readDraftState();
+  const applied = applyStoredDraftToPlayers(state.players, d);
   state.myRoster = applied.myRoster || [];
   state.picks = applied.picks || [];
   if (applied.source) state.draftSource = applied.source;
+  // Linked league roster shape (from Sleeper/ESPN connect)
+  if (d.roster && typeof d.roster === "object") {
+    state.roster = { ...state.roster, ...d.roster };
+    syncRosterInputs();
+  }
+  if (d.leagueTeams) {
+    state.leagueTeams = Number(d.leagueTeams) || state.leagueTeams;
+    const teamsEl = $("#leagueTeams");
+    if (teamsEl) teamsEl.value = String(state.leagueTeams);
+    const vorpTeams = $("#vorpTeamsLabel");
+    if (vorpTeams) vorpTeams.textContent = String(state.leagueTeams);
+  }
   if (applied.connected) {
     setLiveStatus("live", `Synced from On the Clock · ${applied.source || "draft"}`);
   }

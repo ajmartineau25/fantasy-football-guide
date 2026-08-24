@@ -169,6 +169,107 @@ export function detectSleeperTeamCount(draft) {
 }
 
 /**
+ * Parse Sleeper draft or league settings → our roster shape.
+ * Draft settings use slots_qb, slots_rb, …; league uses roster_positions array.
+ */
+export function parseSleeperRosterSettings(draftOrLeague) {
+  const s = draftOrLeague?.settings || {};
+  const fromSlots = {
+    QB: numOrNull(s.slots_qb),
+    RB: numOrNull(s.slots_rb),
+    WR: numOrNull(s.slots_wr),
+    TE: numOrNull(s.slots_te),
+    FLEX: numOrNull(s.slots_flex),
+    K: numOrNull(s.slots_k),
+    DST: numOrNull(s.slots_def),
+    BN: numOrNull(s.slots_bn),
+  };
+  // Superflex counts as an extra FLEX-like QB-eligible spot — fold into FLEX display for now
+  const sf = numOrNull(s.slots_super_flex) || numOrNull(s.slots_superflex) || 0;
+  if (sf > 0) fromSlots.FLEX = (fromSlots.FLEX || 0) + sf;
+
+  const hasAny = Object.values(fromSlots).some((v) => v != null);
+  if (hasAny) {
+    return {
+      QB: fromSlots.QB ?? 1,
+      RB: fromSlots.RB ?? 2,
+      WR: fromSlots.WR ?? 2,
+      TE: fromSlots.TE ?? 1,
+      FLEX: fromSlots.FLEX ?? 1,
+      K: fromSlots.K ?? 0,
+      DST: fromSlots.DST ?? 0,
+      BN: fromSlots.BN ?? 6,
+      teams: numOrNull(s.teams) || null,
+    };
+  }
+
+  // League object: roster_positions like ["QB","RB","RB","WR","WR","TE","FLEX","BN",...]
+  const positions = draftOrLeague?.roster_positions;
+  if (Array.isArray(positions) && positions.length) {
+    const counts = { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, K: 0, DST: 0, BN: 0 };
+    for (const raw of positions) {
+      const p = String(raw || "").toUpperCase();
+      if (p === "QB") counts.QB += 1;
+      else if (p === "RB") counts.RB += 1;
+      else if (p === "WR") counts.WR += 1;
+      else if (p === "TE") counts.TE += 1;
+      else if (p === "FLEX" || p === "WRRB_FLEX" || p === "REC_FLEX") counts.FLEX += 1;
+      else if (p === "SUPER_FLEX" || p === "SUPERFLEX" || p === "Q/W/R/T") counts.FLEX += 1;
+      else if (p === "K") counts.K += 1;
+      else if (p === "DEF" || p === "DST") counts.DST += 1;
+      else if (p === "BN" || p === "BENCH") counts.BN += 1;
+      // ignore IR/TAXI for starter board
+    }
+    return {
+      ...counts,
+      teams: numOrNull(s.teams) || numOrNull(draftOrLeague?.total_rosters) || null,
+    };
+  }
+  return null;
+}
+
+function numOrNull(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * ESPN mSettings → roster slot counts.
+ * lineupslots: { "0": 1, "2": 2, ... } where keys are position IDs.
+ */
+export function parseEspnRosterSettings(leagueJson) {
+  const settings = leagueJson?.settings || {};
+  const slots = settings.rosterSettings?.lineupSlotCounts || settings.rosterSettings?.lineupSlots;
+  // ESPN position IDs (common):
+  // 0 QB, 2 RB, 4 WR, 6 TE, 23 FLEX, 16 D/ST, 17 K, 20 BENCH, 21 IR
+  const map = {
+    0: "QB",
+    2: "RB",
+    4: "WR",
+    6: "TE",
+    23: "FLEX",
+    16: "DST",
+    17: "K",
+    20: "BN",
+  };
+  if (slots && typeof slots === "object") {
+    const out = { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, K: 0, DST: 0, BN: 0 };
+    for (const [key, val] of Object.entries(slots)) {
+      const label = map[key] || map[Number(key)];
+      if (!label) continue;
+      out[label] += Number(val) || 0;
+    }
+    // Some leagues use 3 = RB/WR flex variants — treat unknown flex-like as FLEX if present
+    if (slots["21"] != null) {
+      /* IR ignored */
+    }
+    out.teams = detectEspnTeamCount(leagueJson);
+    return out;
+  }
+  return null;
+}
+
+/**
  * ESPN teams often expose draftDayOrder / draftPosition (1-based slot).
  */
 export function detectEspnDraftSlot(leagueJson, teamId) {

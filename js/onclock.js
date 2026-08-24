@@ -25,6 +25,8 @@ import {
   detectSleeperTeamCount,
   detectEspnDraftSlot,
   detectEspnTeamCount,
+  parseSleeperRosterSettings,
+  parseEspnRosterSettings,
 } from "./draft.js";
 import {
   STRATEGIES,
@@ -100,6 +102,51 @@ function rosterTargets() {
     BN: Number(r.BN ?? 6),
     teams: state.leagueTeams,
   };
+}
+
+/** Apply linked-league roster shape and sync left-panel inputs + right roster. */
+function applyLinkedRosterSettings(roster, { source = "league" } = {}) {
+  if (!roster) return false;
+  state.roster = {
+    QB: Number(roster.QB ?? state.roster.QB ?? 1),
+    RB: Number(roster.RB ?? state.roster.RB ?? 2),
+    WR: Number(roster.WR ?? state.roster.WR ?? 2),
+    TE: Number(roster.TE ?? state.roster.TE ?? 1),
+    FLEX: Number(roster.FLEX ?? state.roster.FLEX ?? 1),
+    K: Number(roster.K ?? state.roster.K ?? 1),
+    DST: Number(roster.DST ?? state.roster.DST ?? 1),
+    BN: Number(roster.BN ?? state.roster.BN ?? 6),
+  };
+  if (roster.teams) {
+    state.leagueTeams = Number(roster.teams) || state.leagueTeams;
+    const teamsEl = $("#leagueTeams");
+    if (teamsEl) teamsEl.value = String(state.leagueTeams);
+  }
+  syncRosterInputsFromState();
+  const meta = $("#rosterPanelMeta");
+  if (meta) {
+    const t = state.roster;
+    meta.textContent = `Linked ${source}: ${t.QB}QB ${t.RB}RB ${t.WR}WR ${t.TE}TE ${t.FLEX}FLEX · ${t.BN} BN`;
+  }
+  persistDraft();
+  renderSleeperRoster();
+  return true;
+}
+
+function syncRosterInputsFromState() {
+  // On the Clock may not have roster number inputs — Rankings does.
+  // Keep shared state; Rankings picks it up via ffg_draft / ffg_league.
+  try {
+    const league = JSON.parse(localStorage.getItem("ffg_league") || "{}");
+    localStorage.setItem(
+      "ffg_league",
+      JSON.stringify({
+        ...league,
+        roster: state.roster,
+        leagueTeams: state.leagueTeams,
+      })
+    );
+  } catch (_) {}
 }
 
 function persistDraft() {
@@ -696,6 +743,7 @@ async function connectSleeper() {
       state.sleeper.username = username;
       state.sleeper.userId = userId;
     }
+    let resolvedLeagueId = leagueId || null;
     if (!draftId && leagueId) {
       const drafts = await sleeperGetLeagueDrafts(leagueId);
       draftId = drafts?.[0]?.draft_id;
@@ -703,7 +751,8 @@ async function connectSleeper() {
     if (!draftId && userId) {
       const leagues = await sleeperGetLeagues(userId, "2026");
       if (leagues?.[0]) {
-        const drafts = await sleeperGetLeagueDrafts(leagues[0].league_id);
+        resolvedLeagueId = leagues[0].league_id;
+        const drafts = await sleeperGetLeagueDrafts(resolvedLeagueId);
         draftId = drafts?.[0]?.draft_id;
       }
     }
@@ -711,6 +760,18 @@ async function connectSleeper() {
     state.sleeper.draftId = draftId;
     await sleeperHydratePlayerIds(state.players);
     const draft = await sleeperGetDraft(draftId);
+    if (!resolvedLeagueId && draft?.league_id) resolvedLeagueId = draft.league_id;
+
+    // Roster slots from draft settings, fallback to league object
+    let rosterCfg = parseSleeperRosterSettings(draft);
+    if ((!rosterCfg || rosterCfg.BN == null) && resolvedLeagueId) {
+      try {
+        const league = await sleeperGetLeague(resolvedLeagueId);
+        rosterCfg = parseSleeperRosterSettings(league) || rosterCfg;
+      } catch (_) {}
+    }
+    if (rosterCfg) applyLinkedRosterSettings(rosterCfg, { source: "Sleeper" });
+
     const picks = await sleeperGetPicks(draftId);
     const applied = applySleeperPicks(state.players, picks, {
       userId: state.sleeper.userId,
@@ -721,7 +782,7 @@ async function connectSleeper() {
     state.picks = applied.picks || [];
 
     const slot = detectSleeperDraftSlot(draft, state.sleeper.userId);
-    const teams = detectSleeperTeamCount(draft);
+    const teams = detectSleeperTeamCount(draft) || rosterCfg?.teams;
     if (slot) proposeDraftSlot(slot, { teams, source: "Sleeper" });
 
     if (state.poller) state.poller.stop();
@@ -738,7 +799,14 @@ async function connectSleeper() {
     }, 4000);
 
     setConnected("sleeper", `Sleeper live · draft ${draftId}`);
-    toast(slot ? `Sleeper connected · detected slot ${slot}` : "Sleeper connected — board is live");
+    const rosterNote = rosterCfg
+      ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX`
+      : "";
+    toast(
+      slot
+        ? `Sleeper connected · slot ${slot}${rosterNote}`
+        : `Sleeper connected${rosterNote}`
+    );
   } catch (e) {
     console.error(e);
     setLiveStatus("error", e.message || "Sleeper failed");
@@ -758,12 +826,14 @@ async function connectEspn() {
     const useProxy = $("#espnProxy").checked;
     setLiveStatus("live", "Connecting ESPN…");
     const json = await espnFetchLeague({ leagueId, season, useProxy });
+    const rosterCfg = parseEspnRosterSettings(json);
+    if (rosterCfg) applyLinkedRosterSettings(rosterCfg, { source: "ESPN" });
     const applied = applyEspnDraft(state.players, json, { teamId });
     state.myRoster = applied.myRoster || [];
     state.picks = applied.picks || [];
     state.espn = { leagueId, teamId };
     const slot = detectEspnDraftSlot(json, teamId);
-    const teams = detectEspnTeamCount(json);
+    const teams = detectEspnTeamCount(json) || rosterCfg?.teams;
     if (slot) proposeDraftSlot(slot, { teams, source: "ESPN" });
     if (state.poller) state.poller.stop();
     state.poller = createDraftPoller(async () => {
@@ -774,7 +844,10 @@ async function connectEspn() {
       renderAll();
     }, 6000);
     setConnected("espn", `ESPN live · league ${leagueId}`);
-    toast(slot ? `ESPN connected · detected slot ${slot}` : "ESPN connected — board is live");
+    const rosterNote = rosterCfg
+      ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX`
+      : "";
+    toast(slot ? `ESPN connected · slot ${slot}${rosterNote}` : `ESPN connected${rosterNote}`);
   } catch (e) {
     console.error(e);
     setLiveStatus("error", e.message || "ESPN failed");
