@@ -39,6 +39,13 @@ import {
   defaultLeagueSettings,
   estimatePickNumber,
 } from "./decision.js";
+import {
+  readDraftState,
+  writeDraftState,
+  applyStoredDraftToPlayers,
+  snapshotDrafted,
+  onDraftUpdated,
+} from "./draft-sync.js";
 
 const state = {
   players: [],
@@ -170,7 +177,95 @@ function persistMyRoster() {
         weightPreset: state.weightPreset,
       })
     );
+    // Keep On the Clock board in sync when marking picks from Rankings
+    const prev = readDraftState();
+    writeDraftState({
+      ...prev,
+      myRosterIds: state.myRoster.map((p) => p.id),
+      drafted: snapshotDrafted(state.players, state.myRoster),
+      picks: state.picks.slice(-80),
+      scoring: state.scoring,
+      strategy: state.strategy,
+      draftSlot: state.draftSlot,
+      leagueTeams: state.leagueTeams,
+      roster: state.roster,
+      weightPreset: state.weightPreset,
+      source: state.draftSource || prev.source || null,
+      connected: !!(state.draftSource || prev.connected),
+      sleeper: state.sleeper?.draftId ? state.sleeper : prev.sleeper,
+      espn: state.espn?.leagueId ? state.espn : prev.espn,
+    });
   } catch (_) {}
+}
+
+function syncFromSharedDraft(draft) {
+  const applied = applyStoredDraftToPlayers(state.players, draft || readDraftState());
+  state.myRoster = applied.myRoster || [];
+  state.picks = applied.picks || [];
+  if (applied.source) state.draftSource = applied.source;
+  if (applied.connected) {
+    setLiveStatus("live", `Synced from On the Clock · ${applied.source || "draft"}`);
+  }
+  renderBoard();
+}
+
+/** Resume live polling on Rankings when On the Clock already connected Sleeper/ESPN. */
+async function maybeResumeLiveSync() {
+  const d = readDraftState();
+  if (!d.connected || !d.source) return;
+  if (state.poller) return;
+
+  if (d.source === "sleeper" && d.sleeper?.draftId) {
+    try {
+      state.sleeper = { ...state.sleeper, ...d.sleeper };
+      await sleeperHydratePlayerIds(state.players);
+      const draft = await sleeperGetDraft(d.sleeper.draftId);
+      const apply = async () => {
+        const picks = await sleeperGetPicks(d.sleeper.draftId);
+        const again = applySleeperPicks(state.players, picks, {
+          userId: state.sleeper.userId,
+          draftOrder: draft.draft_order,
+          slotToRoster: draft.slot_to_roster_id,
+        });
+        state.myRoster = again.myRoster || [];
+        state.picks = again.picks || [];
+        state.draftSource = "sleeper";
+        persistMyRoster();
+        renderBoard();
+        setLiveStatus("live", `Sleeper live · ${d.sleeper.draftId}`);
+      };
+      await apply();
+      state.poller = createDraftPoller(apply, 4000);
+    } catch (e) {
+      console.warn("Rankings Sleeper resume failed", e);
+    }
+  } else if (d.source === "espn" && d.espn?.leagueId) {
+    try {
+      state.espn = { ...state.espn, ...d.espn };
+      const season = 2026;
+      const apply = async () => {
+        const json = await espnFetchLeague({
+          leagueId: d.espn.leagueId,
+          season,
+          useProxy: true,
+        });
+        const again = applyEspnDraft(state.players, json, { teamId: d.espn.teamId });
+        state.myRoster = again.myRoster || [];
+        state.picks = again.picks || [];
+        state.draftSource = "espn";
+        persistMyRoster();
+        renderBoard();
+        setLiveStatus("live", `ESPN live · ${d.espn.leagueId}`);
+      };
+      await apply();
+      state.poller = createDraftPoller(apply, 6000);
+    } catch (e) {
+      console.warn("Rankings ESPN resume failed", e);
+    }
+  } else if (d.source === "manual") {
+    syncFromSharedDraft(d);
+    setLiveStatus("live", "Manual draft synced");
+  }
 }
 
 function loadLeaguePrefs() {
@@ -1127,6 +1222,8 @@ async function init() {
   try {
     loadLeaguePrefs();
     await loadData();
+    // Pull drafted board from On the Clock session
+    syncFromSharedDraft();
     // default scoring button
     $$(".scoring-toggle button").forEach((b) =>
       b.classList.toggle("active", b.dataset.scoring === state.scoring)
@@ -1134,8 +1231,21 @@ async function init() {
     renderWeightPresets();
     renderWeights();
     bindUI();
+    onDraftUpdated((draft) => {
+      if (!state.players.length) return;
+      syncFromSharedDraft(draft);
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") syncFromSharedDraft();
+    });
+    await maybeResumeLiveSync();
     renderBoard();
-    toast(`Loaded ${state.players.length} players · open On the Clock to draft`);
+    const d = readDraftState();
+    toast(
+      d.connected
+        ? `Loaded ${state.players.length} players · live draft synced`
+        : `Loaded ${state.players.length} players · open On the Clock to draft`
+    );
   } catch (e) {
     console.error(e);
     toast("Failed to load data. Serve folder over HTTP (see README).", "err");

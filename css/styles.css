@@ -1325,3 +1325,29 @@ table.board {
 @media (max-width: 1100px) {
   .oc-layout { grid-template-columns: 1fr; }
 }
+
+/* Your turn flash */
+.oc-turn-bar.your-turn {
+  border-color: rgba(45, 212, 191, 0.65);
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.35), 0 0 24px rgba(45, 212, 191, 0.18);
+  animation: ocPulse 1.4s ease-in-out infinite;
+}
+body.oc-your-turn .oc-hero {
+  border-color: rgba(45, 212, 191, 0.55);
+}
+@keyframes ocPulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3), 0 0 12px rgba(45, 212, 191, 0.1); }
+  50% { box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.55), 0 0 28px rgba(45, 212, 191, 0.28); }
+}
+
+/* Queue */
+.oc-queue { display: flex; flex-direction: column; gap: 6px; }
+.oc-queue-item {
+  display: grid; grid-template-columns: 28px auto 1fr auto auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+}
+.oc-q-remove { padding: 2px 8px !important; min-width: 0; font-size: 1rem; line-height: 1; }
+.oc-q-tag { color: var(--accent); font-style: normal; font-weight: 800; font-size: 0.7rem; margin-left: 4px; }
+.oc-alt-row { display: flex; gap: 8px; align-items: stretch; }
+.oc-alt-row .oc-alt { flex: 1; }
+.oc-id-take { white-space: nowrap; font-size: 0.72rem; padding: 8px 10px; }

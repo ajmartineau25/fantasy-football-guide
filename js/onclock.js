@@ -27,6 +27,12 @@ import {
   attachValueAndTiers,
   estimatePickNumber,
 } from "./decision.js";
+import {
+  writeDraftState,
+  applyStoredDraftToPlayers,
+  snapshotDrafted,
+  onDraftUpdated,
+} from "./draft-sync.js";
 
 const state = {
   players: [],
@@ -46,6 +52,9 @@ const state = {
   poller: null,
   sleeper: { userId: null, username: null, draftId: null },
   espn: { leagueId: null, teamId: null },
+  queue: [], // player ids — "I'd take" order; first available becomes primary
+  soundOnTurn: false,
+  _wasYourTurn: false,
 };
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -88,28 +97,28 @@ function rosterTargets() {
 }
 
 function persistDraft() {
-  try {
-    localStorage.setItem(
-      "ffg_draft",
-      JSON.stringify({
-        source: state.draftSource,
-        connected: state.connected,
-        scoring: state.scoring,
-        strategy: state.strategy,
-        draftSlot: state.draftSlot,
-        leagueTeams: state.leagueTeams,
-        roster: state.roster,
-        weightPreset: state.weightPreset,
-        myRosterIds: state.myRoster.map((p) => p.id),
-        drafted: state.players
-          .filter((p) => p.drafted)
-          .map((p) => ({ id: p.id, isMine: state.myRoster.some((m) => m.id === p.id) })),
-        picks: state.picks.slice(-80),
-        sleeper: state.sleeper,
-        espn: state.espn,
-      })
-    );
-  } catch (_) {}
+  // Drop drafted/queued ids that no longer exist or are taken
+  state.queue = (state.queue || []).filter((id) => {
+    const p = state.players.find((x) => x.id === id);
+    return p && !p.drafted;
+  });
+  writeDraftState({
+    source: state.draftSource,
+    connected: state.connected,
+    scoring: state.scoring,
+    strategy: state.strategy,
+    draftSlot: state.draftSlot,
+    leagueTeams: state.leagueTeams,
+    roster: state.roster,
+    weightPreset: state.weightPreset,
+    myRosterIds: state.myRoster.map((p) => p.id),
+    drafted: snapshotDrafted(state.players, state.myRoster),
+    picks: state.picks.slice(-80),
+    sleeper: state.sleeper,
+    espn: state.espn,
+    queue: state.queue,
+    soundOnTurn: state.soundOnTurn,
+  });
 }
 
 function loadPrefs() {
@@ -121,29 +130,72 @@ function loadPrefs() {
     if (league.scoring) state.scoring = league.scoring;
     if (league.roster) state.roster = { ...state.roster, ...league.roster };
     if (league.weightPreset) state.weightPreset = league.weightPreset;
-
-    const draft = JSON.parse(localStorage.getItem("ffg_draft") || "{}");
-    if (draft.source) state.draftSource = draft.source;
-    if (draft.connected) state.connected = !!draft.connected;
-    if (draft.sleeper) state.sleeper = { ...state.sleeper, ...draft.sleeper };
-    if (draft.espn) state.espn = { ...state.espn, ...draft.espn };
-    if (Array.isArray(draft.picks)) state.picks = draft.picks;
-    state._pendingDrafted = draft.drafted || [];
-    state._pendingMyIds = draft.myRosterIds || [];
   } catch (_) {}
 }
 
 function applyPendingDrafted() {
-  const drafted = state._pendingDrafted || [];
-  const myIds = new Set(state._pendingMyIds || []);
-  for (const row of drafted) {
-    const p = state.players.find((x) => x.id === row.id);
-    if (!p) continue;
-    p.drafted = true;
-    if (row.isMine || myIds.has(p.id)) {
-      if (!state.myRoster.some((m) => m.id === p.id)) state.myRoster.push(p);
-    }
+  const applied = applyStoredDraftToPlayers(state.players);
+  state.draftSource = applied.source;
+  state.connected = applied.connected;
+  state.sleeper = { ...state.sleeper, ...applied.sleeper };
+  state.espn = { ...state.espn, ...applied.espn };
+  state.picks = applied.picks || [];
+  state.myRoster = applied.myRoster || [];
+  state.queue = applied.queue || [];
+  state.soundOnTurn = !!applied.soundOnTurn;
+}
+
+function pruneQueue() {
+  state.queue = (state.queue || []).filter((id) => {
+    const p = state.players.find((x) => x.id === id);
+    return p && !p.drafted;
+  });
+}
+
+function addToQueue(id) {
+  pruneQueue();
+  if (state.queue.includes(id)) {
+    toast("Already in your queue");
+    return;
   }
+  if (state.queue.length >= 5) {
+    toast("Queue full (max 5) — remove one first", "err");
+    return;
+  }
+  const p = state.players.find((x) => x.id === id);
+  if (!p || p.drafted) {
+    toast("Player not available", "err");
+    return;
+  }
+  state.queue.push(id);
+  toast(`Queued ${p.name}`);
+  persistDraft();
+  renderAll();
+}
+
+function removeFromQueue(id) {
+  state.queue = state.queue.filter((x) => x !== id);
+  persistDraft();
+  renderAll();
+}
+
+function playTurnBeep() {
+  if (!state.soundOnTurn) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 880;
+    g.gain.value = 0.04;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    setTimeout(() => {
+      o.stop();
+      ctx.close();
+    }, 180);
+  } catch (_) {}
 }
 
 function setLiveStatus(kind, label) {
@@ -228,20 +280,33 @@ function renderTurnBar() {
   if (!state.connected) return;
   const info = picksUntilYou();
   const drafted = state.players.filter((p) => p.drafted).length;
+  const bar = $("#ocTurnBar");
   if (info.yourTurn) {
     $("#ocTurnLabel").textContent = "You're on the clock";
     $("#ocTurnLabel").className = "oc-turn-label hot";
+    bar?.classList.add("your-turn");
+    document.body.classList.add("oc-your-turn");
+    if (!state._wasYourTurn) {
+      playTurnBeep();
+      toast("You're on the clock");
+    }
   } else {
     $("#ocTurnLabel").textContent =
       info.until === 1 ? "You're up in 1 pick" : `You're up in ${info.until} picks`;
     $("#ocTurnLabel").className = "oc-turn-label";
+    bar?.classList.remove("your-turn");
+    document.body.classList.remove("oc-your-turn");
   }
+  state._wasYourTurn = !!info.yourTurn;
   $("#ocTurnMeta").textContent = `Round ~${info.round} · overall pick ${info.overall} · ${drafted} drafted · ${state.strategy.replace("_", " ")}`;
 }
 
-function renderSuggestions() {
-  if (!state.connected) return;
-
+/**
+ * Primary = first undrafted queue player if any, else model BPA #1.
+ * Alts = remaining queue + model fills to 3 (no duplicate).
+ */
+function buildPickStack() {
+  pruneQueue();
   const pickNo = estimatePickNumber(
     state.draftSlot,
     state.leagueTeams,
@@ -255,12 +320,90 @@ function renderSuggestions() {
     myRoster: state.myRoster,
     strategy: state.strategy,
     pickNumber: pickNo,
-    limit: 4,
+    limit: 40,
   });
+  const byId = new Map(picks.map((p) => [p.id, p]));
+  // Enrich queue players with full recommend data when possible
+  const queuePlayers = state.queue
+    .map((id) => {
+      if (byId.has(id)) return { ...byId.get(id), fromQueue: true };
+      const raw = state.players.find((p) => p.id === id && !p.drafted);
+      if (!raw) return null;
+      return {
+        ...raw,
+        fromQueue: true,
+        modelRank: "—",
+        adpRaw: raw.adp?.[state.scoring],
+        reasons: [
+          "Pinned in your queue — promoted after higher picks were taken",
+          `Still available · ADP ${raw.adp?.[state.scoring] ?? "—"}`,
+        ],
+        risks: [],
+      };
+    })
+    .filter(Boolean);
 
-  const primary = picks[0];
-  const alts = picks.slice(1, 4);
+  let primary = null;
+  let fromQueue = false;
+  if (queuePlayers.length) {
+    primary = queuePlayers[0];
+    fromQueue = true;
+  } else if (picks[0]) {
+    primary = picks[0];
+  }
+
+  const used = new Set(primary ? [primary.id] : []);
+  const alts = [];
+  for (const p of queuePlayers.slice(1)) {
+    if (used.has(p.id)) continue;
+    alts.push(p);
+    used.add(p.id);
+    if (alts.length >= 3) break;
+  }
+  for (const p of picks) {
+    if (used.has(p.id)) continue;
+    alts.push(p);
+    used.add(p.id);
+    if (alts.length >= 3) break;
+  }
+  return { primary, alts, fromQueue, modelPicks: picks };
+}
+
+function renderQueue() {
+  const box = $("#ocQueue");
+  if (!box) return;
+  pruneQueue();
+  if (!state.queue.length) {
+    box.innerHTML = `<p class="help-text">Pin backups with <strong>I'd take</strong> on alternates or the board. If your #1 gets sniped, the next queued player becomes the hero instantly.</p>`;
+    return;
+  }
+  box.innerHTML = state.queue
+    .map((id, i) => {
+      const p = state.players.find((x) => x.id === id);
+      if (!p) return "";
+      return `<div class="oc-queue-item" data-id="${id}">
+        <span class="oc-alt-n">${i + 1}</span>
+        <span class="pos-badge ${p.pos}">${p.pos}</span>
+        <span class="oc-alt-name">${p.name}</span>
+        <span class="oc-alt-meta">${p.team}</span>
+        <button type="button" class="btn oc-q-remove" data-id="${id}" title="Remove">×</button>
+      </div>`;
+    })
+    .join("");
+  $$("#ocQueue .oc-q-remove").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      removeFromQueue(btn.dataset.id);
+    });
+  });
+}
+
+function renderSuggestions() {
+  if (!state.connected) return;
+
+  const { primary, alts, fromQueue } = buildPickStack();
   const hero = $("#ocHero");
+  renderQueue();
 
   if (!primary) {
     hero.innerHTML = `<p class="help-text">No players left on the board.</p>`;
@@ -268,41 +411,60 @@ function renderSuggestions() {
     return;
   }
 
+  const reasons = primary.reasons?.length
+    ? primary.reasons
+    : fromQueue
+      ? ["Next in your queue after the previous pick was taken"]
+      : [];
+
   hero.innerHTML = `
-    <div class="oc-hero-kicker">Recommended pick</div>
+    <div class="oc-hero-kicker">${fromQueue ? "From your queue" : "Recommended pick"}</div>
     <div class="oc-hero-top">
       <span class="pos-badge ${primary.pos}">${primary.pos}</span>
       <div>
         <div class="oc-hero-name">${primary.name}</div>
-        <div class="oc-hero-meta">${primary.team} · Bye ${primary.bye || "—"} · ADP ${primary.adpRaw ?? primary.adp?.[state.scoring] ?? "—"} · Model #${primary.modelRank}</div>
+        <div class="oc-hero-meta">${primary.team} · Bye ${primary.bye || "—"} · ADP ${primary.adpRaw ?? primary.adp?.[state.scoring] ?? "—"} · Model #${primary.modelRank ?? "—"}</div>
       </div>
     </div>
     <ul class="oc-reasons">
-      ${(primary.reasons || []).map((r) => `<li>${r}</li>`).join("")}
+      ${reasons.map((r) => `<li>${r}</li>`).join("")}
     </ul>
     ${(primary.risks || []).length ? `<div class="oc-risks"><strong>Watch:</strong> ${primary.risks.join(" · ")}</div>` : ""}
     <div class="btn-row" style="margin-top:14px">
       <button type="button" class="btn btn-primary oc-draft-primary" data-id="${primary.id}">Draft ${primary.name.split(" ").pop()}</button>
+      ${fromQueue ? "" : `<button type="button" class="btn oc-queue-primary" data-id="${primary.id}">I'd take (queue)</button>`}
     </div>
   `;
   hero.querySelector(".oc-draft-primary")?.addEventListener("click", () => {
     takePick(primary.id, true);
   });
+  hero.querySelector(".oc-queue-primary")?.addEventListener("click", () => {
+    addToQueue(primary.id);
+  });
 
   $("#ocAlts").innerHTML = alts
     .map(
       (p, i) => `
-    <button type="button" class="oc-alt" data-id="${p.id}">
-      <span class="oc-alt-n">${i + 2}</span>
-      <span class="pos-badge ${p.pos}">${p.pos}</span>
-      <span class="oc-alt-name">${p.name}</span>
-      <span class="oc-alt-meta">${p.team} · ADP ${p.adpRaw ?? "—"}</span>
-    </button>`
+    <div class="oc-alt-row">
+      <button type="button" class="oc-alt" data-id="${p.id}" data-action="draft">
+        <span class="oc-alt-n">${i + 2}</span>
+        <span class="pos-badge ${p.pos}">${p.pos}</span>
+        <span class="oc-alt-name">${p.name}${p.fromQueue ? ' <em class="oc-q-tag">Q</em>' : ""}</span>
+        <span class="oc-alt-meta">${p.team} · ADP ${p.adpRaw ?? p.adp?.[state.scoring] ?? "—"}</span>
+      </button>
+      <button type="button" class="btn oc-id-take" data-id="${p.id}" title="Add to queue">I'd take</button>
+    </div>`
     )
     .join("") || `<p class="help-text">No alternates</p>`;
 
   $$("#ocAlts .oc-alt").forEach((btn) => {
     btn.addEventListener("click", () => takePick(btn.dataset.id, true));
+  });
+  $$("#ocAlts .oc-id-take").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      addToQueue(btn.dataset.id);
+    });
   });
 }
 
@@ -351,15 +513,23 @@ function renderRemainingBoard() {
       <td class="score-cell">${Number(p.adp[state.scoring]).toFixed(1)}</td>
       <td><span class="pos-badge ${p.pos}">${p.pos}</span></td>
       <td>${p.tier ? `<span class="tier-pill t${Math.min(8, p.tier)}">T${p.tier}</span>` : "—"}</td>
+      <td><button type="button" class="btn oc-board-queue" data-id="${p.id}" style="padding:4px 8px;font-size:0.7rem">I'd take</button></td>
     </tr>`
     )
     .join("");
 
   $("#ocBoardTable").innerHTML = `
     <thead><tr>
-      <th>Rank</th><th>Player</th><th>Team</th><th>Bye</th><th>ADP</th><th>Pos</th><th>Tier</th>
+      <th>Rank</th><th>Player</th><th>Team</th><th>Bye</th><th>ADP</th><th>Pos</th><th>Tier</th><th></th>
     </tr></thead>
-    <tbody>${rows || `<tr><td colspan="7" style="padding:16px;color:var(--text-muted)">Board empty</td></tr>`}</tbody>`;
+    <tbody>${rows || `<tr><td colspan="8" style="padding:16px;color:var(--text-muted)">Board empty</td></tr>`}</tbody>`;
+
+  $$("#ocBoardTable .oc-board-queue").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      addToQueue(btn.dataset.id);
+    });
+  });
 }
 
 function renderDraftLog() {
@@ -399,6 +569,7 @@ function takePick(id, isMine) {
   if (!p || p.drafted) return;
   p.drafted = true;
   if (isMine && !state.myRoster.some((m) => m.id === id)) state.myRoster.push(p);
+  state.queue = state.queue.filter((q) => q !== id);
   const pickNo = state.players.filter((x) => x.drafted).length;
   state.picks.push({
     pickNo,
@@ -520,6 +691,9 @@ function resetDraft() {
   state.draftSource = null;
   state.myRoster = [];
   state.picks = [];
+  state.queue = [];
+  state._wasYourTurn = false;
+  document.body.classList.remove("oc-your-turn");
   for (const p of state.players) {
     p.drafted = false;
     delete p._isMine;
@@ -568,6 +742,16 @@ function bindUI() {
   });
   if ($("#strategyDesc") && STRATEGIES[state.strategy]) {
     $("#strategyDesc").textContent = STRATEGIES[state.strategy].desc;
+  }
+
+  const soundEl = $("#soundOnTurn");
+  if (soundEl) {
+    soundEl.checked = !!state.soundOnTurn;
+    soundEl.addEventListener("change", () => {
+      state.soundOnTurn = soundEl.checked;
+      persistDraft();
+      toast(state.soundOnTurn ? "Turn sound on" : "Turn sound off");
+    });
   }
 
   $("#btnSleeper").addEventListener("click", connectSleeper);

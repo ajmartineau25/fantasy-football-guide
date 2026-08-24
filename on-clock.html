@@ -139,11 +139,22 @@
               <div class="oc-turn-label" id="ocTurnLabel">Waiting for picks…</div>
               <div class="help-text" id="ocTurnMeta"></div>
             </div>
-            <div class="oc-need-chips" id="ocNeedChips"></div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <div class="oc-need-chips" id="ocNeedChips"></div>
+              <label class="checkbox-row" style="margin:0">
+                <input type="checkbox" id="soundOnTurn" />
+                Sound when I'm up
+              </label>
+            </div>
           </div>
 
           <section class="panel oc-hero" id="ocHero">
             <!-- filled by JS -->
+          </section>
+
+          <section class="panel">
+            <h2>My queue</h2>
+            <div class="oc-queue" id="ocQueue"></div>
           </section>
 
           <section class="panel">
