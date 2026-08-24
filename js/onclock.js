@@ -7,6 +7,7 @@ import {
   rankPlayers,
   countRoster,
   WEIGHT_PRESETS,
+  isPositionInLeague,
 } from "./rankings.js";
 import {
   sleeperGetUser,
@@ -136,8 +137,16 @@ function applyLinkedRosterSettings(roster, { source = "league" } = {}) {
   const meta = $("#rosterPanelMeta");
   if (meta) {
     const t = state.roster;
-    meta.textContent = `Linked ${source}: ${t.QB}QB ${t.RB}RB ${t.WR}WR ${t.TE}TE ${t.FLEX}FLEX · ${t.BN} BN`;
+    const kPart = Number(t.K) > 0 ? `${t.K}K` : "no K";
+    const dPart = Number(t.DST) > 0 ? `${t.DST}DST` : "no DST";
+    meta.textContent = `Linked ${source}: ${t.QB}QB ${t.RB}RB ${t.WR}WR ${t.TE}TE ${t.FLEX}FLEX · ${kPart} · ${dPart} · ${t.BN} BN`;
   }
+  // Drop queued K/DST if this league doesn't roster them
+  const targets = rosterTargets();
+  state.queue = (state.queue || []).filter((id) => {
+    const p = state.players.find((x) => x.id === id);
+    return p && isPositionInLeague(p.pos, targets);
+  });
   persistDraft();
   renderSleeperRoster();
   return true;
@@ -819,7 +828,9 @@ async function connectSleeper() {
 
     setConnected("sleeper", `Sleeper live · ${lastPickCount} picks · draft ${draftId}`);
     const rosterNote = rosterCfg
-      ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX`
+      ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX` +
+        `${Number(rosterCfg.K) > 0 ? `/${rosterCfg.K}K` : "/no K"}` +
+        `${Number(rosterCfg.DST) > 0 ? `/${rosterCfg.DST}DST` : "/no DST"}`
       : "";
     toast(
       slot
@@ -872,7 +883,9 @@ async function connectEspn() {
     }, 3000);
     setConnected("espn", `ESPN live · ${lastPickCount} picks · league ${leagueId}`);
     const rosterNote = rosterCfg
-      ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX`
+      ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX` +
+        `${Number(rosterCfg.K) > 0 ? `/${rosterCfg.K}K` : "/no K"}` +
+        `${Number(rosterCfg.DST) > 0 ? `/${rosterCfg.DST}DST` : "/no DST"}`
       : "";
     toast(slot ? `ESPN connected · slot ${slot}${rosterNote}` : `ESPN connected${rosterNote}`);
   } catch (e) {

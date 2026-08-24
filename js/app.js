@@ -14,6 +14,7 @@ import {
   defaultSortDirForFactor,
   countRoster,
   emptyRosterCounts,
+  isPositionInLeague,
 } from "./rankings.js";
 import {
   sleeperGetUser,
@@ -146,7 +147,36 @@ function rosterTargets() {
 
 function rosterLabel() {
   const t = rosterTargets();
-  return `${t.QB}QB ${t.RB}RB ${t.WR}WR ${t.TE}TE ${t.FLEX}FLEX`;
+  const parts = [`${t.QB}QB`, `${t.RB}RB`, `${t.WR}WR`, `${t.TE}TE`, `${t.FLEX}FLEX`];
+  if (t.K > 0) parts.push(`${t.K}K`);
+  else parts.push("no K");
+  if (t.DST > 0) parts.push(`${t.DST}DST`);
+  else parts.push("no DST");
+  return parts.join(" ");
+}
+
+/** Show/hide K & DST position chips to match league roster slots. */
+function syncPositionChips() {
+  const t = rosterTargets();
+  $$(".pos-chips .chip").forEach((chip) => {
+    const pos = chip.dataset.pos;
+    if (pos === "K" || pos === "DST") {
+      const on = isPositionInLeague(pos, t);
+      chip.classList.toggle("hidden", !on);
+      chip.hidden = !on;
+      if (!on && state.position === pos) {
+        state.position = "ALL";
+      }
+    }
+  });
+  $$(".pos-chips .chip").forEach((c) =>
+    c.classList.toggle("active", c.dataset.pos === state.position)
+  );
+  // Roster input hints
+  const kEl = $("#rosterK");
+  const dEl = $("#rosterDST");
+  if (kEl?.closest("label")) kEl.closest("label").classList.toggle("dimmed", t.K <= 0);
+  if (dEl?.closest("label")) dEl.closest("label").classList.toggle("dimmed", t.DST <= 0);
 }
 
 /** Compact Sleeper injury badge next to a player name. */
@@ -630,6 +660,7 @@ function getRankedList() {
 }
 
 function renderBoard() {
+  syncPositionChips();
   renderSheetHeader();
   renderViewBanner();
   renderTeamRankPanel();
@@ -1188,6 +1219,7 @@ function bindUI() {
     if (!el) return;
     el.addEventListener("change", () => {
       readRosterInputs();
+      syncPositionChips();
       persistMyRoster();
       renderBoard();
       toast(`Lineup: ${rosterLabel()}`);

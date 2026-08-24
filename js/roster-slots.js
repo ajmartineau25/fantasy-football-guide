@@ -34,9 +34,12 @@ export function buildSlotTemplate(targets = {}) {
   push("WR", ["WR"], true, wr);
   push("TE", ["TE"], true, te);
   push("FLEX", ["RB", "WR", "TE"], true, flex);
-  push("K", ["K"], true, k);
-  push("DST", ["DST"], true, dst);
-  push("BN", ["QB", "RB", "WR", "TE", "K", "DST"], false, bn);
+  if (k > 0) push("K", ["K"], true, k);
+  if (dst > 0) push("DST", ["DST"], true, dst);
+  const benchAccept = ["QB", "RB", "WR", "TE"];
+  if (k > 0) benchAccept.push("K");
+  if (dst > 0) benchAccept.push("DST");
+  push("BN", benchAccept, false, bn);
   return slots;
 }
 
@@ -87,10 +90,13 @@ export function assignToSlots(myRoster, targets = {}, scoring = "ppr") {
       used.add(p.id);
     } else {
       // Extra overflow row
+      const overflowAccept = ["QB", "RB", "WR", "TE"];
+      if (Number(targets.K ?? 1) > 0) overflowAccept.push("K");
+      if (Number(targets.DST ?? 1) > 0) overflowAccept.push("DST");
       slots.push({
         key: `BN-extra-${p.id}`,
         label: "BN",
-        accept: ["QB", "RB", "WR", "TE", "K", "DST"],
+        accept: overflowAccept,
         starter: false,
         player: p,
       });

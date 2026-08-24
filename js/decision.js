@@ -135,16 +135,22 @@ export function positionScarcity(players, rosterCounts, targets) {
     if (byPos[p.pos] !== undefined) byPos[p.pos] += 1;
   }
   const teams = targets.teams || 12;
+  const kSlots = Number(targets.K ?? 1);
+  const dstSlots = Number(targets.DST ?? 1);
   const depth = {
     QB: (targets.QB || 1) * teams + Math.ceil(teams * 0.5),
     RB: (targets.RB || 2) * teams + teams * 2,
     WR: (targets.WR || 2) * teams + teams * 2 + Math.ceil(teams * 0.5),
     TE: (targets.TE || 1) * teams + Math.ceil(teams * 0.8),
-    K: teams,
-    DST: teams,
+    K: kSlots > 0 ? teams * kSlots : 0,
+    DST: dstSlots > 0 ? teams * dstSlots : 0,
   };
   const out = {};
   for (const pos of Object.keys(byPos)) {
+    if ((pos === "K" && kSlots <= 0) || (pos === "DST" && dstSlots <= 0)) {
+      out[pos] = { left: byPos[pos], scarcity: 0, need: 0 };
+      continue;
+    }
     const left = byPos[pos];
     const expected = depth[pos] || 20;
     // scarcity 0–100: higher = scarcer
@@ -158,16 +164,21 @@ export function positionScarcity(players, rosterCounts, targets) {
 }
 
 function needScore(pos, rosterCounts, targets) {
+  const kSlots = Number(targets.K ?? 1);
+  const dstSlots = Number(targets.DST ?? 1);
+  if (pos === "K" && kSlots <= 0) return 0;
+  if (pos === "DST" && dstSlots <= 0) return 0;
   const depth = {
     QB: (targets.QB || 1) + 1,
     RB: (targets.RB || 2) + 2 + Math.ceil((targets.FLEX || 1) * 0.4),
     WR: (targets.WR || 2) + 2 + Math.ceil((targets.FLEX || 1) * 0.5),
     TE: (targets.TE || 1) + 1,
-    K: targets.K || 1,
-    DST: targets.DST || 1,
+    K: Math.max(0, kSlots),
+    DST: Math.max(0, dstSlots),
   };
   const have = rosterCounts[pos] || 0;
-  const want = depth[pos] || 1;
+  const want = depth[pos] || 0;
+  if (want <= 0) return 0;
   if (have === 0) return 1.0;
   if (have >= want) return 0.15;
   return Math.max(0.2, 1 - have / want);
@@ -388,8 +399,13 @@ export function recommendPicks(players, {
     // Scarcity: tiny bump only (max ~3%)
     pickScore *= 1 + Math.min(0.03, (scarcity[p.pos]?.scarcity || 0) / 2500);
 
-    // Do not draft K/DST while studs remain
-    if (hideKdstEarly && early && (p.pos === "K" || p.pos === "DST")) {
+    // League without K / DST — never recommend them
+    const kSlots = Number(targets.K ?? 1);
+    const dstSlots = Number(targets.DST ?? 1);
+    if ((p.pos === "K" && kSlots <= 0) || (p.pos === "DST" && dstSlots <= 0)) {
+      pickScore = -999;
+    } else if (hideKdstEarly && early && (p.pos === "K" || p.pos === "DST")) {
+      // Do not draft K/DST while studs remain
       pickScore *= 0.25;
     }
     // Soft-cap: need/bias/stack can lift a bit; teammate penalty can drop more
@@ -505,14 +521,14 @@ export function optimizeLineup(roster, {
     return picks;
   }
 
-  lineup.QB = take("QB", slots.QB || 1);
-  lineup.RB = take("RB", slots.RB || 2);
-  lineup.WR = take("WR", slots.WR || 2);
-  lineup.TE = take("TE", slots.TE || 1);
-  lineup.K = take("K", slots.K || 1);
-  lineup.DST = take("DST", slots.DST || 1);
+  lineup.QB = take("QB", Number(slots.QB ?? 1) || 1);
+  lineup.RB = take("RB", Number(slots.RB ?? 2) || 2);
+  lineup.WR = take("WR", Number(slots.WR ?? 2) || 2);
+  lineup.TE = take("TE", Number(slots.TE ?? 1) || 1);
+  lineup.K = take("K", Math.max(0, Number(slots.K ?? 1)));
+  lineup.DST = take("DST", Math.max(0, Number(slots.DST ?? 1)));
 
-  const flexN = slots.FLEX || 1;
+  const flexN = Number(slots.FLEX ?? 1) || 1;
   const flexPool = ranked
     .filter((p) => flexEligible.includes(p.pos) && !used.has(p.id))
     .map((p) => ({ ...p, weekScore: weeklyLineupScore(p) }))

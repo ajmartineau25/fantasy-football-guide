@@ -213,6 +213,10 @@ export function parseSleeperRosterSettings(draftOrLeague) {
 
   const hasAny = Object.values(fromSlots).some((v) => v != null);
   if (hasAny) {
+    // Explicit 0 from Sleeper means the league does not use that slot.
+    // Missing key → default classic counts (1 K / 1 DST) only when no other
+    // slot keys imply a custom shape; here we treat null as 0 when sibling
+    // slots were provided (Sleeper always sends 0 for unused K/DEF).
     return {
       QB: fromSlots.QB ?? 1,
       RB: fromSlots.RB ?? 2,

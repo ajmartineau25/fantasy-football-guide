@@ -247,6 +247,9 @@ input:focus, select:focus {
 .btn-row .btn { flex: 1; }
 
 /* Position chips */
+.roster-grid label.dimmed {
+  opacity: 0.45;
+}
 .pos-chips {
   display: flex;
   flex-wrap: wrap;

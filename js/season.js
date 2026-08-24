@@ -94,8 +94,8 @@ function renderLineup() {
       WR: state.targets.WR || 2,
       TE: state.targets.TE || 1,
       FLEX: state.targets.FLEX || 1,
-      K: state.targets.K || 1,
-      DST: state.targets.DST || 1,
+      K: Number(state.targets.K ?? 1),
+      DST: Number(state.targets.DST ?? 1),
     },
   });
 

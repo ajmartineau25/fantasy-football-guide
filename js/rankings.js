@@ -432,15 +432,27 @@ export function computeWeightedTotal(percentiles, weights) {
   return Math.round((num / den) * 10) / 10;
 }
 
-/** Starters demanded per team (FLEX split across RB/WR/TE). */
+/**
+ * Whether a position is drafted in this league.
+ * K / DST are omitted when roster slots are 0 (common in best ball / SF leagues).
+ */
+export function isPositionInLeague(pos, targets = {}) {
+  if (pos === "K") return Number(targets.K ?? 1) > 0;
+  if (pos === "DST") return Number(targets.DST ?? 1) > 0;
+  return true;
+}
+
+/** Starters demanded per team (FLEX split across RB/WR/TE). 0 slots stay 0. */
 export function starterDemand(targets = {}) {
+  const k = Number(targets.K ?? 1);
+  const dst = Number(targets.DST ?? 1);
   return {
-    QB: targets.QB || 1,
-    RB: (targets.RB || 2) + Math.ceil((targets.FLEX || 1) * 0.4),
-    WR: (targets.WR || 2) + Math.ceil((targets.FLEX || 1) * 0.5),
-    TE: (targets.TE || 1) + Math.ceil((targets.FLEX || 1) * 0.1),
-    K: targets.K || 1,
-    DST: targets.DST || 1,
+    QB: Number(targets.QB ?? 1) || 1,
+    RB: (Number(targets.RB ?? 2) || 2) + Math.ceil((Number(targets.FLEX ?? 1) || 0) * 0.4),
+    WR: (Number(targets.WR ?? 2) || 2) + Math.ceil((Number(targets.FLEX ?? 1) || 0) * 0.5),
+    TE: (Number(targets.TE ?? 1) || 1) + Math.ceil((Number(targets.FLEX ?? 1) || 0) * 0.1),
+    K: Math.max(0, k),
+    DST: Math.max(0, dst),
   };
 }
 
@@ -454,12 +466,14 @@ export function computeVorpMap(playersWithTotal, targets = {}) {
   const demand = starterDemand(targets);
   const byPos = {};
   for (const p of playersWithTotal) {
+    if (!isPositionInLeague(p.pos, targets)) continue;
     byPos[p.pos] = byPos[p.pos] || [];
     byPos[p.pos].push(p);
   }
   const replacementScore = {};
   const replaceAt = {};
   for (const [pos, demandN] of Object.entries(demand)) {
+    if (demandN <= 0) continue;
     const pool = (byPos[pos] || []).slice().sort((a, b) => (b.total ?? 0) - (a.total ?? 0));
     const at = Math.max(1, Math.round(teams * demandN));
     replaceAt[pos] = at;
@@ -485,17 +499,19 @@ export function computeVorpMap(playersWithTotal, targets = {}) {
 }
 
 export function needMultiplier(pos, rosterCounts, targets) {
+  if (!isPositionInLeague(pos, targets)) return 0.5;
   const starters = starterDemand(targets);
   const depth = {
     QB: starters.QB + 1,
     RB: starters.RB + 2,
     WR: starters.WR + 2,
     TE: starters.TE + 1,
-    K: 1,
-    DST: 1,
+    K: Math.max(0, starters.K),
+    DST: Math.max(0, starters.DST),
   };
   const have = rosterCounts[pos] || 0;
-  const want = depth[pos] || 1;
+  const want = depth[pos] || 0;
+  if (want <= 0) return 0.5;
   if (have >= want) return 0.85;
   if (have === 0) return 1.25;
   const ratio = 1 - have / want;
@@ -614,6 +630,8 @@ export function rankPlayers(players, {
     });
   }
 
+  // Drop K / DST (etc.) when the linked league does not roster them
+  list = list.filter((p) => isPositionInLeague(p.pos, targets));
   if (position !== "ALL") list = list.filter((p) => p.pos === position);
   if (hideDrafted) list = list.filter((p) => !p.drafted);
   if (q) {
