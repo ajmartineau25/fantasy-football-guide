@@ -2,10 +2,12 @@
 """
 Full live data scrub:
   1) Sleeper players API → current NFL team (+ sleeper_id)
-  2) Injury news map → lower injury scores
-  3) Consensus 2026 ADP → adp_ppr / adp_half
+  2) Rookie flags from Sleeper (THIS YEAR = years_exp==0 or rookie_year==2026)
+  3) Injuries from Sleeper injury_status / body part / notes (authoritative)
+  4) Consensus 2026 ADP → adp_ppr / adp_half
 
-Patches scripts/generate_data.py PLAYERS list, then runs generate_data.
+Patches scripts/generate_data.py PLAYERS list, then runs generate_data,
+then stamps sleeper_id / years_exp / rookie / injury fields onto data/players.json.
 """
 from __future__ import annotations
 
@@ -14,46 +16,26 @@ import re
 import subprocess
 import sys
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GEN = ROOT / "scripts" / "generate_data.py"
+PLAYERS_JSON = ROOT / "data" / "players.json"
 SLEEPER_CACHE = ROOT / "data" / "sleeper_players_raw.json"
 ADP_OUT = ROOT / "data" / "adp_2026_live.json"
 REPORT = ROOT / "data" / "sync_report.json"
 
-# ---- injury news (Aug 24, 2026 sweep) ----
-# injury score 1–32 (higher = healthier). Mapped to games-played estimate in generate_data.
-INJURIES = {
-    # season / long-term
-    "Jayden Higgins": {"injury": 4, "note": "ACL — season", "adp_bump": 80},
-    "Zach Charbonnet": {"injury": 5, "note": "ACL — TBD", "adp_bump": 40},
-    "Tank Dell": {"injury": 6, "note": "ACL+MCL", "adp_bump": 50},
-    "Jordyn Tyson": {"injury": 8, "note": "Hamstring ~2 months / possible IR", "adp_bump": 60},
-    "Alvin Kamara": {"injury": 10, "note": "MCL sprain 4–6 weeks", "adp_bump": 25},
-    "Isiah Pacheco": {"injury": 12, "note": "MCL 3+ weeks", "adp_bump": 20},
-    "James Conner": {"injury": 14, "note": "Foot/ankle 2–3 weeks", "adp_bump": 15},
-    "Alec Pierce": {"injury": 12, "note": "Ankle / PUP concern", "adp_bump": 25},
-    # Week 1 cloudy
-    "Jeremiyah Love": {"injury": 16, "note": "High ankle sprain — Week 1 uncertain", "adp_bump": 8},
-    "Ashton Jeanty": {"injury": 17, "note": "Ankle sprain (Schefter) — timeline TBD", "adp_bump": 12},
-    "Malik Nabers": {"injury": 18, "note": "ACL recovery — possibly Week 1", "adp_bump": 5},
-    "Patrick Mahomes": {"injury": 18, "note": "ACL/LCL recovery — Week 1 watch", "adp_bump": 8},
-    "Tucker Kraft": {"injury": 18, "note": "ACL/meniscus recovery", "adp_bump": 10},
-    "Michael Pittman Jr.": {"injury": 18, "note": "Hamstring 1–2 weeks", "adp_bump": 8},
-    "Puka Nacua": {"injury": 20, "note": "Groin — limited", "adp_bump": 2},
-    "Sam LaPorta": {"injury": 20, "note": "Hip — limited", "adp_bump": 3},
-    "Chuba Hubbard": {"injury": 20, "note": "Hamstring", "adp_bump": 4},
-    "Breece Hall": {"injury": 20, "note": "Groin", "adp_bump": 3},
-    "Makai Lemon": {"injury": 19, "note": "Hamstring", "adp_bump": 10},
-    "Christian McCaffrey": {"injury": 19, "note": "Tightness / workload watch", "adp_bump": 1},
-    "Khalil Shakir": {"injury": 20, "note": "Undisclosed", "adp_bump": 3},
-    "George Kittle": {"injury": 19, "note": "Achilles recovery watch", "adp_bump": 4},
-    "Xavier Worthy": {"injury": 21, "note": "Shoulder", "adp_bump": 2},
-    "Mike Evans": {"injury": 21, "note": "Quad", "adp_bump": 2},
-    "Emeka Egbuka": {"injury": 21, "note": "Toe", "adp_bump": 2},
-    "Saquon Barkley": {"injury": 20, "note": "Foot/ankle checked — monitor", "adp_bump": 2},
-    "Tyler Warren": {"injury": 18, "note": "Injury concern (camp)", "adp_bump": 6},
+# NFL fantasy season year for "this year's rookies"
+SEASON_YEAR = 2026
+
+# Healthy baseline on our 1–32 injury scale (higher = healthier)
+HEALTHY_INJURY = 27
+
+# Optional manual severity overrides when Sleeper understates a known long-term case.
+# Applied only if worse (lower) than the Sleeper-derived score.
+MANUAL_INJURY_OVERRIDES = {
+    # Keep empty unless we intentionally override Sleeper.
 }
 
 # Consensus PPR ADP ~Aug 24 2026 (BeatADP / DIRECTV / Yates blend)
@@ -159,55 +141,153 @@ def norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
-def load_sleeper() -> dict:
-    if SLEEPER_CACHE.exists():
+def load_sleeper(force_refresh: bool = False) -> dict:
+    if SLEEPER_CACHE.exists() and not force_refresh:
         return json.loads(SLEEPER_CACHE.read_text(encoding="utf-8"))
+    print("Fetching fresh Sleeper players API…")
     req = urllib.request.Request(
         "https://api.sleeper.app/v1/players/nfl",
         headers={"User-Agent": "fantasy-guide/1.0"},
     )
-    with urllib.request.urlopen(req, timeout=120) as r:
+    with urllib.request.urlopen(req, timeout=180) as r:
         data = json.loads(r.read().decode())
     SLEEPER_CACHE.write_text(json.dumps(data), encoding="utf-8")
     return data
 
 
+def severe_injury_text(*parts: object) -> bool:
+    blob = " ".join(str(p or "") for p in parts).lower()
+    keys = (
+        "acl",
+        "achilles",
+        "mcl",
+        "pcl",
+        "fracture",
+        "surgery",
+        "torn",
+        "rupture",
+        "season-ending",
+        "season ending",
+    )
+    return any(k in blob for k in keys)
+
+
+def sleeper_to_injury_score(
+    injury_status: str | None,
+    body_part: str | None = None,
+    notes: str | None = None,
+) -> tuple[int, int, str]:
+    """
+    Map Sleeper injury fields → (injury_score 1–32, adp_bump, note).
+    Higher injury_score = healthier.
+    """
+    st = (injury_status or "").strip()
+    st_l = st.lower()
+    part = (body_part or "").strip()
+    note_raw = (notes or "").strip()
+    severe = severe_injury_text(part, note_raw, st)
+    label_bits = [b for b in (st, part, note_raw) if b]
+    label = " — ".join(label_bits) if label_bits else "Healthy"
+
+    if not st:
+        return HEALTHY_INJURY, 0, "Healthy"
+
+    if st_l in ("ir", "injured_reserve"):
+        return (3 if severe else 4), (60 if severe else 45), label
+    if st_l == "pup":
+        return (5 if severe else 6), (50 if severe else 35), label
+    if st_l in ("dnr", "covid"):
+        return 5, 40, label
+    if st_l in ("out",):
+        return (7 if severe else 9), (30 if severe else 18), label
+    if st_l in ("doubtful",):
+        return (10 if severe else 12), (22 if severe else 14), label
+    if st_l in ("sus", "suspension"):
+        return 14, 12, label
+    if st_l in ("na", "inactive"):
+        return 10, 20, label
+    if st_l in ("questionable", "q"):
+        if severe:
+            return 13, 18, label
+        return 18, 5, label
+    if st_l in ("probable",):
+        return 22, 2, label
+
+    # Unknown status with a tag — treat cautiously
+    return (12 if severe else 16), (15 if severe else 6), label
+
+
+def is_this_year_rookie(pl: dict, season_year: int = SEASON_YEAR) -> bool:
+    """True only for players entering their first NFL season this year."""
+    if not pl:
+        return False
+    ye = pl.get("years_exp")
+    meta = pl.get("metadata") or {}
+    ry = meta.get("rookie_year") if isinstance(meta, dict) else None
+    try:
+        ry_i = int(ry) if ry is not None and str(ry).isdigit() else None
+    except (TypeError, ValueError):
+        ry_i = None
+    # Explicit prior-year class → never a this-year rookie
+    if ry_i is not None and ry_i < season_year:
+        return False
+    if ye is not None:
+        try:
+            if int(ye) >= 1:
+                return False
+            if int(ye) == 0:
+                return True
+        except (TypeError, ValueError):
+            pass
+    return ry_i == season_year
+
+
 def sleeper_name_index(sleeper: dict) -> dict:
     idx = {}
     for pid, pl in sleeper.items():
-        if not pl:
+        if not pl or not isinstance(pl, dict):
             continue
         full = pl.get("full_name") or f"{pl.get('first_name') or ''} {pl.get('last_name') or ''}".strip()
         if not full:
             continue
         key = norm(full)
+        meta = pl.get("metadata") or {}
         entry = {
             "sleeper_id": pid,
             "team": pl.get("team"),
             "pos": pl.get("position"),
             "status": pl.get("status"),
             "injury_status": pl.get("injury_status"),
+            "injury_body_part": pl.get("injury_body_part"),
+            "injury_notes": pl.get("injury_notes"),
+            "injury_start_date": pl.get("injury_start_date"),
+            "practice_participation": pl.get("practice_participation"),
             "active": pl.get("active"),
             "full_name": full,
+            "years_exp": pl.get("years_exp"),
+            "rookie_year": meta.get("rookie_year") if isinstance(meta, dict) else None,
+            "age": pl.get("age"),
+            "is_rookie": is_this_year_rookie(pl),
         }
         idx.setdefault(key, []).append(entry)
-        # also index without suffix already handled in norm
     return idx
 
 
 def pick_sleeper_hit(name: str, pos: str, team: str, idx: dict):
     key = norm(name)
-    hits = idx.get(key) or []
+    hits = list(idx.get(key) or [])
     if not hits:
-        # last-name fallback
+        # last-name fallback (careful — prefer exact-ish)
         last = key.split()[-1] if key else ""
-        if last:
+        first = key.split()[0] if key else ""
+        if last and first:
             for k, arr in idx.items():
-                if k.endswith(" " + last) or k == last:
+                parts = k.split()
+                if len(parts) >= 2 and parts[0] == first and parts[-1] == last:
                     hits.extend(arr)
     if not hits:
         return None
-    # prefer active + matching pos/team
+
     def score(h):
         s = 0
         if h.get("active"):
@@ -226,12 +306,31 @@ def pick_sleeper_hit(name: str, pos: str, team: str, idx: dict):
     return hits[0]
 
 
-def patch_generate_data(team_updates: dict, injury_updates: dict, adp_updates: dict) -> dict:
-    text = GEN.read_text(encoding="utf-8")
-    report = {"team_changes": [], "injury_updates": [], "adp_updates": [], "unmatched_inj": [], "unmatched_adp": []}
+def set_rookie_flag(block: str, want: bool) -> str:
+    """Set or clear `"rookie": True/False` on a PLAYERS dict literal."""
+    if re.search(r'"rookie"\s*:', block):
+        return re.sub(r'"rookie"\s*:\s*(True|False)', f'"rookie": {want}', block, count=1)
+    if want:
+        return re.sub(r"\}\s*$", ', "rookie": True}', block)
+    return block
 
-    # Find each player dict by name and patch fields with regex on the dict literal line(s)
-    # PLAYERS entries are single-line dicts mostly.
+
+def patch_generate_data(
+    team_updates: dict,
+    injury_updates: dict,
+    adp_updates: dict,
+    rookie_updates: dict,
+) -> dict:
+    text = GEN.read_text(encoding="utf-8")
+    report = {
+        "team_changes": [],
+        "injury_updates": [],
+        "adp_updates": [],
+        "rookie_updates": [],
+        "unmatched_inj": [],
+        "unmatched_adp": [],
+    }
+
     def repl_player(match: re.Match) -> str:
         block = match.group(0)
         name_m = re.search(r'"name":\s*"([^"]+)"', block)
@@ -253,8 +352,6 @@ def patch_generate_data(team_updates: dict, injury_updates: dict, adp_updates: d
             if re.search(r'"injury":\s*\d+', block):
                 block = re.sub(r'"injury":\s*\d+', f'"injury": {inj}', block, count=1)
             else:
-                block = block.rstrip("}") + f', "injury": {inj}}}' if False else block
-                # insert before closing
                 block = re.sub(r"\}\s*$", f', "injury": {inj}}}', block)
             report["injury_updates"].append({"name": name, **injury_updates[name]})
 
@@ -268,9 +365,25 @@ def patch_generate_data(team_updates: dict, injury_updates: dict, adp_updates: d
                 block = re.sub(r'"adp_half":\s*[\d.]+', f'"adp_half": {half}', block, count=1)
             report["adp_updates"].append({"name": name, "adp": adp})
 
+        # Rookie (Sleeper-authoritative when we have a match)
+        if name in rookie_updates:
+            want = bool(rookie_updates[name]["rookie"])
+            old_m = re.search(r'"rookie"\s*:\s*(True|False)', block)
+            old = old_m.group(1) == "True" if old_m else False
+            block = set_rookie_flag(block, want)
+            if old != want:
+                report["rookie_updates"].append(
+                    {
+                        "name": name,
+                        "from": old,
+                        "to": want,
+                        "years_exp": rookie_updates[name].get("years_exp"),
+                        "rookie_year": rookie_updates[name].get("rookie_year"),
+                    }
+                )
+
         return block
 
-    # Match player dicts inside PLAYERS = [ ... ]
     pattern = re.compile(
         r'\{\s*"name":\s*"[^"]+"\s*,\s*"pos":\s*"[^"]+"\s*,\s*"team":\s*"[^"]+"[^}]*\}',
         re.MULTILINE,
@@ -291,39 +404,159 @@ def patch_generate_data(team_updates: dict, injury_updates: dict, adp_updates: d
     return report
 
 
+def stamp_players_json(sleeper_meta: dict) -> dict:
+    """After generate_data, stamp sleeper_id / years_exp / rookie / injury onto players.json."""
+    players = json.loads(PLAYERS_JSON.read_text(encoding="utf-8"))
+    stamped = 0
+    rookies = []
+    cleared = []
+    for p in players:
+        meta = sleeper_meta.get(p["name"])
+        if not meta:
+            continue
+        p["sleeper_id"] = meta.get("sleeper_id")
+        p["years_exp"] = meta.get("years_exp")
+        p["rookie_year"] = meta.get("rookie_year")
+        p["injury_status"] = meta.get("injury_status")
+        p["injury_body_part"] = meta.get("injury_body_part")
+        p["injury_notes"] = meta.get("injury_notes")
+        want = bool(meta.get("rookie"))
+        if bool(p.get("rookie")) != want:
+            if want:
+                rookies.append(p["name"])
+            else:
+                cleared.append(p["name"])
+        p["rookie"] = want
+        stamped += 1
+    PLAYERS_JSON.write_text(json.dumps(players, indent=2), encoding="utf-8")
+    compact = ROOT / "data" / "players_compact.json"
+    if compact.exists():
+        compact.write_text(json.dumps(players), encoding="utf-8")
+    return {"stamped": stamped, "set_rookie": rookies, "cleared_rookie": cleared}
+
+
 def main():
+    force = "--refresh" in sys.argv or not SLEEPER_CACHE.exists()
     print("Loading Sleeper…")
-    sleeper = load_sleeper()
+    sleeper = load_sleeper(force_refresh=force)
     idx = sleeper_name_index(sleeper)
 
-    # Read current player names/teams from generate_data via exec of PLAYERS only — parse names
     text = GEN.read_text(encoding="utf-8")
     names = re.findall(r'"name":\s*"([^"]+)"\s*,\s*"pos":\s*"([^"]+)"\s*,\s*"team":\s*"([^"]+)"', text)
 
     team_updates = {}
     sleeper_ids = {}
+    rookie_updates = {}
+    sleeper_meta = {}
+    injury_updates = {}
+    unmatched = []
+
     for name, pos, team in names:
         if pos == "DST":
-            # DST names are team names — keep team abbrev from entry
             continue
         hit = pick_sleeper_hit(name, pos, team, idx)
-        if hit and hit.get("team") and hit["team"] != team:
+        if not hit:
+            unmatched.append(name)
+            continue
+        if hit.get("team") and hit["team"] != team:
             team_updates[name] = hit["team"]
-        if hit and hit.get("sleeper_id"):
+        if hit.get("sleeper_id"):
             sleeper_ids[name] = hit["sleeper_id"]
+        is_rook = bool(hit.get("is_rookie"))
+        rookie_updates[name] = {
+            "rookie": is_rook,
+            "years_exp": hit.get("years_exp"),
+            "rookie_year": hit.get("rookie_year"),
+        }
+
+        score, adp_bump, note = sleeper_to_injury_score(
+            hit.get("injury_status"),
+            hit.get("injury_body_part"),
+            hit.get("injury_notes"),
+        )
+        # Manual override only if stricter
+        if name in MANUAL_INJURY_OVERRIDES:
+            ov = MANUAL_INJURY_OVERRIDES[name]
+            if ov.get("injury", 99) < score:
+                score = ov["injury"]
+                adp_bump = max(adp_bump, ov.get("adp_bump", 0))
+                note = ov.get("note", note)
+
+        # Always write injury for matched players so cleared players recover
+        injury_updates[name] = {
+            "injury": score,
+            "note": note,
+            "adp_bump": adp_bump,
+            "injury_status": hit.get("injury_status"),
+            "injury_body_part": hit.get("injury_body_part"),
+            "injury_notes": hit.get("injury_notes"),
+            "source": "sleeper",
+        }
+
+        sleeper_meta[name] = {
+            "sleeper_id": hit.get("sleeper_id"),
+            "years_exp": hit.get("years_exp"),
+            "rookie_year": hit.get("rookie_year"),
+            "rookie": is_rook,
+            "team": hit.get("team"),
+            "injury_status": hit.get("injury_status"),
+            "injury_body_part": hit.get("injury_body_part"),
+            "injury_notes": hit.get("injury_notes"),
+        }
 
     # Apply injury ADP bumps onto base ADP map
     adp_final = dict(ADP_2026)
-    for name, meta in INJURIES.items():
+    for name, meta in injury_updates.items():
+        bump = meta.get("adp_bump") or 0
+        if bump <= 0:
+            continue
         base = adp_final.get(name)
         if base is not None:
-            adp_final[name] = round(min(200, base + meta.get("adp_bump", 0)), 1)
-        # if not in ADP map, leave injury-only update
+            adp_final[name] = round(min(200, base + bump), 1)
 
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     ADP_OUT.write_text(
-        json.dumps({"updated": "2026-08-24", "adp": adp_final, "injuries": INJURIES}, indent=2),
+        json.dumps(
+            {
+                "updated": today,
+                "adp": adp_final,
+                "injuries": {
+                    n: {
+                        "injury": m["injury"],
+                        "note": m["note"],
+                        "adp_bump": m["adp_bump"],
+                        "injury_status": m.get("injury_status"),
+                        "injury_body_part": m.get("injury_body_part"),
+                        "injury_notes": m.get("injury_notes"),
+                    }
+                    for n, m in injury_updates.items()
+                    if m.get("injury_status") or m["injury"] < HEALTHY_INJURY
+                },
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
+
+    this_year = sorted(
+        [n for n, m in rookie_updates.items() if m["rookie"]],
+        key=lambda x: x,
+    )
+    not_rookies_notable = [
+        n
+        for n in (
+            "Omarion Hampton",
+            "Emeka Egbuka",
+            "Colston Loveland",
+            "Ashton Jeanty",
+            "Cam Skattebo",
+            "Tetairoa McMillan",
+            "Shedeur Sanders",
+            "Quinshon Judkins",
+            "Tyler Warren",
+        )
+        if n in rookie_updates and not rookie_updates[n]["rookie"]
+    ]
 
     print(f"Team changes to apply: {len(team_updates)}")
     for n, t in sorted(team_updates.items(), key=lambda x: x[0])[:40]:
@@ -331,17 +564,61 @@ def main():
     if len(team_updates) > 40:
         print(f"  … +{len(team_updates) - 40} more")
 
-    report = patch_generate_data(team_updates, INJURIES, adp_final)
+    flagged = sorted(
+        [
+            (n, m)
+            for n, m in injury_updates.items()
+            if m.get("injury_status") or m["injury"] < HEALTHY_INJURY
+        ],
+        key=lambda x: (x[1].get("injury_status") or "ZZZ", x[0]),
+    )
+    print(f"\nSleeper injuries on our board: {len(flagged)}")
+    for n, m in flagged:
+        st = m.get("injury_status") or "Healthy"
+        print(f"  {st:14} score={m['injury']:2d}  {n:28} {m['note'][:70]}")
+
+    print(f"\nTHIS YEAR rookies (Sleeper years_exp==0 / ry=={SEASON_YEAR}): {len(this_year)}")
+    for n in this_year:
+        m = rookie_updates[n]
+        print(f"  R  {n}  years={m['years_exp']} ry={m['rookie_year']}")
+    print(f"\nConfirmed NOT this-year rookies (2025 class etc.): {len(not_rookies_notable)}")
+    for n in not_rookies_notable:
+        m = rookie_updates[n]
+        print(f"  —  {n}  years={m['years_exp']} ry={m['rookie_year']}")
+
+    report = patch_generate_data(team_updates, injury_updates, adp_final, rookie_updates)
     report["sleeper_ids_found"] = len(sleeper_ids)
     report["team_change_count"] = len(report["team_changes"])
-    REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    report["this_year_rookies"] = this_year
+    report["rookie_flag_flips"] = report["rookie_updates"]
+    report["unmatched_sleeper"] = unmatched
+    report["sleeper_injuries"] = [
+        {
+            "name": n,
+            "injury": m["injury"],
+            "status": m.get("injury_status"),
+            "note": m["note"],
+        }
+        for n, m in flagged
+    ]
 
     print("Regenerating players.json…")
     subprocess.check_call([sys.executable, str(GEN)], cwd=str(ROOT))
+
+    stamp = stamp_players_json(sleeper_meta)
+    report["stamp"] = stamp
+    REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
     print("Done.")
     print(f"Team changes: {report['team_change_count']}")
-    print(f"Injuries applied: {len(report['injury_updates'])}")
+    print(f"Rookie flag flips: {len(report['rookie_updates'])}")
+    for x in report["rookie_updates"]:
+        print(f"  {x['name']}: {x['from']} → {x['to']} (years={x.get('years_exp')} ry={x.get('rookie_year')})")
+    print(f"Stamped sleeper fields on {stamp['stamped']} players")
+    print(f"Injury scores written: {len(report['injury_updates'])} (flagged {len(flagged)})")
     print(f"ADP updates: {len(report['adp_updates'])}")
+    if unmatched:
+        print(f"Unmatched to Sleeper ({len(unmatched)}):", unmatched[:15])
     if report["unmatched_inj"]:
         print("Unmatched injuries:", report["unmatched_inj"])
     if report["unmatched_adp"]:

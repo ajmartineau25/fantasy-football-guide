@@ -66,6 +66,16 @@ const state = {
 };
 
 const $ = (sel, el = document) => el.querySelector(sel);
+
+function injuryTagHtml(p) {
+  const st = p?.injury_status;
+  if (!st) return "";
+  const severe = /^(IR|PUP|Out|Doubtful|DNR|NA)$/i.test(st);
+  const title = [st, p.injury_body_part, p.injury_notes].filter(Boolean).join(" — ");
+  const short =
+    st === "Questionable" ? "Q" : st === "Doubtful" ? "D" : st === "Out" ? "O" : st;
+  return ` <span class="inj-tag${severe ? " severe" : ""}" title="${title.replace(/"/g, "&quot;")}">${short}</span>`;
+}
 const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
 
 const DATA_FALLBACK =
@@ -574,7 +584,7 @@ function renderSuggestions() {
     <div class="oc-hero-top">
       <span class="pos-badge ${primary.pos}">${primary.pos}</span>
       <div>
-        <div class="oc-hero-name">${primary.name}</div>
+        <div class="oc-hero-name">${primary.name}${injuryTagHtml(primary)}</div>
         <div class="oc-hero-meta">${primary.team} · Bye ${primary.bye || "—"} · ADP ${primary.adpRaw ?? primary.adp?.[state.scoring] ?? "—"} · Model #${primary.modelRank ?? "—"}</div>
       </div>
     </div>
@@ -662,7 +672,7 @@ function renderRemainingBoard() {
       (p, i) => `
     <tr data-id="${p.id}">
       <td class="rank-num">${i + 1}</td>
-      <td><div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}</div></td>
+      <td><div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}${injuryTagHtml(p)}</div></td>
       <td class="team-cell">${p.team}</td>
       <td class="score-cell muted">${p.bye || "—"}</td>
       <td class="score-cell">${Number(p.adp[state.scoring]).toFixed(1)}</td>

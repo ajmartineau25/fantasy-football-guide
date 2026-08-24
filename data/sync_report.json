@@ -1,250 +1,1915 @@
 {
-  "team_changes": [
-    {
-      "name": "David Montgomery",
-      "from": "DET",
-      "to": "HOU"
-    },
-    {
-      "name": "Rachaad White",
-      "from": "TB",
-      "to": "WAS"
-    },
-    {
-      "name": "Brian Robinson Jr.",
-      "from": "WAS",
-      "to": "ATL"
-    },
-    {
-      "name": "Najee Harris",
-      "from": "LAC",
-      "to": "NYG"
-    },
-    {
-      "name": "Rico Dowdle",
-      "from": "CAR",
-      "to": "PIT"
-    },
-    {
-      "name": "Tank Bigsby",
-      "from": "JAX",
-      "to": "PHI"
-    },
-    {
-      "name": "Mike Evans",
-      "from": "TB",
-      "to": "SF"
-    },
-    {
-      "name": "Jauan Jennings",
-      "from": "SF",
-      "to": "MIN"
-    },
-    {
-      "name": "Stefon Diggs",
-      "from": "NE",
-      "to": "WAS"
-    },
-    {
-      "name": "Rashid Shaheed",
-      "from": "NO",
-      "to": "SEA"
-    },
-    {
-      "name": "Deebo Samuel",
-      "from": "WAS",
-      "to": "SF"
-    },
-    {
-      "name": "Michael Pittman Jr.",
-      "from": "IND",
-      "to": "PIT"
-    },
-    {
-      "name": "Keenan Allen",
-      "from": "LAC",
-      "to": "IND"
-    },
-    {
-      "name": "Wan'Dale Robinson",
-      "from": "NYG",
-      "to": "TEN"
-    },
-    {
-      "name": "David Njoku",
-      "from": "CLE",
-      "to": "LAC"
-    },
-    {
-      "name": "Evan Engram",
-      "from": "JAX",
-      "to": "DEN"
-    },
-    {
-      "name": "Isaiah Likely",
-      "from": "BAL",
-      "to": "NYG"
-    },
-    {
-      "name": "Chig Okonkwo",
-      "from": "TEN",
-      "to": "WAS"
-    },
-    {
-      "name": "Matt Gay",
-      "from": "WAS",
-      "to": "LV"
-    },
-    {
-      "name": "Daniel Carlson",
-      "from": "LV",
-      "to": "NO"
-    }
-  ],
+  "team_changes": [],
   "injury_updates": [
     {
+      "name": "Jahmyr Gibbs",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Bijan Robinson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
       "name": "Christian McCaffrey",
-      "injury": 19,
-      "note": "Tightness / workload watch",
-      "adp_bump": 1
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jonathan Taylor",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Saquon Barkley",
-      "injury": 20,
-      "note": "Foot/ankle checked \u2014 monitor",
-      "adp_bump": 2
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "De'Von Achane",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Ashton Jeanty",
-      "injury": 17,
-      "note": "Ankle sprain (Schefter) \u2014 timeline TBD",
-      "adp_bump": 12
+      "injury": 18,
+      "note": "Questionable \u2014 Knee",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Bucky Irving",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Josh Jacobs",
+      "injury": 18,
+      "note": "Questionable \u2014 Groin",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Groin",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Chase Brown",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "James Cook",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Omarion Hampton",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Kenneth Walker III",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Kyren Williams",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Alvin Kamara",
-      "injury": 10,
-      "note": "MCL sprain 4\u20136 weeks",
-      "adp_bump": 25
+      "injury": 18,
+      "note": "Questionable \u2014 Knee",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Derrick Henry",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Breece Hall",
-      "injury": 20,
-      "note": "Groin",
-      "adp_bump": 3
+      "injury": 18,
+      "note": "Questionable \u2014 Thigh",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Thigh",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Quinshon Judkins",
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "TreVeyon Henderson",
+      "injury": 18,
+      "note": "Questionable \u2014 Leg",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Leg",
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "James Conner",
-      "injury": 14,
-      "note": "Foot/ankle 2\u20133 weeks",
-      "adp_bump": 15
+      "injury": 18,
+      "note": "Questionable \u2014 Foot",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Foot",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "David Montgomery",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tony Pollard",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Isiah Pacheco",
-      "injury": 12,
-      "note": "MCL 3+ weeks",
-      "adp_bump": 20
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - MCL",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - MCL",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Rhamondre Stevenson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Joe Mixon",
+      "injury": 18,
+      "note": "Questionable \u2014 Foot",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Foot",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Travis Etienne Jr.",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "RJ Harvey",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Rachaad White",
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Javonte Williams",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tyjae Spears",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jaylen Warren",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Chuba Hubbard",
-      "injury": 20,
-      "note": "Hamstring",
-      "adp_bump": 4
+      "injury": 18,
+      "note": "Questionable \u2014 Hamstring",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Hamstring",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "D'Andre Swift",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Brian Robinson Jr.",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Najee Harris",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Aaron Jones",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "J.K. Dobbins",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Cam Skattebo",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Jeremiyah Love",
-      "injury": 16,
-      "note": "High ankle sprain \u2014 Week 1 uncertain",
-      "adp_bump": 8
+      "injury": 18,
+      "note": "Questionable \u2014 Ankle",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Ankle",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jadarian Price",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Mike Washington Jr.",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jonah Coleman",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Nicholas Singleton",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Rico Dowdle",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Zach Charbonnet",
       "injury": 5,
-      "note": "ACL \u2014 TBD",
-      "adp_bump": 40
+      "note": "PUP \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 50,
+      "injury_status": "PUP",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Trey Benson",
+      "injury": 18,
+      "note": "Questionable \u2014 Knee",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tank Bigsby",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Blake Corum",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Puka Nacua",
-      "injury": 20,
-      "note": "Groin \u2014 limited",
-      "adp_bump": 2
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Ja'Marr Chase",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jaxon Smith-Njigba",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Amon-Ra St. Brown",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Drake London",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "CeeDee Lamb",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Justin Jefferson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Rashee Rice",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "A.J. Brown",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Chris Olave",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "George Pickens",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Nico Collins",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Zay Flowers",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Malik Nabers",
-      "injury": 18,
-      "note": "ACL recovery \u2014 possibly Week 1",
-      "adp_bump": 5
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Brian Thomas Jr.",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tyreek Hill",
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Tee Higgins",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Ladd McConkey",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Garrett Wilson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "DJ Moore",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Marvin Harrison Jr.",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Terry McLaurin",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Davante Adams",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Mike Evans",
-      "injury": 21,
-      "note": "Quad",
-      "adp_bump": 2
+      "injury": 18,
+      "note": "Questionable \u2014 Foot",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Foot",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "DK Metcalf",
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jaylen Waddle",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Devonta Smith",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Courtland Sutton",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jameson Williams",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Rome Odunze",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jauan Jennings",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Ricky Pearsall",
+      "injury": 3,
+      "note": "IR \u2014 Knee - PCL",
+      "adp_bump": 60,
+      "injury_status": "IR",
+      "injury_body_part": "Knee - PCL",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jerry Jeudy",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jordan Addison",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Calvin Ridley",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Chris Godwin",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Stefon Diggs",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Khalil Shakir",
-      "injury": 20,
-      "note": "Undisclosed",
-      "adp_bump": 3
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Josh Downs",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Rashid Shaheed",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Xavier Worthy",
-      "injury": 21,
-      "note": "Shoulder",
-      "adp_bump": 2
+      "injury": 18,
+      "note": "Questionable \u2014 Shoulder",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Shoulder",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jayden Reed",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Dontayvion Wicks",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Carnell Tate",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Jordyn Tyson",
-      "injury": 8,
-      "note": "Hamstring ~2 months / possible IR",
-      "adp_bump": 60
+      "injury": 12,
+      "note": "Doubtful \u2014 Hamstring \u2014 Strain",
+      "adp_bump": 14,
+      "injury_status": "Doubtful",
+      "injury_body_part": "Hamstring",
+      "injury_notes": "Strain",
+      "source": "sleeper"
     },
     {
       "name": "Makai Lemon",
-      "injury": 19,
-      "note": "Hamstring",
-      "adp_bump": 10
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "KC Concepcion",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Omar Cooper Jr.",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Germie Bernard",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Denzel Boston",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "De'Zhaun Stribling",
+      "injury": 18,
+      "note": "Questionable \u2014 Shoulder",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Shoulder",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Antonio Williams",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Zachariah Branch",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Elijah Sarratt",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Malachi Fields",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Ted Hurst",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Cooper Kupp",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Deebo Samuel",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Michael Pittman Jr.",
       "injury": 18,
-      "note": "Hamstring 1\u20132 weeks",
-      "adp_bump": 8
+      "note": "Questionable \u2014 Leg",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Leg",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Keenan Allen",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Diontae Johnson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Wan'Dale Robinson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Adam Thielen",
+      "injury": 10,
+      "note": "NA \u2014 Undisclosed",
+      "adp_bump": 20,
+      "injury_status": "NA",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jalen Coker",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tetairoa McMillan",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Emeka Egbuka",
-      "injury": 21,
-      "note": "Toe",
-      "adp_bump": 2
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Josh Allen",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Lamar Jackson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Drake Maye",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Joe Burrow",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jalen Hurts",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Patrick Mahomes",
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Jayden Daniels",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Baker Mayfield",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Bo Nix",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Justin Herbert",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Dak Prescott",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jared Goff",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Caleb Williams",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Trevor Lawrence",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Matthew Stafford",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jordan Love",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "C.J. Stroud",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Brock Purdy",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Kyler Murray",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Sam Darnold",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jaxson Dart",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tua Tagovailoa",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Daniel Jones",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Cam Ward",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Bryce Young",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Aaron Rodgers",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Geno Smith",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Malik Willis",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Michael Penix Jr.",
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "J.J. McCarthy",
       "injury": 18,
-      "note": "ACL/LCL recovery \u2014 Week 1 watch",
-      "adp_bump": 8
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tyler Shough",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Shedeur Sanders",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Kirk Cousins",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Fernando Mendoza",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Ty Simpson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Trey McBride",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Brock Bowers",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "George Kittle",
-      "injury": 19,
-      "note": "Achilles recovery watch",
-      "adp_bump": 4
+      "injury": 13,
+      "note": "Questionable \u2014 Achilles \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Achilles",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Travis Kelce",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Sam LaPorta",
-      "injury": 20,
-      "note": "Hip \u2014 limited",
-      "adp_bump": 3
+      "injury": 18,
+      "note": "Questionable \u2014 Hip",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Hip",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Mark Andrews",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "David Njoku",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "T.J. Hockenson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Evan Engram",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Kyle Pitts",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Dallas Goedert",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jake Ferguson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Tucker Kraft",
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Hunter Henry",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Pat Freiermuth",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jonnu Smith",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Isaiah Likely",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Cole Kmet",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Dalton Kincaid",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Cade Otton",
       "injury": 18,
-      "note": "ACL/meniscus recovery",
-      "adp_bump": 10
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Chig Okonkwo",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     },
     {
       "name": "Tyler Warren",
       "injury": 18,
-      "note": "Injury concern (camp)",
-      "adp_bump": 6
+      "note": "Questionable \u2014 Groin",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Groin",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Colston Loveland",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Kenyon Sadiq",
+      "injury": 13,
+      "note": "Questionable \u2014 Abdomen \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Abdomen",
+      "injury_notes": "Surgery",
+      "source": "sleeper"
+    },
+    {
+      "name": "Eli Stowers",
+      "injury": 18,
+      "note": "Questionable \u2014 Hamstring",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Hamstring",
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Eli Raridon",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Brandon Aubrey",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Justin Tucker",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Harrison Butker",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jake Elliott",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Cameron Dicker",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Younghoe Koo",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Tyler Bass",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jason Myers",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Chase McLaughlin",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Wil Lutz",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Jake Bates",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Ka'imi Fairbairn",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Chris Boswell",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Evan McPherson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Matt Gay",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
+    },
+    {
+      "name": "Daniel Carlson",
+      "injury": 27,
+      "note": "Healthy",
+      "adp_bump": 0,
+      "injury_status": null,
+      "injury_body_part": null,
+      "injury_notes": null,
+      "source": "sleeper"
     }
   ],
   "adp_updates": [
@@ -258,7 +1923,7 @@
     },
     {
       "name": "Christian McCaffrey",
-      "adp": 8.0
+      "adp": 12.0
     },
     {
       "name": "Jonathan Taylor",
@@ -266,7 +1931,7 @@
     },
     {
       "name": "Saquon Barkley",
-      "adp": 20.5
+      "adp": 18.5
     },
     {
       "name": "De'Von Achane",
@@ -274,7 +1939,7 @@
     },
     {
       "name": "Ashton Jeanty",
-      "adp": 30.0
+      "adp": 23.0
     },
     {
       "name": "Bucky Irving",
@@ -282,7 +1947,7 @@
     },
     {
       "name": "Josh Jacobs",
-      "adp": 30.0
+      "adp": 35.0
     },
     {
       "name": "Chase Brown",
@@ -306,7 +1971,7 @@
     },
     {
       "name": "Alvin Kamara",
-      "adp": 100.0
+      "adp": 80.0
     },
     {
       "name": "Derrick Henry",
@@ -314,15 +1979,15 @@
     },
     {
       "name": "Breece Hall",
-      "adp": 35.0
+      "adp": 37.0
     },
     {
       "name": "Quinshon Judkins",
-      "adp": 52.0
+      "adp": 57.0
     },
     {
       "name": "James Conner",
-      "adp": 87.0
+      "adp": 77.0
     },
     {
       "name": "David Montgomery",
@@ -334,7 +1999,7 @@
     },
     {
       "name": "Isiah Pacheco",
-      "adp": 88.0
+      "adp": 86.0
     },
     {
       "name": "Rhamondre Stevenson",
@@ -350,7 +2015,7 @@
     },
     {
       "name": "Chuba Hubbard",
-      "adp": 62.5
+      "adp": 63.5
     },
     {
       "name": "D'Andre Swift",
@@ -362,7 +2027,7 @@
     },
     {
       "name": "Jeremiyah Love",
-      "adp": 36.0
+      "adp": 33.0
     },
     {
       "name": "Jadarian Price",
@@ -374,7 +2039,7 @@
     },
     {
       "name": "Puka Nacua",
-      "adp": 6.5
+      "adp": 9.5
     },
     {
       "name": "Ja'Marr Chase",
@@ -426,7 +2091,7 @@
     },
     {
       "name": "Malik Nabers",
-      "adp": 35.5
+      "adp": 48.5
     },
     {
       "name": "Brian Thomas Jr.",
@@ -458,11 +2123,11 @@
     },
     {
       "name": "Mike Evans",
-      "adp": 54.0
+      "adp": 57.0
     },
     {
       "name": "DK Metcalf",
-      "adp": 54.0
+      "adp": 59.0
     },
     {
       "name": "Jaylen Waddle",
@@ -494,11 +2159,11 @@
     },
     {
       "name": "Khalil Shakir",
-      "adp": 58.5
+      "adp": 60.5
     },
     {
       "name": "Xavier Worthy",
-      "adp": 62.0
+      "adp": 65.0
     },
     {
       "name": "Carnell Tate",
@@ -506,11 +2171,11 @@
     },
     {
       "name": "Jordyn Tyson",
-      "adp": 190.0
+      "adp": 144.0
     },
     {
       "name": "Makai Lemon",
-      "adp": 105.0
+      "adp": 95.0
     },
     {
       "name": "KC Concepcion",
@@ -522,7 +2187,7 @@
     },
     {
       "name": "Emeka Egbuka",
-      "adp": 40.0
+      "adp": 43.0
     },
     {
       "name": "Josh Allen",
@@ -546,7 +2211,7 @@
     },
     {
       "name": "Patrick Mahomes",
-      "adp": 56.0
+      "adp": 66.0
     },
     {
       "name": "Jayden Daniels",
@@ -586,19 +2251,19 @@
     },
     {
       "name": "George Kittle",
-      "adp": 59.0
+      "adp": 73.0
     },
     {
       "name": "Sam LaPorta",
-      "adp": 53.0
+      "adp": 55.0
     },
     {
       "name": "Tucker Kraft",
-      "adp": 72.0
+      "adp": 80.0
     },
     {
       "name": "Tyler Warren",
-      "adp": 91.0
+      "adp": 90.0
     },
     {
       "name": "Colston Loveland",
@@ -606,18 +2271,277 @@
     },
     {
       "name": "Kenyon Sadiq",
-      "adp": 105.0
+      "adp": 123.0
     }
   ],
-  "unmatched_inj": [
-    "Jayden Higgins",
-    "Tank Dell",
-    "Alec Pierce"
-  ],
+  "rookie_updates": [],
+  "unmatched_inj": [],
   "unmatched_adp": [
     "DeVonta Smith"
   ],
   "players_patched": 207,
   "sleeper_ids_found": 191,
-  "team_change_count": 20
+  "team_change_count": 0,
+  "this_year_rookies": [
+    "Antonio Williams",
+    "Carnell Tate",
+    "De'Zhaun Stribling",
+    "Denzel Boston",
+    "Eli Raridon",
+    "Eli Stowers",
+    "Elijah Sarratt",
+    "Fernando Mendoza",
+    "Germie Bernard",
+    "Jadarian Price",
+    "Jeremiyah Love",
+    "Jonah Coleman",
+    "Jordyn Tyson",
+    "KC Concepcion",
+    "Kenyon Sadiq",
+    "Makai Lemon",
+    "Malachi Fields",
+    "Mike Washington Jr.",
+    "Nicholas Singleton",
+    "Omar Cooper Jr.",
+    "Ted Hurst",
+    "Ty Simpson",
+    "Zachariah Branch"
+  ],
+  "rookie_flag_flips": [],
+  "unmatched_sleeper": [],
+  "sleeper_injuries": [
+    {
+      "name": "Jordyn Tyson",
+      "injury": 12,
+      "status": "Doubtful",
+      "note": "Doubtful \u2014 Hamstring \u2014 Strain"
+    },
+    {
+      "name": "Ricky Pearsall",
+      "injury": 3,
+      "status": "IR",
+      "note": "IR \u2014 Knee - PCL"
+    },
+    {
+      "name": "Adam Thielen",
+      "injury": 10,
+      "status": "NA",
+      "note": "NA \u2014 Undisclosed"
+    },
+    {
+      "name": "Zach Charbonnet",
+      "injury": 5,
+      "status": "PUP",
+      "note": "PUP \u2014 Knee - ACL \u2014 Surgery"
+    },
+    {
+      "name": "Alvin Kamara",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee"
+    },
+    {
+      "name": "Ashton Jeanty",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee"
+    },
+    {
+      "name": "Breece Hall",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Thigh"
+    },
+    {
+      "name": "Cade Otton",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "Christian McCaffrey",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "Chuba Hubbard",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Hamstring"
+    },
+    {
+      "name": "DK Metcalf",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "De'Zhaun Stribling",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Shoulder"
+    },
+    {
+      "name": "Eli Stowers",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Hamstring"
+    },
+    {
+      "name": "Emeka Egbuka",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "George Kittle",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Achilles \u2014 Surgery"
+    },
+    {
+      "name": "Isiah Pacheco",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee - MCL"
+    },
+    {
+      "name": "J.J. McCarthy",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "James Conner",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Foot"
+    },
+    {
+      "name": "Jeremiyah Love",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Ankle"
+    },
+    {
+      "name": "Joe Mixon",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Foot"
+    },
+    {
+      "name": "Josh Jacobs",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Groin"
+    },
+    {
+      "name": "Kenyon Sadiq",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Abdomen \u2014 Surgery"
+    },
+    {
+      "name": "Khalil Shakir",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "Malik Nabers",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery"
+    },
+    {
+      "name": "Michael Penix Jr.",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery"
+    },
+    {
+      "name": "Michael Pittman Jr.",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Leg"
+    },
+    {
+      "name": "Mike Evans",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Foot"
+    },
+    {
+      "name": "Patrick Mahomes",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery"
+    },
+    {
+      "name": "Puka Nacua",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "Quinshon Judkins",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "Rachaad White",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Undisclosed"
+    },
+    {
+      "name": "Sam LaPorta",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Hip"
+    },
+    {
+      "name": "TreVeyon Henderson",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Leg"
+    },
+    {
+      "name": "Trey Benson",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee"
+    },
+    {
+      "name": "Tucker Kraft",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery"
+    },
+    {
+      "name": "Tyler Warren",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Groin"
+    },
+    {
+      "name": "Tyreek Hill",
+      "injury": 13,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery"
+    },
+    {
+      "name": "Xavier Worthy",
+      "injury": 18,
+      "status": "Questionable",
+      "note": "Questionable \u2014 Shoulder"
+    }
+  ],
+  "stamp": {
+    "stamped": 191,
+    "set_rookie": [],
+    "cleared_rookie": []
+  }
 }

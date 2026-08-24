@@ -283,7 +283,12 @@ export function buildReasons(p, ctx) {
 export function buildRisks(p, ctx = {}) {
   const risks = [];
   const m = p.activeMetrics || p.metrics?.ppr || {};
-  if ((m.injury ?? 17) <= 11) risks.push("Injury / games-played profile is shaky");
+  if (p.injury_status) {
+    const part = p.injury_body_part ? ` (${p.injury_body_part})` : "";
+    risks.push(`Sleeper: ${p.injury_status}${part}`);
+  } else if ((m.injury ?? 17) <= 11) {
+    risks.push("Injury / games-played profile is shaky");
+  }
   if ((m.ageFitness ?? 80) < 45) risks.push("Age curve: decline risk elevated");
   if (p.rookie) risks.push("Rookie variance — role may lag Week 1–4");
   if ((m.opportunity ?? 20) >= 18) risks.push("Role not locked — committee / unproven path");

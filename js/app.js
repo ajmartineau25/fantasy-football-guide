@@ -149,6 +149,17 @@ function rosterLabel() {
   return `${t.QB}QB ${t.RB}RB ${t.WR}WR ${t.TE}TE ${t.FLEX}FLEX`;
 }
 
+/** Compact Sleeper injury badge next to a player name. */
+function injuryTagHtml(p) {
+  const st = p?.injury_status;
+  if (!st) return "";
+  const severe = /^(IR|PUP|Out|Doubtful|DNR|NA)$/i.test(st);
+  const title = [st, p.injury_body_part, p.injury_notes].filter(Boolean).join(" — ");
+  const short =
+    st === "Questionable" ? "Q" : st === "Doubtful" ? "D" : st === "Out" ? "O" : st;
+  return ` <span class="inj-tag${severe ? " severe" : ""}" title="${title.replace(/"/g, "&quot;")}">${short}</span>`;
+}
+
 function renderSheetHeader() {
   const sub = $("#sheetSub");
   const badges = $("#sheetBadges");
@@ -698,7 +709,7 @@ function renderBoard() {
           <td>
             <div class="player-cell">
               <div>
-                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}</div>
+                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}${injuryTagHtml(p)}</div>
                 <div class="meta">${teamExtra}</div>
               </div>
             </div>
@@ -750,7 +761,7 @@ function renderBoard() {
           <td class="rank-num">${p.rank}</td>
           <td>
             <div class="player-cell">
-              <div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}</div>
+              <div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}${injuryTagHtml(p)}</div>
             </div>
           </td>
           <td class="team-cell">${p.team}</td>
@@ -868,6 +879,7 @@ function openPlayer(id) {
           Age ${p.age || "—"} · Bye ${p.bye} · ADP ${adp} · Model #${modelRank}
           ${value != null ? ` · vs ADP ${value > 0 ? "+" : ""}${value}` : ""}
           ${p.rookie ? " · Rookie" : ""}
+          ${p.injury_status ? ` · <span class="inj-tag${/^(IR|PUP|Out|Doubtful|DNR|NA)$/i.test(p.injury_status) ? " severe" : ""}">${p.injury_status}${p.injury_body_part ? ` · ${p.injury_body_part}` : ""}</span>` : ""}
           ${p.drafted ? " · <strong style='color:var(--danger)'>DRAFTED</strong>" : ""}
         </p>
       </div>

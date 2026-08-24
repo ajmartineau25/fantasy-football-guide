@@ -4,18 +4,18 @@
     "Jahmyr Gibbs": 1.5,
     "Bijan Robinson": 2.5,
     "Ja'Marr Chase": 3.5,
-    "Puka Nacua": 6.5,
+    "Puka Nacua": 9.5,
     "Jaxon Smith-Njigba": 5.5,
-    "Christian McCaffrey": 8.0,
+    "Christian McCaffrey": 12.0,
     "Amon-Ra St. Brown": 7.5,
     "Jonathan Taylor": 8.5,
     "CeeDee Lamb": 10.0,
-    "Ashton Jeanty": 30.0,
+    "Ashton Jeanty": 23.0,
     "Justin Jefferson": 11.5,
     "James Cook": 12.5,
     "De'Von Achane": 13.5,
     "Chase Brown": 15.5,
-    "Saquon Barkley": 20.5,
+    "Saquon Barkley": 18.5,
     "A.J. Brown": 19.5,
     "Trey McBride": 21.0,
     "Omarion Hampton": 21.5,
@@ -27,18 +27,18 @@
     "Drake London": 16.5,
     "Derrick Henry": 19.0,
     "George Pickens": 24.5,
-    "Jeremiyah Love": 36.0,
-    "Josh Jacobs": 30.0,
+    "Jeremiyah Love": 33.0,
+    "Josh Jacobs": 35.0,
     "DeVonta Smith": 29.0,
     "Zay Flowers": 28.5,
-    "Malik Nabers": 35.5,
-    "Breece Hall": 35.0,
+    "Malik Nabers": 48.5,
+    "Breece Hall": 37.0,
     "Kyren Williams": 31.5,
     "Josh Allen": 31.0,
     "Tee Higgins": 36.0,
     "Garrett Wilson": 37.0,
     "Tetairoa McMillan": 35.0,
-    "Emeka Egbuka": 40.0,
+    "Emeka Egbuka": 43.0,
     "Javonte Williams": 36.5,
     "Travis Etienne Jr.": 38.5,
     "Ladd McConkey": 34.0,
@@ -46,188 +46,357 @@
     "Brian Thomas Jr.": 27.0,
     "Bucky Irving": 29.5,
     "Lamar Jackson": 40.0,
-    "Patrick Mahomes": 56.0,
+    "Patrick Mahomes": 66.0,
     "Jayden Daniels": 42.0,
     "Joe Burrow": 45.0,
     "Jalen Hurts": 46.0,
-    "Sam LaPorta": 53.0,
-    "George Kittle": 59.0,
-    "Tucker Kraft": 72.0,
+    "Sam LaPorta": 55.0,
+    "George Kittle": 73.0,
+    "Tucker Kraft": 80.0,
     "Colston Loveland": 48.0,
-    "Mike Evans": 54.0,
-    "DK Metcalf": 54.0,
+    "Mike Evans": 57.0,
+    "DK Metcalf": 59.0,
     "Marvin Harrison Jr.": 44.0,
     "Terry McLaurin": 46.5,
     "DJ Moore": 48.5,
     "Courtland Sutton": 56.0,
     "Jameson Williams": 58.0,
-    "Xavier Worthy": 62.0,
-    "Khalil Shakir": 58.5,
+    "Xavier Worthy": 65.0,
+    "Khalil Shakir": 60.5,
     "Rome Odunze": 57.0,
     "Jordan Addison": 65.0,
     "Calvin Ridley": 70.0,
     "Stefon Diggs": 72.0,
-    "Alvin Kamara": 100.0,
-    "Chuba Hubbard": 62.5,
+    "Alvin Kamara": 80.0,
+    "Chuba Hubbard": 63.5,
     "D'Andre Swift": 60.5,
-    "Isiah Pacheco": 88.0,
-    "James Conner": 87.0,
+    "Isiah Pacheco": 86.0,
+    "James Conner": 77.0,
     "Tony Pollard": 78.0,
     "Rhamondre Stevenson": 70.5,
     "David Montgomery": 64.0,
-    "Quinshon Judkins": 52.0,
+    "Quinshon Judkins": 57.0,
     "Cam Skattebo": 58.0,
     "Jadarian Price": 55.0,
     "Carnell Tate": 72.0,
-    "Jordyn Tyson": 190.0,
-    "Makai Lemon": 105.0,
-    "Kenyon Sadiq": 105.0,
+    "Jordyn Tyson": 144.0,
+    "Makai Lemon": 95.0,
+    "Kenyon Sadiq": 123.0,
     "KC Concepcion": 100.0,
     "Bo Nix": 75.0,
     "Baker Mayfield": 82.0,
     "Justin Herbert": 78.0,
     "Drake Maye": 70.0,
     "Caleb Williams": 80.0,
-    "Tyler Warren": 91.0,
+    "Tyler Warren": 90.0,
     "Mike Washington Jr.": 140.0,
     "Fernando Mendoza": 165.0,
     "Ty Simpson": 185.0
   },
   "injuries": {
-    "Jayden Higgins": {
-      "injury": 4,
-      "note": "ACL \u2014 season",
-      "adp_bump": 80
+    "Christian McCaffrey": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
+    },
+    "Ashton Jeanty": {
+      "injury": 18,
+      "note": "Questionable \u2014 Knee",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee",
+      "injury_notes": null
+    },
+    "Josh Jacobs": {
+      "injury": 18,
+      "note": "Questionable \u2014 Groin",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Groin",
+      "injury_notes": null
+    },
+    "Alvin Kamara": {
+      "injury": 18,
+      "note": "Questionable \u2014 Knee",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee",
+      "injury_notes": null
+    },
+    "Breece Hall": {
+      "injury": 18,
+      "note": "Questionable \u2014 Thigh",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Thigh",
+      "injury_notes": null
+    },
+    "Quinshon Judkins": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
+    },
+    "TreVeyon Henderson": {
+      "injury": 18,
+      "note": "Questionable \u2014 Leg",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Leg",
+      "injury_notes": null
+    },
+    "James Conner": {
+      "injury": 18,
+      "note": "Questionable \u2014 Foot",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Foot",
+      "injury_notes": null
+    },
+    "Isiah Pacheco": {
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - MCL",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - MCL",
+      "injury_notes": null
+    },
+    "Joe Mixon": {
+      "injury": 18,
+      "note": "Questionable \u2014 Foot",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Foot",
+      "injury_notes": null
+    },
+    "Rachaad White": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
+    },
+    "Chuba Hubbard": {
+      "injury": 18,
+      "note": "Questionable \u2014 Hamstring",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Hamstring",
+      "injury_notes": null
+    },
+    "Jeremiyah Love": {
+      "injury": 18,
+      "note": "Questionable \u2014 Ankle",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Ankle",
+      "injury_notes": null
     },
     "Zach Charbonnet": {
       "injury": 5,
-      "note": "ACL \u2014 TBD",
-      "adp_bump": 40
+      "note": "PUP \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 50,
+      "injury_status": "PUP",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery"
     },
-    "Tank Dell": {
-      "injury": 6,
-      "note": "ACL+MCL",
-      "adp_bump": 50
+    "Trey Benson": {
+      "injury": 18,
+      "note": "Questionable \u2014 Knee",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee",
+      "injury_notes": null
     },
-    "Jordyn Tyson": {
-      "injury": 8,
-      "note": "Hamstring ~2 months / possible IR",
-      "adp_bump": 60
-    },
-    "Alvin Kamara": {
-      "injury": 10,
-      "note": "MCL sprain 4\u20136 weeks",
-      "adp_bump": 25
-    },
-    "Isiah Pacheco": {
-      "injury": 12,
-      "note": "MCL 3+ weeks",
-      "adp_bump": 20
-    },
-    "James Conner": {
-      "injury": 14,
-      "note": "Foot/ankle 2\u20133 weeks",
-      "adp_bump": 15
-    },
-    "Alec Pierce": {
-      "injury": 12,
-      "note": "Ankle / PUP concern",
-      "adp_bump": 25
-    },
-    "Jeremiyah Love": {
-      "injury": 16,
-      "note": "High ankle sprain \u2014 Week 1 uncertain",
-      "adp_bump": 8
-    },
-    "Ashton Jeanty": {
-      "injury": 17,
-      "note": "Ankle sprain (Schefter) \u2014 timeline TBD",
-      "adp_bump": 12
+    "Puka Nacua": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
     },
     "Malik Nabers": {
-      "injury": 18,
-      "note": "ACL recovery \u2014 possibly Week 1",
-      "adp_bump": 5
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery"
     },
-    "Patrick Mahomes": {
-      "injury": 18,
-      "note": "ACL/LCL recovery \u2014 Week 1 watch",
-      "adp_bump": 8
+    "Tyreek Hill": {
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery"
     },
-    "Tucker Kraft": {
+    "Mike Evans": {
       "injury": 18,
-      "note": "ACL/meniscus recovery",
-      "adp_bump": 10
+      "note": "Questionable \u2014 Foot",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Foot",
+      "injury_notes": null
+    },
+    "DK Metcalf": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
+    },
+    "Ricky Pearsall": {
+      "injury": 3,
+      "note": "IR \u2014 Knee - PCL",
+      "adp_bump": 60,
+      "injury_status": "IR",
+      "injury_body_part": "Knee - PCL",
+      "injury_notes": null
+    },
+    "Khalil Shakir": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
+    },
+    "Xavier Worthy": {
+      "injury": 18,
+      "note": "Questionable \u2014 Shoulder",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Shoulder",
+      "injury_notes": null
+    },
+    "Jordyn Tyson": {
+      "injury": 12,
+      "note": "Doubtful \u2014 Hamstring \u2014 Strain",
+      "adp_bump": 14,
+      "injury_status": "Doubtful",
+      "injury_body_part": "Hamstring",
+      "injury_notes": "Strain"
+    },
+    "De'Zhaun Stribling": {
+      "injury": 18,
+      "note": "Questionable \u2014 Shoulder",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Shoulder",
+      "injury_notes": null
     },
     "Michael Pittman Jr.": {
       "injury": 18,
-      "note": "Hamstring 1\u20132 weeks",
-      "adp_bump": 8
+      "note": "Questionable \u2014 Leg",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Leg",
+      "injury_notes": null
     },
-    "Puka Nacua": {
-      "injury": 20,
-      "note": "Groin \u2014 limited",
-      "adp_bump": 2
-    },
-    "Sam LaPorta": {
-      "injury": 20,
-      "note": "Hip \u2014 limited",
-      "adp_bump": 3
-    },
-    "Chuba Hubbard": {
-      "injury": 20,
-      "note": "Hamstring",
-      "adp_bump": 4
-    },
-    "Breece Hall": {
-      "injury": 20,
-      "note": "Groin",
-      "adp_bump": 3
-    },
-    "Makai Lemon": {
-      "injury": 19,
-      "note": "Hamstring",
-      "adp_bump": 10
-    },
-    "Christian McCaffrey": {
-      "injury": 19,
-      "note": "Tightness / workload watch",
-      "adp_bump": 1
-    },
-    "Khalil Shakir": {
-      "injury": 20,
-      "note": "Undisclosed",
-      "adp_bump": 3
-    },
-    "George Kittle": {
-      "injury": 19,
-      "note": "Achilles recovery watch",
-      "adp_bump": 4
-    },
-    "Xavier Worthy": {
-      "injury": 21,
-      "note": "Shoulder",
-      "adp_bump": 2
-    },
-    "Mike Evans": {
-      "injury": 21,
-      "note": "Quad",
-      "adp_bump": 2
+    "Adam Thielen": {
+      "injury": 10,
+      "note": "NA \u2014 Undisclosed",
+      "adp_bump": 20,
+      "injury_status": "NA",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
     },
     "Emeka Egbuka": {
-      "injury": 21,
-      "note": "Toe",
-      "adp_bump": 2
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
     },
-    "Saquon Barkley": {
-      "injury": 20,
-      "note": "Foot/ankle checked \u2014 monitor",
-      "adp_bump": 2
+    "Patrick Mahomes": {
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery"
+    },
+    "Michael Penix Jr.": {
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery"
+    },
+    "J.J. McCarthy": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
+    },
+    "George Kittle": {
+      "injury": 13,
+      "note": "Questionable \u2014 Achilles \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Achilles",
+      "injury_notes": "Surgery"
+    },
+    "Sam LaPorta": {
+      "injury": 18,
+      "note": "Questionable \u2014 Hip",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Hip",
+      "injury_notes": null
+    },
+    "Tucker Kraft": {
+      "injury": 13,
+      "note": "Questionable \u2014 Knee - ACL \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Knee - ACL",
+      "injury_notes": "Surgery"
+    },
+    "Cade Otton": {
+      "injury": 18,
+      "note": "Questionable \u2014 Undisclosed",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Undisclosed",
+      "injury_notes": null
     },
     "Tyler Warren": {
       "injury": 18,
-      "note": "Injury concern (camp)",
-      "adp_bump": 6
+      "note": "Questionable \u2014 Groin",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Groin",
+      "injury_notes": null
+    },
+    "Kenyon Sadiq": {
+      "injury": 13,
+      "note": "Questionable \u2014 Abdomen \u2014 Surgery",
+      "adp_bump": 18,
+      "injury_status": "Questionable",
+      "injury_body_part": "Abdomen",
+      "injury_notes": "Surgery"
+    },
+    "Eli Stowers": {
+      "injury": 18,
+      "note": "Questionable \u2014 Hamstring",
+      "adp_bump": 5,
+      "injury_status": "Questionable",
+      "injury_body_part": "Hamstring",
+      "injury_notes": null
     }
   }
 }

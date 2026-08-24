@@ -814,6 +814,25 @@ table.board {
   margin-left: 4px;
 }
 
+.inj-tag {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  background: rgba(234, 179, 8, 0.18);
+  color: var(--warn);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+}
+.inj-tag.severe {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 .vs-adp { font-family: var(--mono); font-weight: 700; }
 .vs-adp.up { color: var(--accent); }
 .vs-adp.down { color: var(--danger); }
