@@ -189,6 +189,64 @@ export function floorCeiling(p) {
 /**
  * Build reasons for recommending a player (BPA-first narrative).
  */
+/**
+ * Teammate correlation vs your current roster.
+ * Avoid same-NFL-team exposure — except QB + WR/TE stacks (allowed / slight boost).
+ */
+export function teammateExposure(player, myRoster = []) {
+  const team = (player.team || "").toUpperCase();
+  if (!team || team === "FA") {
+    return { teammates: [], isStack: false, isBadTeammate: false, mult: 1, labels: [] };
+  }
+  const mates = (myRoster || []).filter(
+    (r) => r.id !== player.id && (r.team || "").toUpperCase() === team
+  );
+  if (!mates.length) {
+    return { teammates: [], isStack: false, isBadTeammate: false, mult: 1, labels: [] };
+  }
+
+  const labels = mates.map((m) => `${m.name} (${m.pos})`);
+  const hasQb = mates.some((m) => m.pos === "QB") || player.pos === "QB";
+  const hasPassCatcher =
+    mates.some((m) => m.pos === "WR" || m.pos === "TE") ||
+    player.pos === "WR" ||
+    player.pos === "TE";
+  // Intentional stack: you're adding QB↔WR/TE with the other already rostered
+  const isStack =
+    (player.pos === "QB" && mates.some((m) => m.pos === "WR" || m.pos === "TE")) ||
+    ((player.pos === "WR" || player.pos === "TE") && mates.some((m) => m.pos === "QB"));
+
+  // Bad: any same-team pair that isn't a pure QB+receiver stack
+  // e.g. RB+WR, WR+WR, RB+RB, QB+RB, TE+RB without QB, etc.
+  const onlyStackPair =
+    isStack &&
+    mates.every((m) => {
+      if (player.pos === "QB") return m.pos === "WR" || m.pos === "TE";
+      if (player.pos === "WR" || player.pos === "TE") return m.pos === "QB";
+      return false;
+    });
+
+  const isBadTeammate = !onlyStackPair;
+  let mult = 1;
+  if (onlyStackPair) {
+    mult = 1.03; // slight preference for the stack
+  } else if (mates.length >= 2) {
+    mult = 0.82; // already doubled up — strong avoid
+  } else {
+    mult = 0.88; // one non-stack teammate — strong avoid
+  }
+
+  return {
+    teammates: mates,
+    isStack: onlyStackPair,
+    isBadTeammate,
+    mult,
+    labels,
+    hasQb,
+    hasPassCatcher,
+  };
+}
+
 export function buildReasons(p, ctx) {
   const reasons = [];
   const { scarcity, rosterCounts, strategy } = ctx;
@@ -215,13 +273,14 @@ export function buildReasons(p, ctx) {
   if (strategy === "hero_rb" && p.pos === "RB" && (rosterCounts.RB || 0) === 0) {
     reasons.push("Matches Hero-RB lean until you roster an RB");
   }
-  if (ctx.myQbTeam && p.team === ctx.myQbTeam && (p.pos === "WR" || p.pos === "TE")) {
-    reasons.push(`Stack with your QB (${p.team})`);
+  const exp = ctx.teammateExp || teammateExposure(p, ctx.myRoster || []);
+  if (exp.isStack) {
+    reasons.push(`QB stack with ${exp.labels.join(", ")} on ${p.team}`);
   }
   return reasons.slice(0, 4);
 }
 
-export function buildRisks(p) {
+export function buildRisks(p, ctx = {}) {
   const risks = [];
   const m = p.activeMetrics || p.metrics?.ppr || {};
   if ((m.injury ?? 17) <= 11) risks.push("Injury / games-played profile is shaky");
@@ -229,6 +288,10 @@ export function buildRisks(p) {
   if (p.rookie) risks.push("Rookie variance — role may lag Week 1–4");
   if ((m.opportunity ?? 20) >= 18) risks.push("Role not locked — committee / unproven path");
   if (p.valueTag === "reach") risks.push("Market disagrees (ADP much later) — be sure you want him");
+  const exp = ctx.teammateExp || teammateExposure(p, ctx.myRoster || []);
+  if (exp.isBadTeammate) {
+    risks.push(`Same NFL team as ${exp.labels.join(", ")} — correlation risk`);
+  }
   return risks.slice(0, 3);
 }
 
@@ -239,6 +302,7 @@ export function buildRisks(p) {
  * Soft adjustments only:
  *  - mild roster-need multiplier (cannot vault a WR3 over an elite RB1)
  *  - strategy position bias (~±6%)
+ *  - teammate correlation: avoid same NFL team except QB+WR/TE stacks
  *  - K/DST suppressed until late
  *
  * ADP value is NEVER used to rank who to pick (shown as a label only).
@@ -253,6 +317,7 @@ export function recommendPicks(players, {
   pickNumber = 1,
   limit = 5,
   hideKdstEarly = true,
+  avoidTeammates = true,
 } = {}) {
   const strat = STRATEGIES[strategy] || STRATEGIES.balanced;
   const rosterCounts = countRoster(myRoster);
@@ -274,7 +339,14 @@ export function recommendPicks(players, {
   const scarcity = positionScarcity(players, rosterCounts, targets);
 
   const myQb = myRoster.find((p) => p.pos === "QB");
-  const ctx = { scarcity, rosterCounts, targets, strategy, myQbTeam: myQb?.team };
+  const ctx = {
+    scarcity,
+    rosterCounts,
+    targets,
+    strategy,
+    myQbTeam: myQb?.team,
+    myRoster,
+  };
 
   const teams = targets.teams || 12;
   const early = pickNumber <= teams * 9; // before ~round 10
@@ -300,10 +372,13 @@ export function recommendPicks(players, {
     const n = needScore(p.pos, rosterCounts, targets);
     const model = p.displayTotal ?? p.total ?? 0;
     const bias = (stratBias[p.pos] ?? 1) * (rosterBias[p.pos] ?? 1);
+    const teammateExp = avoidTeammates
+      ? teammateExposure(p, myRoster)
+      : { mult: 1, isBadTeammate: false, isStack: false, labels: [] };
 
     // BPA core: model score. Need multiplies in a narrow band, e.g. 0.94–1.12
     const needMult = 1 + needStrength * (n - 0.5) * 2; // n=1 → +needStrength, n=0.15 → slight down
-    let pickScore = model * needMult * bias;
+    let pickScore = model * needMult * bias * (teammateExp.mult || 1);
 
     // Scarcity: tiny bump only (max ~3%)
     pickScore *= 1 + Math.min(0.03, (scarcity[p.pos]?.scarcity || 0) / 2500);
@@ -312,19 +387,22 @@ export function recommendPicks(players, {
     if (hideKdstEarly && early && (p.pos === "K" || p.pos === "DST")) {
       pickScore *= 0.25;
     }
-    // Soft-cap: never let need/bias alone jump more than ~8 model points over pure BPA
-    // (guards against mid-round "values" outranking elite remaining talent)
+    // Soft-cap: need/bias/stack can lift a bit; teammate penalty can drop more
     const pure = model;
-    if (pickScore > pure + 8) pickScore = pure + 8;
-    if (pickScore < pure - 6) pickScore = pure - 6;
+    const floor = teammateExp.isBadTeammate ? pure - 14 : pure - 6;
+    const ceil = pure + 8;
+    if (pickScore > ceil) pickScore = ceil;
+    if (pickScore < floor) pickScore = floor;
 
+    const rowCtx = { ...ctx, teammateExp };
     return {
       ...p,
       ...fc,
       pickScore: Math.round(pickScore * 100) / 100,
       bpaScore: model,
+      teammateExp,
       reasons: null, // filled after sort so modelRank is correct
-      risks: buildRisks(p),
+      risks: buildRisks(p, rowCtx),
       needFit: Math.round(n * 100),
     };
   });
@@ -342,7 +420,7 @@ export function recommendPicks(players, {
   const modelRankMap = new Map(byModel.map((p, i) => [p.id, i + 1]));
   for (const p of scored) {
     p.modelRank = modelRankMap.get(p.id) ?? p.modelRank;
-    p.reasons = buildReasons(p, ctx);
+    p.reasons = buildReasons(p, { ...ctx, teammateExp: p.teammateExp });
   }
 
   return {
