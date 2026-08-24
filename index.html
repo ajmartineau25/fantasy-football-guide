@@ -11,7 +11,7 @@
     <header class="header">
       <div class="brand">
         <h1>Fantasy Football <span>Guide</span> 2026</h1>
-        <p>On-clock AI · value vs ADP · live draft · season lineups &amp; waivers</p>
+        <p>Creator-style board · situation presets · live draft · on-clock AI</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
         <nav class="site-nav">
@@ -74,19 +74,18 @@
         </section>
 
         <section class="panel">
-          <h2>Factor weights</h2>
-          <p class="help-text">Natural units (FPts, player props, ranks). Weights drive the 0–100 model + on-clock AI.</p>
-          <div id="weights"></div>
-          <div id="weightTotal" class="weight-total ok"><span>Weight sum</span><span>100</span></div>
-          <div class="btn-row">
-            <button type="button" class="btn" id="resetWeights">Reset weights</button>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h2>Scoring layers</h2>
-          <p class="help-text" style="margin-bottom:8px">Click a layer to open its ranking tab.</p>
-          <div class="layer-links" id="layerLinks"></div>
+          <h2>Ranking style</h2>
+          <p class="help-text">Pick a preset — no slider juggling. Drives the model score &amp; on-clock AI.</p>
+          <div class="preset-grid" id="weightPresets"></div>
+          <p class="preset-desc" id="presetDesc"></p>
+          <details class="advanced-weights">
+            <summary>Advanced · tweak individual factors</summary>
+            <div id="weights"></div>
+            <div id="weightTotal" class="weight-total ok"><span>Weight sum</span><span>100</span></div>
+            <div class="btn-row">
+              <button type="button" class="btn" id="resetWeights">Reset to Balanced</button>
+            </div>
+          </details>
         </section>
       </aside>
 

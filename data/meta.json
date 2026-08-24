@@ -97,6 +97,33 @@
     "injury": 6,
     "sos": 3
   },
+  "weight_presets": [
+    {
+      "id": "balanced",
+      "label": "Balanced",
+      "desc": "Even blend of production, role, situation, and market."
+    },
+    {
+      "id": "situation",
+      "label": "Overall Situation",
+      "desc": "QB, O-Line, playcaller, SOS & role."
+    },
+    {
+      "id": "production",
+      "label": "Prior Production",
+      "desc": "Last-year points, efficiency, opportunity, Vegas."
+    },
+    {
+      "id": "upside",
+      "label": "Youth & Upside",
+      "desc": "Age curve, opportunity, health \u2014 chase breakouts."
+    },
+    {
+      "id": "market",
+      "label": "Beat the Market",
+      "desc": "ADP + Vegas props \u2014 hunt value vs consensus."
+    }
+  ],
   "league_defaults": {
     "teams": 12,
     "roster": {

@@ -5,6 +5,8 @@ import {
   FACTOR_DESCRIPTIONS,
   FACTOR_META,
   TEAM_LEVEL_FACTORS,
+  WEIGHT_PRESETS,
+  presetById,
   rankPlayers,
   rankTeamsByFactor,
   formatMetric,
@@ -51,6 +53,7 @@ const state = {
   sortKey: "total",
   sortDir: "desc",
   weights: {},
+  weightPreset: "balanced",
   enableNeed: true,
   myRoster: [],
   picks: [],
@@ -102,7 +105,9 @@ async function loadData() {
   state.players = players;
   state.meta = meta;
   state.teams = teams;
-  state.weights = { ...meta.default_weights };
+  const balanced = presetById("balanced");
+  state.weightPreset = "balanced";
+  state.weights = { ...(meta.default_weights || balanced.weights) };
   state.scoring = meta.league_defaults?.scoring === "half" ? "half" : "ppr";
 }
 
@@ -237,8 +242,35 @@ function renderOnClock() {
   });
 }
 
+function applyWeightPreset(id, { silent = false } = {}) {
+  const preset = presetById(id);
+  state.weightPreset = preset.id;
+  state.weights = { ...preset.weights };
+  renderWeightPresets();
+  renderWeights();
+  renderBoard();
+  if (!silent) toast(`Ranking style: ${preset.label}`);
+}
+
+function renderWeightPresets() {
+  const box = $("#weightPresets");
+  if (!box) return;
+  box.innerHTML = WEIGHT_PRESETS.map((p) => {
+    const active = state.weightPreset === p.id ? "active" : "";
+    return `<button type="button" class="preset-chip ${active}" data-preset="${p.id}" title="${p.desc}">
+      ${p.label}
+    </button>`;
+  }).join("");
+  const desc = $("#presetDesc");
+  if (desc) desc.textContent = presetById(state.weightPreset).desc;
+  box.querySelectorAll(".preset-chip").forEach((btn) => {
+    btn.addEventListener("click", () => applyWeightPreset(btn.dataset.preset));
+  });
+}
+
 function renderWeights() {
   const box = $("#weights");
+  if (!box) return;
   box.innerHTML = FACTOR_KEYS.map((key) => {
     const val = state.weights[key] ?? 0;
     const label = state.meta?.factors?.find((f) => f.key === key)?.label || FACTOR_LABELS[key];
@@ -254,30 +286,14 @@ function renderWeights() {
     input.addEventListener("input", () => {
       const key = input.dataset.key;
       state.weights[key] = Number(input.value);
+      state.weightPreset = "custom";
       $(`#wv-${key}`).textContent = input.value;
       updateWeightTotal();
-      renderLayerLinks();
+      renderWeightPresets();
       renderBoard();
     });
   });
   updateWeightTotal();
-  renderLayerLinks();
-}
-
-function renderLayerLinks() {
-  const box = $("#layerLinks");
-  if (!box) return;
-  box.innerHTML = FACTOR_KEYS.map((key) => {
-    const label = FACTOR_TAB_LABELS[key] || FACTOR_LABELS[key];
-    const w = state.weights[key] ?? 0;
-    const active = state.view === key ? "active" : "";
-    return `<button type="button" class="layer-link ${active}" data-view="${key}">
-      <span>${label}</span><span class="w">w=${w}</span>
-    </button>`;
-  }).join("");
-  box.querySelectorAll(".layer-link").forEach((btn) => {
-    btn.addEventListener("click", () => setRankingView(btn.dataset.view));
-  });
 }
 
 function updateWeightTotal() {
@@ -590,20 +606,16 @@ function renderBoard() {
       })
       .join("");
   } else {
-    const factorHeaders = FACTOR_KEYS.map((k) => {
-      const u = metricUnit(k);
-      return `<th data-sort="${k}" class="${state.sortKey === k ? "sorted" : ""}" title="${FACTOR_TAB_LABELS[k]} (${u})">${FACTOR_LABELS[k]}</th>`;
-    }).join("");
-
+    // Clean Flock-style summary: big player rows, few columns (factor detail lives in tabs)
     thead = `
       <tr>
         <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">#</th>
         <th data-sort="name" class="${state.sortKey === "name" ? "sorted" : ""}">Player</th>
         <th>Pos</th>
         <th data-sort="adpRaw" class="${state.sortKey === "adpRaw" ? "sorted" : ""}">ADP</th>
-        <th data-sort="fpts" class="${state.sortKey === "fpts" ? "sorted" : ""}">'25 FPts</th>
-        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Model</th>
-        ${factorHeaders}
+        <th data-sort="fpts" class="${state.sortKey === "fpts" ? "sorted" : ""}">'25</th>
+        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Score</th>
+        <th>vs ADP</th>
         <th></th>
       </tr>`;
 
@@ -612,32 +624,31 @@ function renderBoard() {
     rows = list
       .map((p) => {
         const myId = state.myRoster.some((m) => m.id === p.id);
-        const m = p.activeMetrics || p.activeScores || {};
-        const scores = FACTOR_KEYS.map((k) => {
-          const text = formatMetric(k, m, state.scoring);
-          return `<td class="score-cell" title="${FACTOR_TAB_LABELS[k]}: ${text}">${text}</td>`;
-        }).join("");
+        const vs =
+          p.value != null
+            ? `<span class="vs-adp ${p.value > 0 ? "up" : p.value < 0 ? "down" : ""}">${p.value > 0 ? "+" : ""}${p.value}</span>`
+            : "—";
         return `
         <tr class="${p.drafted ? "drafted" : ""} ${myId ? "my-pick" : ""} ${topIds.has(p.id) && !p.drafted ? "recommended" : ""}" data-id="${p.id}">
-          <td>${p.rank}</td>
+          <td class="rank-num">${p.rank}</td>
           <td>
             <div class="player-cell">
               <div>
-                <div class="name">${p.name}${p.rookie ? ' <span style="color:var(--warn);font-size:0.7rem">R</span>' : ""}${p.tier ? `<span class="tag tier">T${p.tier}</span>` : ""}${valueTagHtml(p.valueTag)}</div>
-                <div class="meta">${p.team} · Bye ${p.bye}${p.age ? ` · Age ${p.age}` : ""}${p.value != null ? ` · vs ADP ${p.value > 0 ? "+" : ""}${p.value}` : ""}</div>
+                <div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}${p.tier ? `<span class="tag tier">T${p.tier}</span>` : ""}${valueTagHtml(p.valueTag)}</div>
+                <div class="meta">${p.team} · Bye ${p.bye}${p.age ? ` · ${p.age}y` : ""}</div>
               </div>
             </div>
           </td>
           <td><span class="pos-badge ${p.pos}">${p.pos}</span></td>
           <td class="score-cell">${p.adp[state.scoring]}</td>
-          <td class="score-cell">${(p.fpts_2025[state.scoring] ?? 0).toFixed(1)}</td>
+          <td class="score-cell muted">${(p.fpts_2025[state.scoring] ?? 0).toFixed(0)}</td>
           <td class="score-cell score-total">
             <span class="score-bar" style="width:${barWidthPct(p.displayTotal)}px"></span>
             ${p.displayTotal.toFixed(1)}
           </td>
-          ${scores}
+          <td class="score-cell">${vs}</td>
           <td>
-            <button class="btn draft-btn" data-id="${p.id}" style="width:auto;padding:4px 8px;font-size:0.72rem" ${p.drafted ? "disabled" : ""}>
+            <button class="btn draft-btn" data-id="${p.id}" style="width:auto;padding:6px 12px;font-size:0.75rem" ${p.drafted ? "disabled" : ""}>
               ${p.drafted ? "Out" : "Draft"}
             </button>
           </td>
@@ -693,7 +704,6 @@ function setRankingView(view) {
   $$("#rankTabs .rank-tab").forEach((t) =>
     t.classList.toggle("active", t.dataset.view === view)
   );
-  renderLayerLinks();
   renderBoard();
 }
 
@@ -1054,12 +1064,10 @@ function bindUI() {
     renderBoard();
   });
 
-  $("#resetWeights").addEventListener("click", () => {
-    state.weights = { ...state.meta.default_weights };
-    renderWeights();
-    renderBoard();
-    toast("Weights reset to defaults");
-  });
+  const resetBtn = $("#resetWeights");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => applyWeightPreset("balanced"));
+  }
 
   $("#btnSleeper").addEventListener("click", connectSleeper);
   $("#btnEspn").addEventListener("click", connectEspn);
@@ -1117,6 +1125,7 @@ async function init() {
     $$(".scoring-toggle button").forEach((b) =>
       b.classList.toggle("active", b.dataset.scoring === state.scoring)
     );
+    renderWeightPresets();
     renderWeights();
     bindUI();
     renderBoard();

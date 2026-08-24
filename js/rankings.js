@@ -30,6 +30,107 @@ export const FACTOR_KEYS = [
   "sos",
 ];
 
+/**
+ * Five prevalent ranking styles — replaces fiddly per-factor sliders.
+ * Each preset is a full weight map that sums to 100.
+ */
+export const WEIGHT_PRESETS = [
+  {
+    id: "balanced",
+    label: "Balanced",
+    desc: "Even blend of production, role, situation, and market signals.",
+    weights: {
+      lastYear: 18,
+      age: 7,
+      qb: 8,
+      oline: 8,
+      playcaller: 8,
+      adp: 12,
+      vegas: 8,
+      opportunity: 14,
+      efficiency: 8,
+      injury: 6,
+      sos: 3,
+    },
+  },
+  {
+    id: "situation",
+    label: "Overall Situation",
+    desc: "QB, O-Line, playcaller, SOS & role — bet the supporting cast.",
+    weights: {
+      lastYear: 6,
+      age: 4,
+      qb: 16,
+      oline: 16,
+      playcaller: 16,
+      adp: 6,
+      vegas: 6,
+      opportunity: 14,
+      efficiency: 6,
+      injury: 4,
+      sos: 12,
+    },
+  },
+  {
+    id: "production",
+    label: "Prior Production",
+    desc: "Last-year points, efficiency, opportunity, and Vegas lines.",
+    weights: {
+      lastYear: 28,
+      age: 4,
+      qb: 4,
+      oline: 4,
+      playcaller: 4,
+      adp: 8,
+      vegas: 14,
+      opportunity: 16,
+      efficiency: 12,
+      injury: 4,
+      sos: 2,
+    },
+  },
+  {
+    id: "upside",
+    label: "Youth & Upside",
+    desc: "Age curve, opportunity, health — chase breakouts over proven vets.",
+    weights: {
+      lastYear: 8,
+      age: 22,
+      qb: 6,
+      oline: 8,
+      playcaller: 8,
+      adp: 6,
+      vegas: 8,
+      opportunity: 18,
+      efficiency: 8,
+      injury: 6,
+      sos: 2,
+    },
+  },
+  {
+    id: "market",
+    label: "Beat the Market",
+    desc: "ADP + Vegas props — hunt value vs consensus draft cost.",
+    weights: {
+      lastYear: 10,
+      age: 5,
+      qb: 5,
+      oline: 5,
+      playcaller: 5,
+      adp: 28,
+      vegas: 18,
+      opportunity: 12,
+      efficiency: 6,
+      injury: 4,
+      sos: 2,
+    },
+  },
+];
+
+export function presetById(id) {
+  return WEIGHT_PRESETS.find((p) => p.id === id) || WEIGHT_PRESETS[0];
+}
+
 export const FACTOR_LABELS = {
   lastYear: "Last Year",
   age: "Age",
