@@ -6,6 +6,7 @@ import {
   presetById,
   rankPlayers,
   countRoster,
+  WEIGHT_PRESETS,
 } from "./rankings.js";
 import {
   sleeperGetUser,
@@ -20,6 +21,10 @@ import {
   applyEspnDraft,
   createDraftPoller,
   markDraftedByName,
+  detectSleeperDraftSlot,
+  detectSleeperTeamCount,
+  detectEspnDraftSlot,
+  detectEspnTeamCount,
 } from "./draft.js";
 import {
   STRATEGIES,
@@ -215,6 +220,90 @@ function setConnected(source, label) {
   if (manual) manual.disabled = false;
   persistDraft();
   renderAll();
+}
+
+/** Prompt user once to confirm auto-detected draft slot. */
+function proposeDraftSlot(slot, { teams = null, source = "" } = {}) {
+  const n = Number(slot);
+  if (!Number.isFinite(n) || n < 1) return;
+  state._pendingSlot = n;
+  if (teams) {
+    state.leagueTeams = teams;
+    const el = $("#leagueTeams");
+    if (el) el.value = String(teams);
+  }
+  const box = $("#slotConfirm");
+  if (!box) {
+    state.draftSlot = n;
+    const slotEl = $("#draftSlot");
+    if (slotEl) slotEl.value = String(n);
+    return;
+  }
+  $("#detectedSlotNum").textContent = String(n);
+  $("#detectedSlotPick").textContent = String(n);
+  box.classList.remove("hidden");
+  const status = $("#slotStatus");
+  if (status) {
+    status.textContent = `Detected from ${source || "league"} — confirm to lock your pick countdown.`;
+  }
+}
+
+function confirmDraftSlot() {
+  const n = Number(state._pendingSlot) || Number($("#draftSlot")?.value) || 1;
+  state.draftSlot = n;
+  const slotEl = $("#draftSlot");
+  if (slotEl) slotEl.value = String(n);
+  $("#slotConfirm")?.classList.add("hidden");
+  const status = $("#slotStatus");
+  if (status) status.textContent = `Locked: you’re slot ${n} (R1 pick #${n}). Change anytime above.`;
+  persistDraft();
+  renderAll();
+  toast(`You’re draft slot ${n}`);
+}
+
+function applyRankingPreset(id, { silent = false, fromStrategy = false } = {}) {
+  const preset = presetById(id);
+  state.weightPreset = preset.id;
+  state.weights = { ...preset.weights };
+  renderOcPresets();
+  if (!silent) {
+    toast(
+      fromStrategy
+        ? `Strategy set ranking style → ${preset.label}`
+        : `Ranking style: ${preset.label}`
+    );
+  }
+  persistDraft();
+  renderAll();
+}
+
+function renderOcPresets() {
+  const box = $("#ocWeightPresets");
+  if (!box) return;
+  box.innerHTML = WEIGHT_PRESETS.map((p) => {
+    const active = state.weightPreset === p.id ? "active" : "";
+    return `<button type="button" class="preset-chip ${active}" data-preset="${p.id}" title="${p.desc}">${p.label}</button>`;
+  }).join("");
+  const desc = $("#ocPresetDesc");
+  if (desc) desc.textContent = presetById(state.weightPreset).desc;
+  box.querySelectorAll(".preset-chip").forEach((btn) => {
+    btn.addEventListener("click", () => applyRankingPreset(btn.dataset.preset));
+  });
+}
+
+function applyStrategy(id, { syncPreset = true } = {}) {
+  const key = STRATEGIES[id] ? id : "balanced";
+  const strat = STRATEGIES[key];
+  state.strategy = key;
+  const sel = $("#strategySelect");
+  if (sel) sel.value = key;
+  if ($("#strategyDesc")) $("#strategyDesc").textContent = strat.desc;
+  if (syncPreset && strat.suggestedPreset) {
+    applyRankingPreset(strat.suggestedPreset, { fromStrategy: true });
+  } else {
+    persistDraft();
+    renderAll();
+  }
 }
 
 function picksUntilYou() {
@@ -624,6 +713,10 @@ async function connectSleeper() {
     state.myRoster = applied.myRoster || [];
     state.picks = applied.picks || [];
 
+    const slot = detectSleeperDraftSlot(draft, state.sleeper.userId);
+    const teams = detectSleeperTeamCount(draft);
+    if (slot) proposeDraftSlot(slot, { teams, source: "Sleeper" });
+
     if (state.poller) state.poller.stop();
     state.poller = createDraftPoller(async () => {
       const fresh = await sleeperGetPicks(draftId);
@@ -638,7 +731,7 @@ async function connectSleeper() {
     }, 4000);
 
     setConnected("sleeper", `Sleeper live · draft ${draftId}`);
-    toast("Sleeper connected — board is live");
+    toast(slot ? `Sleeper connected · detected slot ${slot}` : "Sleeper connected — board is live");
   } catch (e) {
     console.error(e);
     setLiveStatus("error", e.message || "Sleeper failed");
@@ -662,6 +755,9 @@ async function connectEspn() {
     state.myRoster = applied.myRoster || [];
     state.picks = applied.picks || [];
     state.espn = { leagueId, teamId };
+    const slot = detectEspnDraftSlot(json, teamId);
+    const teams = detectEspnTeamCount(json);
+    if (slot) proposeDraftSlot(slot, { teams, source: "ESPN" });
     if (state.poller) state.poller.stop();
     state.poller = createDraftPoller(async () => {
       const fresh = await espnFetchLeague({ leagueId, season, useProxy });
@@ -671,7 +767,7 @@ async function connectEspn() {
       renderAll();
     }, 6000);
     setConnected("espn", `ESPN live · league ${leagueId}`);
-    toast("ESPN connected — board is live");
+    toast(slot ? `ESPN connected · detected slot ${slot}` : "ESPN connected — board is live");
   } catch (e) {
     console.error(e);
     setLiveStatus("error", e.message || "ESPN failed");
@@ -730,19 +826,33 @@ function bindUI() {
   $("#draftSlot").value = String(state.draftSlot);
   $("#draftSlot").addEventListener("change", (e) => {
     state.draftSlot = Number(e.target.value) || 1;
+    $("#slotConfirm")?.classList.add("hidden");
+    const status = $("#slotStatus");
+    if (status) status.textContent = `Manual slot ${state.draftSlot}.`;
+    persistDraft();
     renderAll();
   });
+  $("#btnConfirmSlot")?.addEventListener("click", confirmDraftSlot);
+  $("#btnDismissSlot")?.addEventListener("click", () => {
+    $("#slotConfirm")?.classList.add("hidden");
+    $("#draftSlot")?.focus();
+    const status = $("#slotStatus");
+    if (status) status.textContent = "Adjust slot manually above.";
+  });
+
+  // Rebuild strategy options from STRATEGIES (keeps HTML in sync)
   const strat = $("#strategySelect");
-  strat.value = state.strategy;
-  strat.addEventListener("change", () => {
-    state.strategy = strat.value;
-    const s = STRATEGIES[state.strategy];
-    if ($("#strategyDesc") && s) $("#strategyDesc").textContent = s.desc;
-    renderAll();
-  });
+  if (strat) {
+    strat.innerHTML = Object.entries(STRATEGIES)
+      .map(([id, s]) => `<option value="${id}">${s.label}</option>`)
+      .join("");
+    strat.value = state.strategy in STRATEGIES ? state.strategy : "balanced";
+    strat.addEventListener("change", () => applyStrategy(strat.value, { syncPreset: true }));
+  }
   if ($("#strategyDesc") && STRATEGIES[state.strategy]) {
     $("#strategyDesc").textContent = STRATEGIES[state.strategy].desc;
   }
+  renderOcPresets();
 
   const soundEl = $("#soundOnTurn");
   if (soundEl) {

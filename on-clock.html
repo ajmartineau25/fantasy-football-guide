@@ -99,15 +99,31 @@
           </select>
           <label class="field" for="draftSlot">Your draft slot</label>
           <input id="draftSlot" type="number" min="1" max="14" value="1" />
-          <label class="field" for="strategySelect">Strategy</label>
+          <div id="slotConfirm" class="oc-slot-confirm hidden">
+            <p>Detected: you’re <strong>slot <span id="detectedSlotNum">?</span></strong> (pick #<span id="detectedSlotPick">?</span> overall in R1)</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="btnConfirmSlot">That’s me</button>
+              <button type="button" class="btn" id="btnDismissSlot">Change manually</button>
+            </div>
+          </div>
+          <p class="help-text" id="slotStatus">Slot auto-detects from Sleeper/ESPN — confirm once.</p>
+
+          <label class="field" for="strategySelect">Draft strategy</label>
           <select id="strategySelect">
-            <option value="balanced">Balanced</option>
-            <option value="zero_rb">Zero RB</option>
+            <option value="balanced">BPA / Balanced</option>
             <option value="hero_rb">Hero RB</option>
+            <option value="zero_rb">Zero RB</option>
             <option value="robust_rb">Robust RB</option>
+            <option value="late_qb">Late QB</option>
             <option value="best_ball">Best Ball</option>
+            <option value="value">Value / Beat ADP</option>
           </select>
           <p class="help-text" id="strategyDesc">Best player available; soft roster fit</p>
+
+          <h2 style="margin-top:14px">Ranking style</h2>
+          <p class="help-text">Same presets as Rankings — feeds the model behind your pick.</p>
+          <div class="preset-grid" id="ocWeightPresets"></div>
+          <p class="preset-desc" id="ocPresetDesc"></p>
         </section>
 
         <section class="panel">

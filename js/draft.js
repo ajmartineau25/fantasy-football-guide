@@ -151,6 +151,48 @@ export async function sleeperHydratePlayerIds(localPlayers) {
  * Apply Sleeper picks onto local board.
  * @returns {{ draftedIds: Set, myRoster: object[], picks: object[], myRosterId: number|null }}
  */
+/**
+ * Sleeper draft_order maps user_id → slot (1-based).
+ */
+export function detectSleeperDraftSlot(draft, userId) {
+  if (!draft?.draft_order || userId == null) return null;
+  const raw =
+    draft.draft_order[userId] ??
+    draft.draft_order[String(userId)];
+  const slot = Number(raw);
+  return Number.isFinite(slot) && slot > 0 ? slot : null;
+}
+
+export function detectSleeperTeamCount(draft) {
+  const n = Number(draft?.settings?.teams || draft?.metadata?.teams);
+  return Number.isFinite(n) && n >= 8 ? n : null;
+}
+
+/**
+ * ESPN teams often expose draftDayOrder / draftPosition (1-based slot).
+ */
+export function detectEspnDraftSlot(leagueJson, teamId) {
+  if (teamId == null) return null;
+  const teams = leagueJson?.teams || [];
+  const t = teams.find((x) => Number(x.id) === Number(teamId));
+  if (!t) return null;
+  const raw =
+    t.draftDayOrder ??
+    t.draftPosition ??
+    t.draftOverallPick ??
+    t?.primaryOwner?.draftPosition;
+  const slot = Number(raw);
+  return Number.isFinite(slot) && slot > 0 ? slot : null;
+}
+
+export function detectEspnTeamCount(leagueJson) {
+  const n =
+    Number(leagueJson?.settings?.size) ||
+    Number(leagueJson?.status?.teamsJoined) ||
+    (leagueJson?.teams || []).length;
+  return Number.isFinite(n) && n >= 8 ? n : null;
+}
+
 export function applySleeperPicks(localPlayers, picks, { userId, draftOrder, slotToRoster } = {}) {
   // Reset
   for (const p of localPlayers) {

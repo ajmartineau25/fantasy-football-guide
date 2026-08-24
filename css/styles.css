@@ -1351,3 +1351,9 @@ body.oc-your-turn .oc-hero {
 .oc-alt-row { display: flex; gap: 8px; align-items: stretch; }
 .oc-alt-row .oc-alt { flex: 1; }
 .oc-id-take { white-space: nowrap; font-size: 0.72rem; padding: 8px 10px; }
+
+.oc-slot-confirm {
+  margin-top: 10px; padding: 12px; border-radius: 10px;
+  border: 1px solid rgba(45, 212, 191, 0.45); background: rgba(45, 212, 191, 0.08);
+}
+.oc-slot-confirm p { margin: 0 0 10px; font-size: 0.9rem; color: var(--text); }

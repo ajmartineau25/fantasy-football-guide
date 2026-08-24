@@ -5,41 +5,75 @@
 import { rankPlayers, countRoster, emptyRosterCounts } from "./rankings.js";
 
 /**
- * Strategies only gently tilt BPA by position — they never override top talent.
- * needStrength: how hard to favor empty roster spots (0 = pure BPA, 0.2 = soft).
+ * Proven fantasy draft archetypes — gently tilt BPA by position.
+ * They never vault a WR3 over an elite RB1; needStrength stays soft.
+ * suggestedPreset → ranking-style weights from WEIGHT_PRESETS (Situation, Market, etc.).
  */
 export const STRATEGIES = {
   balanced: {
-    label: "Balanced",
-    desc: "Best player available; soft tilt toward roster holes",
+    label: "BPA / Balanced",
+    desc: "Best player available every pick; soft roster-need tilt. Default for most redraft.",
     needStrength: 0.12,
     posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DST: 1 },
-  },
-  zero_rb: {
-    label: "Zero RB",
-    desc: "BPA with mild WR/TE lean (still won't take Flowers over Gibbs)",
-    needStrength: 0.1,
-    posBias: { WR: 1.04, TE: 1.03, RB: 0.94, QB: 1.0, K: 0.95, DST: 0.95 },
+    suggestedPreset: "balanced",
   },
   hero_rb: {
     label: "Hero RB",
-    desc: "BPA with mild early-RB lean until you have one",
+    desc: "One elite RB early (R1–2), then load WR/TE — the most common winning 2025–26 build.",
     needStrength: 0.12,
-    posBias: { RB: 1.05, WR: 1.0, TE: 1.0, QB: 0.99, K: 0.95, DST: 0.95 },
+    posBias: { RB: 1.06, WR: 1.02, TE: 1.01, QB: 0.98, K: 0.92, DST: 0.92 },
+    suggestedPreset: "production",
+    earlyRbPushUntil: 1,
+  },
+  zero_rb: {
+    label: "Zero RB",
+    desc: "Fade early RBs for WR/TE studs; attack RB upside mid/late. Contrarian when room is Hero-heavy.",
+    needStrength: 0.1,
+    posBias: { WR: 1.06, TE: 1.04, RB: 0.9, QB: 1.0, K: 0.92, DST: 0.92 },
+    suggestedPreset: "upside",
   },
   robust_rb: {
     label: "Robust RB",
-    desc: "BPA with stronger RB depth preference",
+    desc: "Stack RBs early (often 2–3 in first 4–5 picks); wait on QB/TE. Stronger in standard / low-PPR.",
     needStrength: 0.14,
-    posBias: { RB: 1.06, WR: 0.98, TE: 0.99, QB: 0.98, K: 0.95, DST: 0.95 },
+    posBias: { RB: 1.08, WR: 0.97, TE: 0.96, QB: 0.95, K: 0.9, DST: 0.9 },
+    suggestedPreset: "situation",
+  },
+  late_qb: {
+    label: "Late QB",
+    desc: "Ignore QB until mid rounds; take skill-position value while others reach for elites.",
+    needStrength: 0.11,
+    posBias: { QB: 0.88, RB: 1.02, WR: 1.03, TE: 1.02, K: 0.92, DST: 0.92 },
+    suggestedPreset: "market",
   },
   best_ball: {
     label: "Best Ball",
-    desc: "BPA; push K/DST later, slight skill upside lean",
-    needStrength: 0.08,
-    posBias: { WR: 1.03, TE: 1.02, RB: 1.01, QB: 1.02, K: 0.7, DST: 0.7 },
+    desc: "Ceiling chasing; stack volume; push K/DST to the end (or skip).",
+    needStrength: 0.06,
+    posBias: { WR: 1.04, TE: 1.03, RB: 1.02, QB: 1.03, K: 0.55, DST: 0.55 },
+    suggestedPreset: "upside",
+  },
+  value: {
+    label: "Value / Beat ADP",
+    desc: "Lean into Flock + ADP + Vegas consensus; take falls, avoid reaches.",
+    needStrength: 0.1,
+    posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 0.9, DST: 0.9 },
+    suggestedPreset: "market",
   },
 };
+
+/** Apply Hero-RB style: once you have enough early RBs, stop boosting RB. */
+export function strategyPosBias(strat, rosterCounts) {
+  const bias = { ...(strat.posBias || {}) };
+  if (strat.earlyRbPushUntil != null) {
+    const rbs = rosterCounts?.RB || 0;
+    if (rbs >= strat.earlyRbPushUntil) {
+      bias.RB = Math.min(bias.RB ?? 1, 0.97);
+      bias.WR = Math.max(bias.WR ?? 1, 1.03);
+    }
+  }
+  return bias;
+}
 
 /**
  * Model rank among available (or all) players after ranking.
@@ -243,11 +277,13 @@ export function recommendPicks(players, {
     rosterBias.WR = Math.min(rosterBias.WR, 0.99);
   }
 
+  const stratBias = strategyPosBias(strat, rosterCounts);
+
   const scored = ranked.map((p) => {
     const fc = floorCeiling(p);
     const n = needScore(p.pos, rosterCounts, targets);
     const model = p.displayTotal ?? p.total ?? 0;
-    const bias = (strat.posBias?.[p.pos] ?? 1) * (rosterBias[p.pos] ?? 1);
+    const bias = (stratBias[p.pos] ?? 1) * (rosterBias[p.pos] ?? 1);
 
     // BPA core: model score. Need multiplies in a narrow band, e.g. 0.94–1.12
     const needMult = 1 + needStrength * (n - 0.5) * 2; // n=1 → +needStrength, n=0.15 → slight down
