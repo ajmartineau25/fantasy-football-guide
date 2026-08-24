@@ -1082,11 +1082,22 @@ function bindUI() {
 
   const stratSel = $("#strategySelect");
   if (stratSel) {
-    stratSel.value = state.strategy;
+    stratSel.innerHTML = Object.entries(STRATEGIES)
+      .map(([id, s]) => `<option value="${id}">${s.label}</option>`)
+      .join("");
+    stratSel.value = state.strategy in STRATEGIES ? state.strategy : "balanced";
     const applyStrat = () => {
       state.strategy = stratSel.value;
       const s = STRATEGIES[state.strategy];
       if ($("#strategyDesc") && s) $("#strategyDesc").textContent = s.desc;
+      // Mirror On the Clock: strategy suggests a ranking-style preset
+      if (s?.suggestedPreset) {
+        const preset = presetById(s.suggestedPreset);
+        state.weightPreset = preset.id;
+        state.weights = { ...preset.weights };
+        renderWeightPresets();
+        renderWeights();
+      }
       persistMyRoster();
       renderBoard();
     };
