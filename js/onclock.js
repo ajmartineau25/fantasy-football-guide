@@ -586,6 +586,9 @@ function renderRemainingBoard() {
     weights: state.weights,
     hideDrafted: true,
     enableNeed: false,
+    enableVorp: true,
+    vorpBlend: 0.5,
+    targets: rosterTargets(),
   });
   list = attachValueAndTiers(list, state.scoring).filter((p) => !p.drafted);
 

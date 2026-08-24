@@ -432,8 +432,9 @@ export function computeWeightedTotal(percentiles, weights) {
   return Math.round((num / den) * 10) / 10;
 }
 
-export function needMultiplier(pos, rosterCounts, targets) {
-  const starters = {
+/** Starters demanded per team (FLEX split across RB/WR/TE). */
+export function starterDemand(targets = {}) {
+  return {
     QB: targets.QB || 1,
     RB: (targets.RB || 2) + Math.ceil((targets.FLEX || 1) * 0.4),
     WR: (targets.WR || 2) + Math.ceil((targets.FLEX || 1) * 0.5),
@@ -441,6 +442,50 @@ export function needMultiplier(pos, rosterCounts, targets) {
     K: targets.K || 1,
     DST: targets.DST || 1,
   };
+}
+
+/**
+ * League-size VORP: value over the replacement starter at each position.
+ * Replacement = player at rank (teams × starters_at_pos) by model total.
+ * Returns Map id → { vorp, replacement, posRank, replaceAt }.
+ */
+export function computeVorpMap(playersWithTotal, targets = {}) {
+  const teams = Number(targets.teams) || 12;
+  const demand = starterDemand(targets);
+  const byPos = {};
+  for (const p of playersWithTotal) {
+    byPos[p.pos] = byPos[p.pos] || [];
+    byPos[p.pos].push(p);
+  }
+  const replacementScore = {};
+  const replaceAt = {};
+  for (const [pos, demandN] of Object.entries(demand)) {
+    const pool = (byPos[pos] || []).slice().sort((a, b) => (b.total ?? 0) - (a.total ?? 0));
+    const at = Math.max(1, Math.round(teams * demandN));
+    replaceAt[pos] = at;
+    // 0-based index of replacement player
+    const idx = Math.min(pool.length - 1, at - 1);
+    replacementScore[pos] = pool.length ? pool[idx].total ?? 0 : 0;
+  }
+  const out = new Map();
+  for (const [pos, pool] of Object.entries(byPos)) {
+    const sorted = pool.slice().sort((a, b) => (b.total ?? 0) - (a.total ?? 0));
+    sorted.forEach((p, i) => {
+      const rep = replacementScore[pos] ?? 0;
+      const vorp = Math.round(((p.total ?? 0) - rep) * 10) / 10;
+      out.set(p.id, {
+        vorp,
+        replacement: rep,
+        posRank: i + 1,
+        replaceAt: replaceAt[pos] || teams,
+      });
+    });
+  }
+  return out;
+}
+
+export function needMultiplier(pos, rosterCounts, targets) {
+  const starters = starterDemand(targets);
   const depth = {
     QB: starters.QB + 1,
     RB: starters.RB + 2,
@@ -524,6 +569,9 @@ export function rankPlayers(players, {
   rosterCounts = {},
   targets = {},
   enableNeed = false,
+  /** Blend league-size VORP into ranking (0–1). Default 0.45 when enabled. */
+  enableVorp = true,
+  vorpBlend = 0.45,
 } = {}) {
   const percentiles = buildPercentiles(players, scoring);
   const q = search.trim().toLowerCase();
@@ -543,6 +591,29 @@ export function rankPlayers(players, {
     };
   });
 
+  // VORP uses pre-need model totals so replacement is stable
+  if (enableVorp) {
+    const vorpMap = computeVorpMap(list, targets);
+    const blend = Math.max(0, Math.min(1, Number(vorpBlend) || 0));
+    list = list.map((p) => {
+      const v = vorpMap.get(p.id) || { vorp: 0, replacement: 0, posRank: null, replaceAt: null };
+      // Scale: display = (1-blend)*base + blend*(50 + vorp)
+      // vorp is typically about -30..+40 on 0–100 totals
+      const base = p.displayTotal;
+      const vorpScore = Math.max(0, Math.min(100, 50 + v.vorp));
+      const blended = Math.round((base * (1 - blend) + vorpScore * blend) * 10) / 10;
+      return {
+        ...p,
+        vorp: v.vorp,
+        vorpReplacement: v.replacement,
+        vorpPosRank: v.posRank,
+        vorpReplaceAt: v.replaceAt,
+        displayTotal: blended,
+        modelOnly: base,
+      };
+    });
+  }
+
   if (position !== "ALL") list = list.filter((p) => p.pos === position);
   if (hideDrafted) list = list.filter((p) => !p.drafted);
   if (q) {
@@ -561,6 +632,9 @@ export function rankPlayers(players, {
     if (sortKey === "total") {
       av = a.displayTotal;
       bv = b.displayTotal;
+    } else if (sortKey === "vorp") {
+      av = a.vorp ?? -999;
+      bv = b.vorp ?? -999;
     } else if (sortKey === "name") {
       return a.name < b.name ? -dir : a.name > b.name ? dir : 0;
     } else if (sortKey === "adpRaw") {

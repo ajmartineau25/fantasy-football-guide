@@ -251,6 +251,8 @@ export function recommendPicks(players, {
     weights,
     hideDrafted: true,
     enableNeed: false,
+    enableVorp: true,
+    vorpBlend: 0.5,
     rosterCounts,
     targets,
   });

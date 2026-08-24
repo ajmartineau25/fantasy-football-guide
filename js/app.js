@@ -62,6 +62,8 @@ const state = {
   weights: {},
   weightPreset: "balanced",
   enableNeed: true,
+  enableVorp: true,
+  enableVorp: true,
   myRoster: [],
   picks: [],
   draftSource: null, // sleeper | espn | manual
@@ -481,13 +483,14 @@ function viewLabel() {
 function renderViewBanner() {
   const banner = $("#viewBanner");
   if (state.view === "summary") {
-    banner.innerHTML = `
-      <h3>Summary — multi-factor model total</h3>
-      <p>Players ranked by a <strong>0–100 model score</strong>: each factor is converted to a percentile in its natural units, then combined with your weights. Columns show the real metrics (FPts, ADP, win totals, etc.) — not a fake 1–32 for everything.</p>
+    const teams = state.leagueTeams || 12;
+  banner.innerHTML = `
+      <h3>Summary — model + league-size VORP</h3>
+      <p>Multi-factor <strong>0–100</strong> score blended with <strong>VORP</strong> (value over the replacement starter in a <strong>${teams}-team</strong> league with your roster slots). Change teams/starters to reshuffle the board.</p>
       <div class="banner-meta">
-        <div class="stat-pill">Model total <strong>0–100</strong></div>
-        <div class="stat-pill">Playcaller / QB / SOS <strong>1–32 teams</strong></div>
-        <div class="stat-pill">Last year <strong>FPts</strong> · ADP <strong>pick #</strong> · Vegas <strong>player props</strong></div>
+        <div class="stat-pill">VORP <strong>${state.enableVorp ? "on" : "off"}</strong></div>
+        <div class="stat-pill">League <strong>${teams} teams</strong></div>
+        <div class="stat-pill">Flock · ADP · situation factors</div>
       </div>`;
     return;
   }
@@ -591,6 +594,8 @@ function getRankedList() {
     rosterCounts: countRoster(state.myRoster),
     targets: rosterTargets(),
     enableNeed: !isFactor && state.enableNeed,
+    enableVorp: state.enableVorp !== false,
+    vorpBlend: 0.45,
   });
 }
 
@@ -697,7 +702,7 @@ function renderBoard() {
       })
       .join("");
   } else {
-    // Flock-style draft sheet: Rank | Player | Team | Bye | ADP | Pos | Tier
+    // Flock-style draft sheet + VORP
     thead = `
       <tr>
         <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Rank</th>
@@ -705,6 +710,7 @@ function renderBoard() {
         <th>Team</th>
         <th>Bye</th>
         <th data-sort="adpRaw" class="${state.sortKey === "adpRaw" ? "sorted" : ""}">ADP</th>
+        <th data-sort="vorp" class="${state.sortKey === "vorp" ? "sorted" : ""}">VORP</th>
         <th>Pos</th>
         <th>Tier</th>
         <th></th>
@@ -715,6 +721,11 @@ function renderBoard() {
     rows = list
       .map((p) => {
         const myId = state.myRoster.some((m) => m.id === p.id);
+        const vorp = p.vorp;
+        const vorpCls =
+          vorp == null ? "" : vorp >= 8 ? "up" : vorp <= -5 ? "down" : "";
+        const vorpTxt =
+          vorp == null ? "—" : `${vorp > 0 ? "+" : ""}${vorp.toFixed(1)}`;
         return `
         <tr class="sheet-row ${p.drafted ? "drafted" : ""} ${myId ? "my-pick" : ""} ${topIds.has(p.id) && !p.drafted ? "recommended" : ""}" data-id="${p.id}">
           <td class="rank-num">${p.rank}</td>
@@ -726,6 +737,7 @@ function renderBoard() {
           <td class="team-cell">${p.team}</td>
           <td class="score-cell muted">${p.bye || "—"}</td>
           <td class="score-cell">${Number(p.adp[state.scoring]).toFixed(1)}</td>
+          <td class="score-cell vs-adp ${vorpCls}" title="Value over replacement (#${p.vorpReplaceAt} ${p.pos} in ${state.leagueTeams}-team)">${vorpTxt}</td>
           <td><span class="pos-badge ${p.pos}">${p.pos}</span></td>
           <td>${p.tier ? `<span class="${tierClass(p.tier)}">T${p.tier}</span>` : "—"}</td>
           <td>
@@ -1109,8 +1121,11 @@ function bindUI() {
     teamsEl.value = String(state.leagueTeams);
     teamsEl.addEventListener("change", () => {
       state.leagueTeams = Number(teamsEl.value) || 12;
+      const vorpTeams = $("#vorpTeamsLabel");
+      if (vorpTeams) vorpTeams.textContent = String(state.leagueTeams);
       persistMyRoster();
       renderBoard();
+      toast(`${state.leagueTeams}-team VORP refreshed`);
     });
   }
   const slotEl = $("#draftSlot");
@@ -1180,6 +1195,17 @@ function bindUI() {
     state.enableNeed = e.target.checked;
     renderBoard();
   });
+  const vorpEl = $("#enableVorp");
+  if (vorpEl) {
+    vorpEl.checked = state.enableVorp !== false;
+    vorpEl.addEventListener("change", () => {
+      state.enableVorp = vorpEl.checked;
+      renderBoard();
+      toast(state.enableVorp ? "VORP on — ranks use league size" : "VORP off — pure model");
+    });
+  }
+  const vorpTeams = $("#vorpTeamsLabel");
+  if (vorpTeams) vorpTeams.textContent = String(state.leagueTeams);
 
   const resetBtn = $("#resetWeights");
   if (resetBtn) {
