@@ -38,6 +38,7 @@ import {
   snapshotDrafted,
   onDraftUpdated,
 } from "./draft-sync.js";
+import { assignToSlots, renderSleeperRosterHtml } from "./roster-slots.js";
 
 const state = {
   players: [],
@@ -357,19 +358,27 @@ function renderNeedMeter() {
     })
     .join("");
 
-  $("#myRosterList").innerHTML =
-    state.myRoster
-      .map(
-        (p) =>
-          `<div class="rec-item"><span class="pos-badge ${p.pos}">${p.pos}</span><div><strong>${p.name}</strong><div class="meta" style="color:var(--text-muted);font-size:0.72rem">${p.team}</div></div></div>`
-      )
-      .join("") || `<p class="help-text">No picks yet</p>`;
-
   // chips for empty holes
   const holes = order.filter((pos) => (counts[pos] || 0) === 0 && pos !== "K" && pos !== "DST");
   $("#ocNeedChips").innerHTML = holes.length
     ? holes.map((p) => `<span class="oc-chip need">Need ${p}</span>`).join("")
     : `<span class="oc-chip ok">Starters covered</span>`;
+
+  renderSleeperRoster();
+}
+
+function renderSleeperRoster() {
+  const el = $("#sleeperRoster");
+  if (!el) return;
+  const slots = assignToSlots(state.myRoster, rosterTargets(), state.scoring);
+  el.innerHTML = renderSleeperRosterHtml(slots);
+  const meta = $("#rosterPanelMeta");
+  if (meta) {
+    const filled = slots.filter((s) => s.player).length;
+    const starters = slots.filter((s) => s.starter && s.player).length;
+    const starterSlots = slots.filter((s) => s.starter).length;
+    meta.textContent = `${filled} drafted · ${starters}/${starterSlots} starters`;
+  }
 }
 
 function renderTurnBar() {
@@ -631,25 +640,12 @@ function renderRemainingBoard() {
   });
 }
 
-function renderDraftLog() {
-  const log = $("#draftLog");
-  if (!log) return;
-  log.innerHTML = state.picks
-    .slice()
-    .reverse()
-    .slice(0, 40)
-    .map(
-      (p) =>
-        `<div class="pick ${p.isMine ? "mine" : ""}"><span class="num">#${p.pickNo ?? "—"}</span><span>${p.isMine ? "★ " : ""}${p.name} <span style="color:var(--text-muted)">${p.pos || ""} ${p.team || ""}</span></span></div>`
-    )
-    .join("") || `<p class="help-text">No picks yet</p>`;
-}
-
 function renderAll() {
   if (!state.connected) {
     $("#ocGate")?.classList.remove("hidden");
     $("#ocRoom")?.classList.add("hidden");
     setLiveStatus("", "Not connected — connect to unlock picks");
+    renderSleeperRoster();
     return;
   }
   $("#ocGate")?.classList.add("hidden");
@@ -659,7 +655,7 @@ function renderAll() {
   renderSuggestions();
   renderGoneBefore();
   renderRemainingBoard();
-  renderDraftLog();
+  renderSleeperRoster();
   persistDraft();
 }
 
@@ -667,9 +663,10 @@ function takePick(id, isMine) {
   const p = state.players.find((x) => x.id === id);
   if (!p || p.drafted) return;
   p.drafted = true;
+  const pickNo = state.players.filter((x) => x.drafted).length;
+  p.pickNo = pickNo;
   if (isMine && !state.myRoster.some((m) => m.id === id)) state.myRoster.push(p);
   state.queue = state.queue.filter((q) => q !== id);
-  const pickNo = state.players.filter((x) => x.drafted).length;
   state.picks.push({
     pickNo,
     name: p.name,

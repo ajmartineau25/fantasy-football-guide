@@ -46,6 +46,7 @@ import {
   snapshotDrafted,
   onDraftUpdated,
 } from "./draft-sync.js";
+import { assignToSlots, renderSleeperRosterHtml } from "./roster-slots.js";
 
 const state = {
   players: [],
@@ -448,22 +449,25 @@ function renderRecommendations(_ranked) {
   /* moved to On the Clock tab */
 }
 
-function renderDraftLog() {
-  const log = $("#draftLog");
-  if (!state.picks.length) {
-    log.innerHTML = `<div class="help-text">No picks yet. Connect Sleeper/ESPN or mark picks manually.</div>`;
-    return;
+function renderSleeperRoster() {
+  const el = $("#sleeperRoster");
+  if (!el) return;
+  const slots = assignToSlots(state.myRoster, rosterTargets(), state.scoring);
+  el.innerHTML = renderSleeperRosterHtml(slots);
+  const meta = $("#rosterPanelMeta");
+  if (meta) {
+    const filled = slots.filter((s) => s.player).length;
+    const starters = slots.filter((s) => s.starter && s.player).length;
+    const starterSlots = slots.filter((s) => s.starter).length;
+    meta.textContent = filled
+      ? `${filled} drafted · ${starters}/${starterSlots} starters`
+      : "Starters → bench (Sleeper layout)";
   }
-  const recent = [...state.picks].reverse().slice(0, 40);
-  log.innerHTML = recent
-    .map(
-      (p) => `
-    <div class="pick ${p.isMine ? "mine" : ""}">
-      <span class="num">#${p.pickNo ?? "—"}</span>
-      <span>${p.isMine ? "★ " : ""}${p.name} <span style="color:var(--text-muted)">${p.pos || ""} ${p.team || ""}</span></span>
-    </div>`
-    )
-    .join("");
+}
+
+function renderDraftLog() {
+  // Replaced by Sleeper-style roster on the right
+  renderSleeperRoster();
 }
 
 /** Bar width from a 0–100 model percentile (or approx from factor). */

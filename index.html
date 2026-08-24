@@ -163,14 +163,20 @@
       <!-- Right: tips + jump to draft room -->
       <aside class="draft-panel">
         <section class="panel">
-          <h2>Your roster need</h2>
+          <h2>My team</h2>
+          <p class="help-text" id="rosterPanelMeta">Starters → bench (Sleeper layout)</p>
+          <div id="sleeperRoster"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Need</h2>
           <div class="need-grid" id="needMeter"></div>
         </section>
 
         <section class="panel">
           <h2>Live draft room</h2>
           <p class="help-text">
-            Pick recommendations live on <strong>On the Clock</strong> — connect Sleeper, ESPN, or Manual first, then get one clear pick + 3 backups.
+            Full pick UI on <strong>On the Clock</strong> — connect there for live sync.
           </p>
           <div class="btn-row">
             <a class="btn btn-primary" href="./on-clock.html" style="text-align:center;text-decoration:none;display:block">Open On the Clock →</a>
@@ -178,21 +184,16 @@
         </section>
 
         <section class="panel">
-          <h2>Quick mark (optional)</h2>
-          <label class="field" for="manualName">Grey a name on this board</label>
+          <h2>Quick mark</h2>
+          <label class="field" for="manualName">Grey a name</label>
           <input id="manualName" type="text" placeholder="e.g. Jahmyr Gibbs" />
           <label class="checkbox-row">
             <input type="checkbox" id="manualMine" checked />
-            Count as my pick (need meter)
+            My pick
           </label>
           <div class="btn-row" style="margin-top:10px">
             <button type="button" class="btn btn-danger" id="btnResetDraft">Reset board</button>
           </div>
-        </section>
-
-        <section class="panel">
-          <h2>Draft log</h2>
-          <div class="draft-log" id="draftLog"></div>
         </section>
       </aside>
     </div>
