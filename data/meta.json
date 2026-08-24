@@ -1,11 +1,19 @@
 {
   "season": 2026,
-  "updated": "2026-08-04",
+  "updated": "2026-08-24",
   "scoring_modes": [
     "half",
     "ppr"
   ],
+  "flock_source": "Flock Fantasy draft sheets \u00b7 2026-08-24",
   "factors": [
+    {
+      "key": "flock",
+      "label": "Flock Consensus",
+      "unit": "rank",
+      "higherBetter": false,
+      "desc": "Flock Fantasy overall draft-sheet rank (1 = best). Medium prior (~25% in Balanced)."
+    },
     {
       "key": "lastYear",
       "label": "Last Year Stats",
@@ -85,28 +93,29 @@
     }
   ],
   "default_weights": {
-    "lastYear": 18,
-    "age": 7,
-    "qb": 8,
-    "oline": 8,
-    "playcaller": 8,
-    "adp": 12,
-    "vegas": 8,
-    "opportunity": 14,
-    "efficiency": 8,
-    "injury": 6,
-    "sos": 3
+    "flock": 25,
+    "lastYear": 14,
+    "age": 5,
+    "qb": 6,
+    "oline": 6,
+    "playcaller": 6,
+    "adp": 9,
+    "vegas": 6,
+    "opportunity": 10,
+    "efficiency": 6,
+    "injury": 5,
+    "sos": 2
   },
   "weight_presets": [
     {
       "id": "balanced",
       "label": "Balanced",
-      "desc": "Even blend of production, role, situation, and market."
+      "desc": "Flock ~25% + even blend of production, role, situation, market."
     },
     {
       "id": "situation",
       "label": "Overall Situation",
-      "desc": "QB, O-Line, playcaller, SOS & role."
+      "desc": "QB, O-Line, playcaller, SOS & role (Flock still ~15%)."
     },
     {
       "id": "production",
@@ -121,7 +130,7 @@
     {
       "id": "market",
       "label": "Beat the Market",
-      "desc": "ADP + Vegas props \u2014 hunt value vs consensus."
+      "desc": "Flock + ADP + Vegas \u2014 lean into consensus boards."
     }
   ],
   "league_defaults": {

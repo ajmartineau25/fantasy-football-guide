@@ -65,6 +65,8 @@ const state = {
   strategy: "balanced",
   draftSlot: 1,
   leagueTeams: 12,
+  roster: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, K: 1, DST: 1, BN: 6 },
+  boardMode: "sheet", // sheet | factors
   lastRecs: [],
 };
 
@@ -105,24 +107,52 @@ async function loadData() {
   state.players = players;
   state.meta = meta;
   state.teams = teams;
-  const balanced = presetById("balanced");
-  state.weightPreset = "balanced";
-  state.weights = { ...(meta.default_weights || balanced.weights) };
-  state.scoring = meta.league_defaults?.scoring === "half" ? "half" : "ppr";
+  const preset = presetById(state.weightPreset || "balanced");
+  state.weightPreset = preset.id;
+  state.weights = { ...preset.weights };
+  if (!["ppr", "half"].includes(state.scoring)) {
+    state.scoring = meta.league_defaults?.scoring === "half" ? "half" : "ppr";
+  }
+  // Defaults first, then any saved roster overrides from loadLeaguePrefs (already applied)
+  if (meta.league_defaults?.roster) {
+    state.roster = { ...meta.league_defaults.roster, ...state.roster };
+  }
 }
 
 function rosterTargets() {
-  const r = state.meta?.league_defaults?.roster || {};
+  const r = state.roster || state.meta?.league_defaults?.roster || {};
   return {
-    QB: r.QB ?? 1,
-    RB: r.RB ?? 2,
-    WR: r.WR ?? 2,
-    TE: r.TE ?? 1,
-    FLEX: r.FLEX ?? 1,
-    K: r.K ?? 1,
-    DST: r.DST ?? 1,
+    QB: Number(r.QB ?? 1),
+    RB: Number(r.RB ?? 2),
+    WR: Number(r.WR ?? 2),
+    TE: Number(r.TE ?? 1),
+    FLEX: Number(r.FLEX ?? 1),
+    K: Number(r.K ?? 1),
+    DST: Number(r.DST ?? 1),
+    BN: Number(r.BN ?? 6),
     teams: state.leagueTeams,
   };
+}
+
+function rosterLabel() {
+  const t = rosterTargets();
+  return `${t.QB}QB ${t.RB}RB ${t.WR}WR ${t.TE}TE ${t.FLEX}FLEX`;
+}
+
+function renderSheetHeader() {
+  const sub = $("#sheetSub");
+  const badges = $("#sheetBadges");
+  if (!sub || !badges) return;
+  const scoring = state.scoring === "ppr" ? "PPR" : "0.5 PPR";
+  const preset = presetById(state.weightPreset);
+  const flockW = state.weights?.flock ?? 0;
+  sub.textContent = `${state.leagueTeams}-team · ${rosterLabel()} · ${preset.label} · Flock blend ${flockW}%`;
+  badges.innerHTML = `
+    <span class="sheet-badge accent">${scoring}</span>
+    <span class="sheet-badge">${state.leagueTeams} TEAM</span>
+    <span class="sheet-badge">Flock ${flockW}%</span>
+    <span class="sheet-badge muted">Aug 24</span>
+  `;
 }
 
 function persistMyRoster() {
@@ -135,6 +165,9 @@ function persistMyRoster() {
         draftSlot: state.draftSlot,
         leagueTeams: state.leagueTeams,
         scoring: state.scoring,
+        roster: state.roster,
+        boardMode: state.boardMode,
+        weightPreset: state.weightPreset,
       })
     );
   } catch (_) {}
@@ -149,7 +182,65 @@ function loadLeaguePrefs() {
     if (o.draftSlot) state.draftSlot = o.draftSlot;
     if (o.leagueTeams) state.leagueTeams = o.leagueTeams;
     if (o.scoring) state.scoring = o.scoring;
+    if (o.roster && typeof o.roster === "object") state.roster = { ...state.roster, ...o.roster };
+    if (o.boardMode) state.boardMode = o.boardMode;
+    if (o.weightPreset) state.weightPreset = o.weightPreset;
   } catch (_) {}
+}
+
+function syncRosterInputs() {
+  const map = {
+    rosterQB: "QB",
+    rosterRB: "RB",
+    rosterWR: "WR",
+    rosterTE: "TE",
+    rosterFLEX: "FLEX",
+    rosterK: "K",
+    rosterDST: "DST",
+    rosterBN: "BN",
+  };
+  for (const [id, key] of Object.entries(map)) {
+    const el = $(`#${id}`);
+    if (el) el.value = String(state.roster[key] ?? 0);
+  }
+}
+
+function readRosterInputs() {
+  const map = {
+    rosterQB: "QB",
+    rosterRB: "RB",
+    rosterWR: "WR",
+    rosterTE: "TE",
+    rosterFLEX: "FLEX",
+    rosterK: "K",
+    rosterDST: "DST",
+    rosterBN: "BN",
+  };
+  for (const [id, key] of Object.entries(map)) {
+    const el = $(`#${id}`);
+    if (el) state.roster[key] = Math.max(0, Number(el.value) || 0);
+  }
+}
+
+function setBoardMode(mode) {
+  state.boardMode = mode === "factors" ? "factors" : "sheet";
+  $$(".mode-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.boardMode === state.boardMode)
+  );
+  const tabs = $("#rankTabs");
+  if (tabs) tabs.classList.toggle("hidden", state.boardMode === "sheet");
+  if (state.boardMode === "sheet") {
+    state.view = "summary";
+    state.sortKey = "total";
+    state.sortDir = "desc";
+  }
+  persistMyRoster();
+  renderBoard();
+}
+
+function tierClass(tier) {
+  const t = Math.min(8, Math.max(1, Number(tier) || 1));
+  return `tier-pill t${t}`;
 }
 
 function valueTagHtml(tag) {
@@ -505,10 +596,11 @@ function getRankedList() {
 }
 
 function renderBoard() {
+  renderSheetHeader();
   renderViewBanner();
   renderTeamRankPanel();
 
-  const isFactor = isFactorView();
+  const isFactor = state.boardMode === "factors" && isFactorView();
   let list = getRankedList();
 
   if (isFactor) {
@@ -606,16 +698,16 @@ function renderBoard() {
       })
       .join("");
   } else {
-    // Clean Flock-style summary: big player rows, few columns (factor detail lives in tabs)
+    // Flock-style draft sheet: Rank | Player | Team | Bye | ADP | Pos | Tier
     thead = `
       <tr>
-        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">#</th>
+        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Rank</th>
         <th data-sort="name" class="${state.sortKey === "name" ? "sorted" : ""}">Player</th>
-        <th>Pos</th>
+        <th>Team</th>
+        <th>Bye</th>
         <th data-sort="adpRaw" class="${state.sortKey === "adpRaw" ? "sorted" : ""}">ADP</th>
-        <th data-sort="fpts" class="${state.sortKey === "fpts" ? "sorted" : ""}">'25</th>
-        <th data-sort="total" class="${state.sortKey === "total" ? "sorted" : ""}">Score</th>
-        <th>vs ADP</th>
+        <th>Pos</th>
+        <th>Tier</th>
         <th></th>
       </tr>`;
 
@@ -624,31 +716,21 @@ function renderBoard() {
     rows = list
       .map((p) => {
         const myId = state.myRoster.some((m) => m.id === p.id);
-        const vs =
-          p.value != null
-            ? `<span class="vs-adp ${p.value > 0 ? "up" : p.value < 0 ? "down" : ""}">${p.value > 0 ? "+" : ""}${p.value}</span>`
-            : "—";
         return `
-        <tr class="${p.drafted ? "drafted" : ""} ${myId ? "my-pick" : ""} ${topIds.has(p.id) && !p.drafted ? "recommended" : ""}" data-id="${p.id}">
+        <tr class="sheet-row ${p.drafted ? "drafted" : ""} ${myId ? "my-pick" : ""} ${topIds.has(p.id) && !p.drafted ? "recommended" : ""}" data-id="${p.id}">
           <td class="rank-num">${p.rank}</td>
           <td>
             <div class="player-cell">
-              <div>
-                <div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}${p.tier ? `<span class="tag tier">T${p.tier}</span>` : ""}${valueTagHtml(p.valueTag)}</div>
-                <div class="meta">${p.team} · Bye ${p.bye}${p.age ? ` · ${p.age}y` : ""}</div>
-              </div>
+              <div class="name">${p.name}${p.rookie ? ' <span class="rookie-tag">R</span>' : ""}</div>
             </div>
           </td>
+          <td class="team-cell">${p.team}</td>
+          <td class="score-cell muted">${p.bye || "—"}</td>
+          <td class="score-cell">${Number(p.adp[state.scoring]).toFixed(1)}</td>
           <td><span class="pos-badge ${p.pos}">${p.pos}</span></td>
-          <td class="score-cell">${p.adp[state.scoring]}</td>
-          <td class="score-cell muted">${(p.fpts_2025[state.scoring] ?? 0).toFixed(0)}</td>
-          <td class="score-cell score-total">
-            <span class="score-bar" style="width:${barWidthPct(p.displayTotal)}px"></span>
-            ${p.displayTotal.toFixed(1)}
-          </td>
-          <td class="score-cell">${vs}</td>
+          <td>${p.tier ? `<span class="${tierClass(p.tier)}">T${p.tier}</span>` : "—"}</td>
           <td>
-            <button class="btn draft-btn" data-id="${p.id}" style="width:auto;padding:6px 12px;font-size:0.75rem" ${p.drafted ? "disabled" : ""}>
+            <button class="btn draft-btn" data-id="${p.id}" style="width:auto;padding:5px 10px;font-size:0.72rem" ${p.drafted ? "disabled" : ""}>
               ${p.drafted ? "Out" : "Draft"}
             </button>
           </td>
@@ -1029,6 +1111,30 @@ function bindUI() {
       renderBoard();
     });
   }
+  syncRosterInputs();
+  [
+    "rosterQB",
+    "rosterRB",
+    "rosterWR",
+    "rosterTE",
+    "rosterFLEX",
+    "rosterK",
+    "rosterDST",
+    "rosterBN",
+  ].forEach((id) => {
+    const el = $(`#${id}`);
+    if (!el) return;
+    el.addEventListener("change", () => {
+      readRosterInputs();
+      persistMyRoster();
+      renderBoard();
+      toast(`Lineup: ${rosterLabel()}`);
+    });
+  });
+  $$(".mode-btn").forEach((btn) => {
+    btn.addEventListener("click", () => setBoardMode(btn.dataset.boardMode));
+  });
+  setBoardMode(state.boardMode);
 
   // Scoring
   $$(".scoring-toggle button").forEach((btn) => {

@@ -86,13 +86,14 @@ export function positionScarcity(players, rosterCounts, targets) {
   for (const p of available) {
     if (byPos[p.pos] !== undefined) byPos[p.pos] += 1;
   }
+  const teams = targets.teams || 12;
   const depth = {
-    QB: (targets.QB || 1) * 12 + 6,
-    RB: (targets.RB || 2) * 12 + 24,
-    WR: (targets.WR || 2) * 12 + 30,
-    TE: (targets.TE || 1) * 12 + 10,
-    K: 12,
-    DST: 12,
+    QB: (targets.QB || 1) * teams + Math.ceil(teams * 0.5),
+    RB: (targets.RB || 2) * teams + teams * 2,
+    WR: (targets.WR || 2) * teams + teams * 2 + Math.ceil(teams * 0.5),
+    TE: (targets.TE || 1) * teams + Math.ceil(teams * 0.8),
+    K: teams,
+    DST: teams,
   };
   const out = {};
   for (const pos of Object.keys(byPos)) {
@@ -230,11 +231,23 @@ export function recommendPicks(players, {
   // Need tilt only matters after you have a roster; stay tiny early
   const needStrength = rosterEmpty ? 0 : (strat.needStrength ?? 0.12) * (pickNumber <= teams ? 0.35 : 1);
 
+  // League roster shape: extra WR/FLEX starters soft-tilt pass-catchers
+  const rosterBias = { QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DST: 1 };
+  if ((targets.WR || 2) >= 3 || (targets.FLEX || 1) >= 2) {
+    rosterBias.WR = 1.04;
+    rosterBias.TE = 1.02;
+    rosterBias.RB = 0.98;
+  }
+  if ((targets.RB || 2) >= 3) {
+    rosterBias.RB = Math.max(rosterBias.RB, 1.04);
+    rosterBias.WR = Math.min(rosterBias.WR, 0.99);
+  }
+
   const scored = ranked.map((p) => {
     const fc = floorCeiling(p);
     const n = needScore(p.pos, rosterCounts, targets);
     const model = p.displayTotal ?? p.total ?? 0;
-    const bias = strat.posBias?.[p.pos] ?? 1;
+    const bias = (strat.posBias?.[p.pos] ?? 1) * (rosterBias[p.pos] ?? 1);
 
     // BPA core: model score. Need multiplies in a narrow band, e.g. 0.94–1.12
     const needMult = 1 + needStrength * (n - 0.5) * 2; // n=1 → +needStrength, n=0.15 → slight down

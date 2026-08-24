@@ -17,6 +17,7 @@
  */
 
 export const FACTOR_KEYS = [
+  "flock",
   "lastYear",
   "age",
   "qb",
@@ -33,96 +34,102 @@ export const FACTOR_KEYS = [
 /**
  * Five prevalent ranking styles — replaces fiddly per-factor sliders.
  * Each preset is a full weight map that sums to 100.
+ * Balanced keeps ~25% Flock Fantasy draft-sheet consensus (user request).
  */
 export const WEIGHT_PRESETS = [
   {
     id: "balanced",
     label: "Balanced",
-    desc: "Even blend of production, role, situation, and market signals.",
+    desc: "Flock ~25% + even blend of production, role, situation, and market.",
     weights: {
-      lastYear: 18,
-      age: 7,
-      qb: 8,
-      oline: 8,
-      playcaller: 8,
-      adp: 12,
-      vegas: 8,
-      opportunity: 14,
-      efficiency: 8,
-      injury: 6,
-      sos: 3,
+      flock: 25,
+      lastYear: 14,
+      age: 5,
+      qb: 6,
+      oline: 6,
+      playcaller: 6,
+      adp: 9,
+      vegas: 6,
+      opportunity: 10,
+      efficiency: 6,
+      injury: 5,
+      sos: 2,
     },
   },
   {
     id: "situation",
     label: "Overall Situation",
-    desc: "QB, O-Line, playcaller, SOS & role — bet the supporting cast.",
+    desc: "QB, O-Line, playcaller, SOS & role — Flock still ~15%.",
     weights: {
-      lastYear: 6,
-      age: 4,
-      qb: 16,
-      oline: 16,
-      playcaller: 16,
-      adp: 6,
-      vegas: 6,
-      opportunity: 14,
-      efficiency: 6,
-      injury: 4,
-      sos: 12,
+      flock: 15,
+      lastYear: 5,
+      age: 3,
+      qb: 14,
+      oline: 14,
+      playcaller: 14,
+      adp: 5,
+      vegas: 5,
+      opportunity: 12,
+      efficiency: 5,
+      injury: 3,
+      sos: 5,
     },
   },
   {
     id: "production",
     label: "Prior Production",
-    desc: "Last-year points, efficiency, opportunity, and Vegas lines.",
+    desc: "Last-year points, efficiency, opportunity, Vegas — Flock ~20%.",
     weights: {
-      lastYear: 28,
-      age: 4,
-      qb: 4,
-      oline: 4,
-      playcaller: 4,
-      adp: 8,
-      vegas: 14,
-      opportunity: 16,
-      efficiency: 12,
-      injury: 4,
-      sos: 2,
+      flock: 20,
+      lastYear: 22,
+      age: 3,
+      qb: 3,
+      oline: 3,
+      playcaller: 3,
+      adp: 6,
+      vegas: 12,
+      opportunity: 14,
+      efficiency: 10,
+      injury: 3,
+      sos: 1,
     },
   },
   {
     id: "upside",
     label: "Youth & Upside",
-    desc: "Age curve, opportunity, health — chase breakouts over proven vets.",
+    desc: "Age curve + opportunity + health — Flock ~18%.",
     weights: {
-      lastYear: 8,
-      age: 22,
-      qb: 6,
-      oline: 8,
-      playcaller: 8,
-      adp: 6,
-      vegas: 8,
-      opportunity: 18,
-      efficiency: 8,
-      injury: 6,
+      flock: 18,
+      lastYear: 6,
+      age: 18,
+      qb: 5,
+      oline: 7,
+      playcaller: 7,
+      adp: 5,
+      vegas: 6,
+      opportunity: 15,
+      efficiency: 6,
+      injury: 5,
       sos: 2,
     },
   },
   {
     id: "market",
     label: "Beat the Market",
-    desc: "ADP + Vegas props — hunt value vs consensus draft cost.",
+    desc: "Flock + ADP + Vegas — lean into consensus boards (~28% Flock).",
     weights: {
-      lastYear: 10,
-      age: 5,
-      qb: 5,
-      oline: 5,
-      playcaller: 5,
-      adp: 28,
-      vegas: 18,
-      opportunity: 12,
-      efficiency: 6,
-      injury: 4,
-      sos: 2,
+      flock: 28,
+      lastYear: 8,
+      age: 4,
+      qb: 4,
+      oline: 4,
+      playcaller: 4,
+      adp: 22,
+      vegas: 12,
+      opportunity: 8,
+      efficiency: 4,
+      injury: 2,
+      sos: 0,
     },
   },
 ];
@@ -132,6 +139,7 @@ export function presetById(id) {
 }
 
 export const FACTOR_LABELS = {
+  flock: "Flock",
   lastYear: "Last Year",
   age: "Age",
   qb: "QB",
@@ -146,6 +154,7 @@ export const FACTOR_LABELS = {
 };
 
 export const FACTOR_TAB_LABELS = {
+  flock: "Flock Consensus",
   lastYear: "Last Year Stats",
   age: "Age",
   qb: "Quarterback",
@@ -171,6 +180,12 @@ export const TEAM_LEVEL_FACTORS = new Set(["playcaller", "qb", "oline", "sos"]);
 
 /** Meta for each factor's display + sort direction. */
 export const FACTOR_META = {
+  flock: {
+    unit: "rank",
+    higherBetter: false,
+    scaleNote: "Flock overall rank",
+    desc: "Flock Fantasy overall draft-sheet rank (1 = best). Medium prior in Balanced (~25%).",
+  },
   lastYear: {
     unit: "FPts",
     higherBetter: true,
@@ -259,15 +274,15 @@ export function getModelValue(metrics, key) {
   if (!metrics) return 0;
   if (key === "age") return metrics.ageFitness ?? 50;
   if (key === "adp") {
-    // Invert ADP so early picks score higher: use negative ADP for ranking direction
     return metrics.adp ?? 999;
   }
+  if (key === "flock") return metrics.flock ?? 250;
   if (key === "opportunity") return metrics.opportunity ?? 999;
   return metrics[key] ?? 0;
 }
 
 export function isHigherBetter(key) {
-  if (key === "adp" || key === "opportunity") return false;
+  if (key === "adp" || key === "opportunity" || key === "flock") return false;
   if (key === "age") return true; // ageFitness is higherBetter
   return FACTOR_META[key]?.higherBetter !== false;
 }
@@ -289,6 +304,8 @@ export function formatMetric(key, metrics, scoring) {
       return `${v}/32`;
     case "adp":
       return Number(v).toFixed(1);
+    case "flock":
+      return v >= 250 ? "—" : `#${v}`;
     case "vegas": {
       const yds = metrics.vegasYards ?? v;
       const tds = metrics.vegasTds;
@@ -385,6 +402,7 @@ export function buildPercentiles(players, scoring = "ppr") {
         const m = p.metrics?.[scoring] || p.scores?.[scoring] || {};
         if (key === "age") return m.ageFitness ?? 50;
         if (key === "adp") return m.adp ?? 999;
+        if (key === "flock") return m.flock ?? 250;
         return m[key] ?? 0;
       });
       const pct = percentileMap(vals, isHigherBetter(key));

@@ -39,6 +39,17 @@
           </select>
           <label class="field" for="draftSlot">Your draft slot</label>
           <input id="draftSlot" type="number" min="1" max="14" value="1" />
+          <div class="roster-grid" aria-label="Starting lineup">
+            <label>QB <input id="rosterQB" type="number" min="0" max="3" value="1" /></label>
+            <label>RB <input id="rosterRB" type="number" min="0" max="4" value="2" /></label>
+            <label>WR <input id="rosterWR" type="number" min="0" max="5" value="2" /></label>
+            <label>TE <input id="rosterTE" type="number" min="0" max="3" value="1" /></label>
+            <label>FLEX <input id="rosterFLEX" type="number" min="0" max="3" value="1" /></label>
+            <label>K <input id="rosterK" type="number" min="0" max="2" value="1" /></label>
+            <label>DST <input id="rosterDST" type="number" min="0" max="2" value="1" /></label>
+            <label>BN <input id="rosterBN" type="number" min="0" max="10" value="6" /></label>
+          </div>
+          <p class="help-text">Starters reshape need, scarcity, and on-clock AI.</p>
           <label class="field" for="strategySelect">Strategy</label>
           <select id="strategySelect">
             <option value="balanced">Balanced</option>
@@ -91,8 +102,22 @@
 
       <!-- Center: board -->
       <main class="main-panel">
-        <nav class="rank-tabs" id="rankTabs" aria-label="Ranking views">
+        <div class="sheet-header" id="sheetHeader">
+          <div>
+            <h2 class="sheet-title">2026 Draft Board</h2>
+            <p class="sheet-sub" id="sheetSub">Loading…</p>
+          </div>
+          <div class="sheet-badges" id="sheetBadges"></div>
+        </div>
+
+        <div class="mode-toggle" role="group" aria-label="Board mode">
+          <button type="button" class="mode-btn active" data-board-mode="sheet">Sheet</button>
+          <button type="button" class="mode-btn" data-board-mode="factors">Factors</button>
+        </div>
+
+        <nav class="rank-tabs hidden" id="rankTabs" aria-label="Ranking views">
           <button type="button" class="rank-tab active" data-view="summary">Summary</button>
+          <button type="button" class="rank-tab" data-view="flock">Flock</button>
           <button type="button" class="rank-tab" data-view="lastYear">Last Year</button>
           <button type="button" class="rank-tab" data-view="age">Age</button>
           <button type="button" class="rank-tab" data-view="qb">QB</button>

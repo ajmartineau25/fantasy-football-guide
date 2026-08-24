@@ -2,9 +2,42 @@
 """Generate team + player JSON for the 2026 Fantasy Football Guide dashboard."""
 
 import json
+import re
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "data"
+
+
+def _norm_name(s: str) -> str:
+    s = s.lower().replace("'", "").replace(".", "").replace("-", " ")
+    s = re.sub(r"[^a-z0-9 ]", " ", s)
+    s = re.sub(r"\b(iii|ii|jr|sr)\b", "", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def load_flock_ranks() -> dict:
+    """Overall ranks from Flock draft sheet PDF (1 = best)."""
+    path = OUT / "flock_ranks.json"
+    if not path.exists():
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    return {_norm_name(k): int(v) for k, v in raw.items()}
+
+
+def resolve_flock_rank(name: str, flock: dict, default: int = 250) -> int:
+    n = _norm_name(name)
+    if n in flock:
+        return flock[n]
+    parts = n.split()
+    if len(parts) >= 2:
+        compact = parts[0] + " " + parts[-1]
+        if compact in flock:
+            return flock[compact]
+        for k, v in flock.items():
+            kp = k.split()
+            if len(kp) >= 2 and kp[0] == parts[0] and kp[-1] == parts[-1]:
+                return v
+    return default
 
 # Vegas win totals (DraftKings via FOX Sports, Jul 2026)
 # Playcaller rank 32=best fantasy-friendly OC/scheme, 1=worst
@@ -490,6 +523,7 @@ def position_env_metrics(pos: str, team_meta: dict) -> dict:
 def build_players():
     # Opportunity: rank within position by legacy volume score (1 = best role)
     opp_rank = pos_rank_map(PLAYERS, lambda x: x["opportunity"], reverse=True)
+    flock = load_flock_ranks()
 
     enriched = []
     for i, p in enumerate(PLAYERS):
@@ -501,6 +535,7 @@ def build_players():
         fitness = age_fitness(p["pos"], p["age"]) if p["pos"] != "DST" else 50.0
         n_at_pos = sum(1 for x in PLAYERS if x["pos"] == p["pos"])
         props = estimate_player_props(p)
+        flock_rank = resolve_flock_rank(p["name"], flock)
 
         # metrics: applicable display values (same for ppr/half except lastYear + adp)
         def metrics_for(scoring: str) -> dict:
@@ -520,6 +555,8 @@ def build_players():
                 "playcaller": env["playcaller"],
                 # Real ADP (lower = drafted earlier)
                 "adp": adp,
+                # Flock Fantasy overall draft-sheet rank (1 = best); medium prior
+                "flock": flock_rank,
                 # PLAYER prop primary line (yards/sacks/points) — NOT team wins
                 "vegas": props["primary"],
                 "vegasYards": props["yards"],
@@ -547,6 +584,7 @@ def build_players():
             "age": p["age"],
             "bye": p.get("bye", 0),
             "rookie": bool(p.get("rookie", False)),
+            "flock_rank": flock_rank,
             "adp": {"ppr": p["adp_ppr"], "half": p["adp_half"]},
             "fpts_2025": {"ppr": p["fpts_ppr"], "half": p["fpts_half"]},
             "raw": {
@@ -562,6 +600,7 @@ def build_players():
                 "opp_of": n_at_pos,
                 "age_fitness": fitness,
                 "vegas_props": props,
+                "flock_rank": flock_rank,
                 "env_applies": {
                     "qb": env["qb"] is not None,
                     "oline": env["oline"] is not None,
@@ -588,9 +627,17 @@ def main():
     players = build_players()
     meta = {
         "season": 2026,
-        "updated": "2026-08-04",
+        "updated": "2026-08-24",
         "scoring_modes": ["half", "ppr"],
+        "flock_source": "Flock Fantasy draft sheets · 2026-08-24",
         "factors": [
+            {
+                "key": "flock",
+                "label": "Flock Consensus",
+                "unit": "rank",
+                "higherBetter": False,
+                "desc": "Flock Fantasy overall draft-sheet rank (1 = best). Medium prior (~25% in Balanced).",
+            },
             {
                 "key": "lastYear",
                 "label": "Last Year Stats",
@@ -670,24 +717,25 @@ def main():
             },
         ],
         "default_weights": {
-            "lastYear": 18,
-            "age": 7,
-            "qb": 8,
-            "oline": 8,
-            "playcaller": 8,
-            "adp": 12,
-            "vegas": 8,
-            "opportunity": 14,
-            "efficiency": 8,
-            "injury": 6,
-            "sos": 3,
+            "flock": 25,
+            "lastYear": 14,
+            "age": 5,
+            "qb": 6,
+            "oline": 6,
+            "playcaller": 6,
+            "adp": 9,
+            "vegas": 6,
+            "opportunity": 10,
+            "efficiency": 6,
+            "injury": 5,
+            "sos": 2,
         },
         "weight_presets": [
-            {"id": "balanced", "label": "Balanced", "desc": "Even blend of production, role, situation, and market."},
-            {"id": "situation", "label": "Overall Situation", "desc": "QB, O-Line, playcaller, SOS & role."},
+            {"id": "balanced", "label": "Balanced", "desc": "Flock ~25% + even blend of production, role, situation, market."},
+            {"id": "situation", "label": "Overall Situation", "desc": "QB, O-Line, playcaller, SOS & role (Flock still ~15%)."},
             {"id": "production", "label": "Prior Production", "desc": "Last-year points, efficiency, opportunity, Vegas."},
             {"id": "upside", "label": "Youth & Upside", "desc": "Age curve, opportunity, health — chase breakouts."},
-            {"id": "market", "label": "Beat the Market", "desc": "ADP + Vegas props — hunt value vs consensus."},
+            {"id": "market", "label": "Beat the Market", "desc": "Flock + ADP + Vegas — lean into consensus boards."},
         ],
         "league_defaults": {
             "teams": 12,
