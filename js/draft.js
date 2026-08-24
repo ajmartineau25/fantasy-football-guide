@@ -25,7 +25,9 @@ export function normalizeName(name) {
  */
 export function matchPlayer(localPlayers, { name, pos, team, sleeperId }) {
   if (sleeperId) {
-    const byId = localPlayers.find((p) => p.sleeper_id === sleeperId);
+    const byId = localPlayers.find(
+      (p) => p.sleeper_id != null && String(p.sleeper_id) === String(sleeperId)
+    );
     if (byId) return byId;
   }
   const n = normalizeName(name);
@@ -34,22 +36,38 @@ export function matchPlayer(localPlayers, { name, pos, team, sleeperId }) {
   // Exact name
   let hits = localPlayers.filter((p) => normalizeName(p.name) === n);
   if (hits.length === 1) return hits[0];
-  if (pos) hits = hits.filter((p) => p.pos === pos);
-  if (hits.length === 1) return hits[0];
+  if (pos) {
+    const posHits = hits.filter((p) => p.pos === pos);
+    if (posHits.length === 1) return posHits[0];
+    if (posHits.length) hits = posHits;
+  }
   if (team) {
     const t = team.toUpperCase();
-    hits = hits.filter((p) => p.team === t);
-    if (hits.length === 1) return hits[0];
+    const teamHits = hits.filter((p) => p.team === t);
+    if (teamHits.length === 1) return teamHits[0];
+    if (teamHits.length) hits = teamHits;
   }
+  if (hits.length === 1) return hits[0];
 
-  // Partial / last-name
-  const last = n.split(" ").pop();
-  hits = localPlayers.filter((p) => {
-    const pn = normalizeName(p.name);
-    return pn === n || pn.endsWith(" " + last) || pn.includes(n);
-  });
-  if (pos) hits = hits.filter((p) => p.pos === pos);
-  if (team) hits = hits.filter((p) => p.team === (team || "").toUpperCase());
+  // Last name + position (+ team if provided)
+  const parts = n.split(" ").filter(Boolean);
+  const last = parts[parts.length - 1];
+  if (last && last.length > 2) {
+    let lastHits = localPlayers.filter((p) => {
+      const pn = normalizeName(p.name);
+      const pp = pn.split(" ");
+      return pp[pp.length - 1] === last;
+    });
+    if (pos) lastHits = lastHits.filter((p) => p.pos === pos);
+    if (team) lastHits = lastHits.filter((p) => p.team === team.toUpperCase());
+    if (lastHits.length === 1) return lastHits[0];
+    // First initial + last
+    if (parts[0] && lastHits.length > 1) {
+      const fi = parts[0][0];
+      const fiHits = lastHits.filter((p) => normalizeName(p.name)[0] === fi);
+      if (fiHits.length === 1) return fiHits[0];
+    }
+  }
   return hits[0] || null;
 }
 
@@ -68,13 +86,18 @@ export async function sleeperGetLeagues(userId, season = "2026") {
 }
 
 export async function sleeperGetDraft(draftId) {
-  const res = await fetch(`${SLEEPER}/draft/${draftId}`);
+  const res = await fetch(`${SLEEPER}/draft/${draftId}?t=${Date.now()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load Sleeper draft");
   return res.json();
 }
 
 export async function sleeperGetPicks(draftId) {
-  const res = await fetch(`${SLEEPER}/draft/${draftId}/picks`);
+  // Cache-bust so live drafts don't get a stale browser-cached pick list
+  const res = await fetch(`${SLEEPER}/draft/${draftId}/picks?t=${Date.now()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load Sleeper picks");
   return res.json();
 }
@@ -487,21 +510,27 @@ export function applyEspnDraft(localPlayers, leagueJson, { teamId } = {}) {
 export function createDraftPoller(fn, intervalMs = 5000) {
   let timer = null;
   let stopped = true;
+  let inFlight = false;
 
   async function tick() {
-    if (stopped) return;
+    if (stopped || inFlight) return;
+    inFlight = true;
     try {
       await fn();
     } catch (e) {
       console.error("Draft poll error", e);
+    } finally {
+      inFlight = false;
     }
   }
 
-  return {
+  const api = {
     start() {
+      if (!stopped && timer) return api; // already running
       stopped = false;
       tick();
       timer = setInterval(tick, intervalMs);
+      return api;
     },
     stop() {
       stopped = true;
@@ -512,6 +541,9 @@ export function createDraftPoller(fn, intervalMs = 5000) {
       return !stopped && !!timer;
     },
   };
+  // Auto-start so callers that forget .start() still poll live
+  api.start();
+  return api;
 }
 
 /** Manual mark drafted by name (for mock / non-connected drafts). */

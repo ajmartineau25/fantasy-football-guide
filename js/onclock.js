@@ -785,6 +785,7 @@ async function connectSleeper() {
     const teams = detectSleeperTeamCount(draft) || rosterCfg?.teams;
     if (slot) proposeDraftSlot(slot, { teams, source: "Sleeper" });
 
+    let lastPickCount = (applied.picks || []).length;
     if (state.poller) state.poller.stop();
     state.poller = createDraftPoller(async () => {
       const fresh = await sleeperGetPicks(draftId);
@@ -795,10 +796,18 @@ async function connectSleeper() {
       });
       state.myRoster = again.myRoster || [];
       state.picks = again.picks || [];
+      const n = (again.picks || []).length;
+      const matched = again.draftedIds?.size ?? 0;
+      setLiveStatus("live", `Sleeper live · ${n} picks · ${matched} matched`);
+      if (n > lastPickCount) {
+        const newest = again.picks[again.picks.length - 1];
+        toast(`Pick ${newest?.pickNo ?? n}: ${newest?.name || "player"}`);
+        lastPickCount = n;
+      }
       renderAll();
-    }, 4000);
+    }, 2500);
 
-    setConnected("sleeper", `Sleeper live · draft ${draftId}`);
+    setConnected("sleeper", `Sleeper live · ${lastPickCount} picks · draft ${draftId}`);
     const rosterNote = rosterCfg
       ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX`
       : "";
@@ -835,15 +844,23 @@ async function connectEspn() {
     const slot = detectEspnDraftSlot(json, teamId);
     const teams = detectEspnTeamCount(json) || rosterCfg?.teams;
     if (slot) proposeDraftSlot(slot, { teams, source: "ESPN" });
+    let lastPickCount = (applied.picks || []).length;
     if (state.poller) state.poller.stop();
     state.poller = createDraftPoller(async () => {
       const fresh = await espnFetchLeague({ leagueId, season, useProxy });
       const again = applyEspnDraft(state.players, fresh, { teamId });
       state.myRoster = again.myRoster || [];
       state.picks = again.picks || [];
+      const n = (again.picks || []).length;
+      setLiveStatus("live", `ESPN live · ${n} picks`);
+      if (n > lastPickCount) {
+        const newest = again.picks[again.picks.length - 1];
+        toast(`Pick ${newest?.pickNo ?? n}: ${newest?.name || "player"}`);
+        lastPickCount = n;
+      }
       renderAll();
-    }, 6000);
-    setConnected("espn", `ESPN live · league ${leagueId}`);
+    }, 3000);
+    setConnected("espn", `ESPN live · ${lastPickCount} picks · league ${leagueId}`);
     const rosterNote = rosterCfg
       ? ` · ${rosterCfg.RB}RB/${rosterCfg.WR}WR/${rosterCfg.FLEX}FLEX`
       : "";
