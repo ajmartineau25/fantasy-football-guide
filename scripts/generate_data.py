@@ -732,7 +732,7 @@ def main():
         },
         "weight_presets": [
             {"id": "balanced", "label": "Balanced", "desc": "Flock ~25% + even blend of production, role, situation, market."},
-            {"id": "situation", "label": "Overall Situation", "desc": "QB, O-Line, playcaller, SOS & role (Flock still ~15%)."},
+            {"id": "situation", "label": "Overall Situation", "desc": "Env (QB/OL/playcaller/SOS) ~30%; surplus into Flock (~32%)."},
             {"id": "production", "label": "Prior Production", "desc": "Last-year points, efficiency, opportunity, Vegas."},
             {"id": "upside", "label": "Youth & Upside", "desc": "Age curve, opportunity, health — chase breakouts."},
             {"id": "market", "label": "Beat the Market", "desc": "Flock + ADP + Vegas — lean into consensus boards."},

@@ -291,13 +291,20 @@ function renderOcPresets() {
   });
 }
 
+function strategyHelpHtml(strat) {
+  const rounds = strat.bestRounds ? `<div class="oc-strat-rounds"><strong>Best rounds:</strong> ${strat.bestRounds}</div>` : "";
+  const guide = strat.roundGuide ? `<div class="help-text" style="margin-top:4px">${strat.roundGuide}</div>` : "";
+  return `${strat.desc}${rounds}${guide}`;
+}
+
 function applyStrategy(id, { syncPreset = true } = {}) {
   const key = STRATEGIES[id] ? id : "balanced";
   const strat = STRATEGIES[key];
   state.strategy = key;
   const sel = $("#strategySelect");
   if (sel) sel.value = key;
-  if ($("#strategyDesc")) $("#strategyDesc").textContent = strat.desc;
+  const desc = $("#strategyDesc");
+  if (desc) desc.innerHTML = strategyHelpHtml(strat);
   if (syncPreset && strat.suggestedPreset) {
     applyRankingPreset(strat.suggestedPreset, { fromStrategy: true });
   } else {
@@ -853,7 +860,7 @@ function bindUI() {
     strat.addEventListener("change", () => applyStrategy(strat.value, { syncPreset: true }));
   }
   if ($("#strategyDesc") && STRATEGIES[state.strategy]) {
-    $("#strategyDesc").textContent = STRATEGIES[state.strategy].desc;
+    $("#strategyDesc").innerHTML = strategyHelpHtml(STRATEGIES[state.strategy]);
   }
   renderOcPresets();
 

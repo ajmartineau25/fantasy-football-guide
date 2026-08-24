@@ -1357,3 +1357,7 @@ body.oc-your-turn .oc-hero {
   border: 1px solid rgba(45, 212, 191, 0.45); background: rgba(45, 212, 191, 0.08);
 }
 .oc-slot-confirm p { margin: 0 0 10px; font-size: 0.9rem; color: var(--text); }
+
+.oc-strat-rounds {
+  margin-top: 8px; font-size: 0.84rem; color: var(--heading); font-weight: 700;
+}

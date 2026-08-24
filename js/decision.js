@@ -16,6 +16,8 @@ export const STRATEGIES = {
     needStrength: 0.12,
     posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DST: 1 },
     suggestedPreset: "balanced",
+    bestRounds: "All rounds (default)",
+    roundGuide: "Use all draft. Best when the board is messy or you’re unsure — never force a build.",
   },
   hero_rb: {
     label: "Hero RB",
@@ -24,6 +26,8 @@ export const STRATEGIES = {
     posBias: { RB: 1.06, WR: 1.02, TE: 1.01, QB: 0.98, K: 0.92, DST: 0.92 },
     suggestedPreset: "production",
     earlyRbPushUntil: 1,
+    bestRounds: "R1–2 (hero), then R3–8 WR/TE",
+    roundGuide: "Lock one RB by pick ~24. Rounds 3–7 pound WR/TE. RB2/3 in R8–11. QB whenever value hits.",
   },
   zero_rb: {
     label: "Zero RB",
@@ -31,6 +35,8 @@ export const STRATEGIES = {
     needStrength: 0.1,
     posBias: { WR: 1.06, TE: 1.04, RB: 0.9, QB: 1.0, K: 0.92, DST: 0.92 },
     suggestedPreset: "upside",
+    bestRounds: "R1–5 WR/TE, R6–10 RB smash",
+    roundGuide: "No RB before ~pick 60 unless elite fall. Rounds 6–10 take 3–4 RBs with upside. Great at turns (1/2, 2/3).",
   },
   robust_rb: {
     label: "Robust RB",
@@ -38,6 +44,8 @@ export const STRATEGIES = {
     needStrength: 0.14,
     posBias: { RB: 1.08, WR: 0.97, TE: 0.96, QB: 0.95, K: 0.9, DST: 0.9 },
     suggestedPreset: "situation",
+    bestRounds: "R1–5 RB-heavy",
+    roundGuide: "Aim 2 RBs in R1–3, often a 3rd by R5. WR in R3–6. Wait on QB/TE until R7+. Stronger in 0.5 PPR / standard.",
   },
   late_qb: {
     label: "Late QB",
@@ -45,6 +53,8 @@ export const STRATEGIES = {
     needStrength: 0.11,
     posBias: { QB: 0.88, RB: 1.02, WR: 1.03, TE: 1.02, K: 0.92, DST: 0.92 },
     suggestedPreset: "market",
+    bestRounds: "Skill R1–8, QB R9–12",
+    roundGuide: "Don’t touch QB before ~pick 100 unless a stud falls hard. Pairs with any RB build. Stream if needed.",
   },
   best_ball: {
     label: "Best Ball",
@@ -52,6 +62,8 @@ export const STRATEGIES = {
     needStrength: 0.06,
     posBias: { WR: 1.04, TE: 1.03, RB: 1.02, QB: 1.03, K: 0.55, DST: 0.55 },
     suggestedPreset: "upside",
+    bestRounds: "All — push K/DST to R15+",
+    roundGuide: "Prioritize upside & stacks every round. Extra WR/RB depth R8–14. Never draft K/DST early (or at all).",
   },
   value: {
     label: "Value / Beat ADP",
@@ -59,6 +71,8 @@ export const STRATEGIES = {
     needStrength: 0.1,
     posBias: { QB: 1, RB: 1, WR: 1, TE: 1, K: 0.9, DST: 0.9 },
     suggestedPreset: "market",
+    bestRounds: "R4–14 (falls & pivots)",
+    roundGuide: "Early: stay near consensus. Middle/late: draft the board — take players falling past ADP, skip reaches.",
   },
 };
 

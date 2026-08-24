@@ -485,12 +485,14 @@ function renderViewBanner() {
   if (state.view === "summary") {
     const teams = state.leagueTeams || 12;
   banner.innerHTML = `
-      <h3>Summary — model + league-size VORP</h3>
-      <p>Multi-factor <strong>0–100</strong> score blended with <strong>VORP</strong> (value over the replacement starter in a <strong>${teams}-team</strong> league with your roster slots). Change teams/starters to reshuffle the board.</p>
+      <h3>Summary — factor model → then VORP blend</h3>
+      <p><strong>Step 1:</strong> weighted factors (Flock, production, situation…) → 0–100 model score.
+      <strong>Step 2:</strong> VORP = model − replacement starter in your <strong>${teams}-team</strong> league (teams × roster slots).
+      Final rank blends both (~55% model / ~45% VORP when VORP is on). VORP is <em>not</em> a factor slider — it runs after weights.</p>
       <div class="banner-meta">
-        <div class="stat-pill">VORP <strong>${state.enableVorp ? "on" : "off"}</strong></div>
+        <div class="stat-pill">VORP <strong>${state.enableVorp ? "on · post-weight" : "off"}</strong></div>
         <div class="stat-pill">League <strong>${teams} teams</strong></div>
-        <div class="stat-pill">Flock · ADP · situation factors</div>
+        <div class="stat-pill">Preset <strong>${presetById(state.weightPreset).label}</strong></div>
       </div>`;
     return;
   }
@@ -1101,7 +1103,12 @@ function bindUI() {
     const applyStrat = () => {
       state.strategy = stratSel.value;
       const s = STRATEGIES[state.strategy];
-      if ($("#strategyDesc") && s) $("#strategyDesc").textContent = s.desc;
+      if ($("#strategyDesc") && s) {
+        const rounds = s.bestRounds ? ` · <strong>${s.bestRounds}</strong>` : "";
+        $("#strategyDesc").innerHTML = `${s.desc}${rounds}${
+          s.roundGuide ? `<div class="help-text" style="margin-top:4px">${s.roundGuide}</div>` : ""
+        }`;
+      }
       // Mirror On the Clock: strategy suggests a ranking-style preset
       if (s?.suggestedPreset) {
         const preset = presetById(s.suggestedPreset);
